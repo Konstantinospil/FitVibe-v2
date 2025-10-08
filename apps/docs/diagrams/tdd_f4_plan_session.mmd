@@ -1,0 +1,12 @@
+%% Source: TDD | Section: n/a | Heading: F4. Plan Session
+sequenceDiagram
+  participant FE as Frontend
+  participant API as /sessions
+  participant SVC as Sessions Service
+  participant DB as PostgreSQL
+
+  FE->>API: POST /sessions {title, planned_for, exercises[]}
+  API->>SVC: createSession(cmd)
+  SVC->>DB: insert session + session_exercises + planned_attributes
+  SVC-->>API: sessionId
+  API-->>FE: 201 Created {id}

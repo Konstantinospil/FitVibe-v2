@@ -1,0 +1,8 @@
+%% Source: TDD | Section: 12.1 | Heading: 12.1 Pipeline & Promotion Flow
+flowchart LR
+  A[Commit/PR] --> CI[CI: Lint • Type • Test • Build • SBOM • Docker]
+  CI --> REG[Push image to GHCR]
+  REG --> STG[Deploy Staging]
+  STG --> TESTS[Smoke + E2E + Migrations + Perf sample]
+  TESTS -->|manual gate| PRD[Deploy Production]
+  PRD --> HCHK[/Health + /metrics gate/]

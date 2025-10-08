@@ -1,0 +1,25 @@
+{
+  "name": "fitvibe",
+  "version": "2.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "clean": "rimraf node_modules .turbo && pnpm install",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.4",
+    "eslint": "^9.37.0",
+    "prettier": "^3.3.3",
+    "husky": "^9.0.10",
+    "lint-staged": "^15.2.7",
+    "rimraf": "^6.0.1",
+    "dotenv-cli": "^7.4.2"
+  }
+}

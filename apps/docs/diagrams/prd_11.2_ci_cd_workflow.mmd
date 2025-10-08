@@ -1,0 +1,31 @@
+%% Source: PRD | Section: 11.2 | Heading: 11.2 CI/CD Workflow
+flowchart TD
+  Dev[Developer] -->|push/PR| Repo[GitHub Repository]
+
+  subgraph CI[Continuous Integration]
+    direction TB
+    Repo --> Checkout[Checkout Code]
+    Checkout --> Install[Install Dependencies + Restore Cache]
+    Install --> Lint[Run Lint]
+    Lint --> TypeCheck[Run Type Check]
+    TypeCheck --> Test[Jest: Run Unit & Integration Tests]
+    Test --> Build[Build FE & BE Artifacts]
+    Build --> DockerBuild[Build Docker Images]
+    DockerBuild --> PushImages[Push to GHCR: SHA + SemVer]
+    Lint -.->|fail| CI_Fail[❌ CI Failed]
+    TypeCheck -.->|fail| CI_Fail
+    Test -.->|fail| CI_Fail
+  end
+
+  PushImages --> Approval[🔒 Manual Approval Required]
+
+  subgraph CD[Continuous Deployment]
+    direction TB
+    Approval --> Deploy[Deploy Job]
+    Deploy --> Runner[GitHub Runner / SSH to Host]
+    Runner --> Pull[Pull Images from GHCR]
+    Pull --> Compose[Run docker compose prod]
+    Compose --> HealthCheck[Run Health Checks]
+    HealthCheck -->|ok| Services[✅ Services Updated]
+    HealthCheck -.->|fail| Rollback[Rollback to Previous Image]
+  end

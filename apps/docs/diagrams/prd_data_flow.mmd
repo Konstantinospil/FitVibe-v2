@@ -1,0 +1,16 @@
+%% Source: PRD | Section: n/a | Heading: Data Flow
+sequenceDiagram
+  participant U as User (Browser)
+  participant FE as Frontend (React +i18next)
+  participant BE as Backend (Express)
+  participant AI as AI Translator (DeepL/OpenAI)
+  participant DB as PostgreSQL (Cache)
+
+  U->>FE: View Feed (locale=de)
+  FE->>BE: GET /feed?lang=de
+  BE->>DB: Fetch original EN content
+  BE->>AI: Translate missing entries (EN→DE)
+  AI-->>BE: Translated text
+  BE->>DB: Cache translation
+  BE-->>FE: Localized response (JSON)
+  FE-->>U: Render German text

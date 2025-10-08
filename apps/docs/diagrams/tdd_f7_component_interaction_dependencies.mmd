@@ -1,0 +1,19 @@
+%% Source: TDD | Section: n/a | Heading: F7. Component Interaction & Dependencies
+flowchart TB
+  Auth --> Users
+  Auth --> Mailer
+  Sessions --> Exercises
+  Sessions --> Points
+  Points --> PG[(DB)]
+  Users --> Media
+  Feed --> Sessions
+  subgraph CrossCutting
+    Logger
+    ErrorHandler
+    Validation
+    Config
+  end
+  Auth --> Logger
+  Sessions --> Logger
+  Points --> Logger
+  Feed --> Logger

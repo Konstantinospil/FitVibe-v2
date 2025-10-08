@@ -1,0 +1,12 @@
+%% Source: TDD | Section: n/a | Heading: F6. Clone Public Session
+sequenceDiagram
+  participant FE as Frontend
+  participant API as /feed/:id/clone
+  participant SVC as Feed Service
+  participant DB as PostgreSQL
+
+  FE->>API: POST /feed/:id/clone
+  API->>SVC: cloneSession(publicId, userId)
+  SVC->>DB: read source session + exercises
+  SVC->>DB: insert new session for user (attribution kept)
+  API-->>FE: 201 Created {newSessionId}

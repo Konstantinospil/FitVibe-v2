@@ -1,0 +1,22 @@
+%% Source: TDD | Section: n/a | Heading: F2. Registration & Email Verification
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant FE as Frontend
+  participant API as Backend (Auth Router)
+  participant SVC as Auth Service
+  participant DB as PostgreSQL
+  participant MAIL as Mailer
+
+  U->>FE: Fill registration form
+  FE->>API: POST /auth/register {email, username, password}
+  API->>SVC: validate + registerUser()
+  SVC->>DB: insert users (inactive) + verification token (TTL 15m)
+  SVC->>MAIL: sendVerificationEmail(link)
+  API-->>FE: 201 Created
+
+  U->>FE: Click verification link
+  FE->>API: GET /auth/verify?token=...
+  API->>SVC: verifyEmail(token)
+  SVC->>DB: set user active, delete token
+  API-->>FE: 200 OK

@@ -1,0 +1,22 @@
+# Node / Editor
+node_modules/
+dist/
+build/
+.vscode/
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Turbo / pnpm cache
+.turbo/
+.pnpm-store/
+
+# Coverage
+coverage/
+*.log
+
+# Docker
+infra/docker/data/
+infra/docker/volumes/
+infra/docker/tmp/
