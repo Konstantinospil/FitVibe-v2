@@ -13,13 +13,14 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "typescript": "^5.5.4",
+    "@types/jest": "^30.0.0",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^9.37.0",
-    "prettier": "^3.3.3",
     "husky": "^9.0.10",
     "lint-staged": "^15.2.7",
+    "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
-    "dotenv-cli": "^7.4.2"
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.4"
   }
 }
