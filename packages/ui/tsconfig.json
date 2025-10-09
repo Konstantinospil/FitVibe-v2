@@ -4,10 +4,15 @@
     "rootDir": "src",
     "outDir": "dist",
     "baseUrl": "src",
+    "jsx": "react-jsx",              // ✅ Enables React JSX
+    "target": "ESNext",
+    "module": "ESNext",
     "declaration": true,
     "composite": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true,
+    "types": ["react", "react-dom"]  // ✅ Add React type definitions
   },
   "include": ["src"]
 }

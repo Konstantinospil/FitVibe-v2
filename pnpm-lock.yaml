@@ -11,6 +11,12 @@ importers:
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.26
+      '@types/react-dom':
+        specifier: ^18.3.3
+        version: 18.3.7(@types/react@18.3.26)
       dotenv-cli:
         specifier: ^7.4.2
         version: 7.4.4
