@@ -1,0 +1,25 @@
+name: CD
+on:
+  workflow_dispatch:
+    inputs:
+      backend_tag:
+        description: 'Backend image tag'
+        required: false
+      frontend_tag:
+        description: 'Frontend image tag'
+        required: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/fitvibe
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
