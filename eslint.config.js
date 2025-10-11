@@ -86,4 +86,10 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  {
+    files: ["packages/utils/src/logger.ts"],
+    rules: {
+      "no-console": "off",
+    },
+  },
 ];
