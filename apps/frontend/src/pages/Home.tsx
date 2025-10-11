@@ -6,8 +6,8 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     getHealthStatus()
-      .then(() => setStatus("Backend online ✅"))
-      .catch(() => setStatus("Backend offline ❌"));
+      .then(() => setStatus("Backend online :)"))
+      .catch(() => setStatus("Backend offline :("));
   }, []);
 
   return (

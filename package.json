@@ -6,23 +6,32 @@
   "scripts": {
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint --continue",
+    "lint:check": "turbo run lint -- --max-warnings=0",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "clean": "rimraf node_modules .turbo && pnpm install",
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@eslint/js": "^9.37.0",
     "@types/jest": "^30.0.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.3",
-    "dotenv-cli": "^7.4.2",
+    "@types/react": "^18.3.26",
+    "@types/react-dom": "^18.3.7",
+    "dotenv-cli": "^7.4.4",
     "eslint": "^9.37.0",
-    "husky": "^9.0.10",
-    "lint-staged": "^15.2.7",
-    "prettier": "^3.3.3",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
-    "turbo": "^2.0.0",
-    "typescript": "^5.5.4"
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0"
   }
 }
