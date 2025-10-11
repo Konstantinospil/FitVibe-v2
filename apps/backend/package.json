@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "lint": "eslint \"src\"",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "express": "^4.19.2",
@@ -17,6 +17,7 @@
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
+    "jest": "^30.2.0",
     "tsx": "^4.11.0",
     "typescript": "^5.5.4",
     "@types/node": "^20.11.30",
