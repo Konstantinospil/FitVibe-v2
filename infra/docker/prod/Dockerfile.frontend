@@ -1,0 +1,39 @@
+## ===============================================================
+## FitVibe Frontend - Monorepo Build Pipeline
+## ===============================================================
+
+# ---------- Builder Stage ----------
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# 1) Copy workspace manifests needed for dependency resolution
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/frontend/package.json apps/frontend/
+COPY packages/*/package.json packages/*/
+
+# 2) Enable pnpm via corepack and pre-fetch deps for better caching
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+RUN pnpm fetch --prod=false
+
+# 3) Copy the remaining project sources
+COPY . .
+
+# 4) Link node_modules (dev deps included for build tooling)
+RUN pnpm install --frozen-lockfile --prod=false --offline
+
+# 5) Build the frontend workspace package
+RUN pnpm --filter @fitvibe/frontend run build
+
+# ---------- Runtime Stage ----------
+FROM nginx:alpine
+
+# Copy static assets produced during the build stage
+COPY --from=builder /app/apps/frontend/dist /usr/share/nginx/html
+
+# Basic hardening and nginx defaults
+RUN sed -i 's/user  nginx;/user nobody;/' /etc/nginx/nginx.conf && \
+    sed -i 's/# server_tokens off;/server_tokens off;/' /etc/nginx/nginx.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+## ===============================================================
