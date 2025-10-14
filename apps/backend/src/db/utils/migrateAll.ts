@@ -1,5 +1,16 @@
-import { spawnSync } from 'child_process';
+import db from "../index.js";
 
-console.log('🔼 Applying all migrations...');
-const result = spawnSync('npx', ['knex', 'migrate:latest', '--knexfile', 'src/db/knexfile.ts'], { stdio: 'inherit' });
-process.exit(result.status ?? 0);
+async function main(): Promise<void> {
+  try {
+    console.log("[db] Applying migrations (all environments)...");
+    await db.migrate.latest();
+    console.log("[db] Migrations applied successfully.");
+  } finally {
+    await db.destroy();
+  }
+}
+
+main().catch((error) => {
+  console.error("Failed to apply migrations.", error);
+  process.exit(1);
+});

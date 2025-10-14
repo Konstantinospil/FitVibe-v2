@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const passwordPolicy = z
+export const passwordPolicy = z
   .string()
   .min(12, "Password must be at least 12 characters long")
   .max(128)
@@ -41,3 +41,18 @@ export const ResetPasswordSchema = z.object({
   token: z.string().min(1),
   newPassword: passwordPolicy,
 });
+
+export const RevokeSessionsSchema = z
+  .object({
+    sessionId: z.string().uuid().optional(),
+    revokeAll: z.boolean().optional(),
+    revokeOthers: z.boolean().optional(),
+  })
+  .refine(
+    (data) => Boolean(data.sessionId || data.revokeAll || data.revokeOthers),
+    { message: "Provide sessionId or revoke scope", path: ["sessionId"] },
+  )
+  .refine(
+    (data) => !(data.revokeAll && data.revokeOthers),
+    { message: "Cannot combine revokeAll and revokeOthers", path: ["revokeAll"] },
+  );

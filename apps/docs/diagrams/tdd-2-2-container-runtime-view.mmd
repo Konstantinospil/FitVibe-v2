@@ -1,0 +1,20 @@
+graph TB
+  subgraph Client
+    A[React App] 
+  end
+  subgraph Server
+    B[Express API]
+    C[Worker / Jobs (emails, cleanups)]
+  end
+  subgraph Data
+    D[(PostgreSQL)]
+  end
+  subgraph Edge
+    E[NGINX + Certbot]
+  end
+  A -->|/api/v1| B
+  B --> D
+  C --> D
+  B -->|SMTP| F[Mail Adapter]
+  E --> A
+  E --> B

@@ -1,7 +1,7 @@
-import { db } from '../../db/connection';
+import { db } from "../../db/connection.js";
 
 export async function saveUserAvatarBase64(userId: string, base64: string) {
-  return db('users')
+  return db("users")
     .where({ id: userId })
     .update({
       avatar_base64: base64,
@@ -11,12 +11,12 @@ export async function saveUserAvatarBase64(userId: string, base64: string) {
 }
 
 export async function getUserAvatarBase64(userId: string): Promise<string | null> {
-  const row = await db('users').select('avatar_base64').where({ id: userId }).first();
+  const row = await db("users").select("avatar_base64").where({ id: userId }).first();
   return row?.avatar_base64 ?? null;
 }
 
 export async function clearUserAvatar(userId: string) {
-  return db('users')
+  return db("users")
     .where({ id: userId })
     .update({
       avatar_base64: null,

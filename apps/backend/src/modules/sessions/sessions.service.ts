@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+﻿import { v4 as uuidv4 } from 'uuid';
 import { db } from '../../db/connection';
 import {
   listSessions,
@@ -21,8 +21,8 @@ import { insertAudit } from '../common/audit.util';
 const allowedTransitions: Record<string, string[]> = {
   planned: ['in_progress', 'completed', 'canceled'],
   in_progress: ['completed', 'canceled'],
-  completed: [],
-  canceled: []
+  done: [],
+  canceled: [],
 };
 
 export async function getAll(userId: string, query: SessionQuery): Promise<PaginatedResult<Session>> {
@@ -44,12 +44,16 @@ export async function createOne(userId: string, dto: CreateSessionDTO) {
 
   const row: Session = {
     id: uuidv4(),
-    user_id: userId,
+    owner_id: userId,
     plan_id: dto.plan_id || null,
-    name: dto.name,
-    date: new Date(dto.date).toISOString(),
+    title: dto.title,
+    planned_at: new Date(dto.planned_at).toISOString(),
     status: 'planned',
-    notes: dto.notes ?? null
+    visibility: dto.visibility ?? 'private',
+    notes: dto.notes ?? null,
+    recurrence_rule: dto.recurrence_rule ?? null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   await createSession(row);
@@ -68,7 +72,7 @@ export async function updateOne(userId: string, id: string, dto: UpdateSessionDT
     if (!allowed.includes(dto.status)) {
       throw Object.assign(new Error(`Invalid status transition: ${current.status} -> ${dto.status}`), { status: 400 });
     }
-    if (dto.status === 'completed' && !dto.date) dto.date = new Date().toISOString();
+    if (dto.status === 'completed' && !dto.completed_at) dto.completed_at = new Date().toISOString();
   }
 
   if (dto.plan_id) {
@@ -78,7 +82,9 @@ export async function updateOne(userId: string, id: string, dto: UpdateSessionDT
 
   const affected = await updateSession(id, userId, {
     ...dto,
-    date: dto.date ? new Date(dto.date).toISOString() : undefined
+    planned_at: dto.planned_at ? new Date(dto.planned_at).toISOString() : undefined,
+    completed_at: dto.completed_at ? new Date(dto.completed_at).toISOString() : dto.completed_at,
+    started_at: dto.started_at ? new Date(dto.started_at).toISOString() : dto.started_at,
   });
   if (affected === 0) throw Object.assign(new Error('Session not found'), { status: 404 });
 
@@ -99,3 +105,4 @@ export async function cancelOne(userId: string, id: string) {
   await insertAudit(userId, 'session_cancel', { id });
   if (current.plan_id) await recomputeProgress(userId, current.plan_id);
 }
+

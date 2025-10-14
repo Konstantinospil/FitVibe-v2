@@ -20,9 +20,10 @@
                     "src/db/**/*.ts",
                     "src/middlewares/**/*.ts",
                     "src/observability/**/*.ts",
-                    "src/routes/**/*.ts",
+                    "src/api/**/*.ts",
                     "src/services/**/*.ts",
                     "src/utils/**/*.ts",
-                    "src/modules/auth/**/*.ts"
+                    "src/modules/**/*.ts",
+                    "src/jobs/**/*.ts"
                 ]
 }

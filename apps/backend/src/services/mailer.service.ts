@@ -1,0 +1,1 @@
+export interface MailMessage {\n  to: string;\n  subject: string;\n  html?: string;\n  text?: string;\n}\n\nexport class MailerService {\n  async send(_message: MailMessage): Promise<void> {\n    // TODO: integrate transactional email provider\n  }\n}\n

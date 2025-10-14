@@ -1,0 +1,9 @@
+flowchart LR
+    REGISTER[Account Creation<br/>Email + Password<br/>Email Verification] --> LOGIN[Login<br/>Email + Password<br/>Optional TOTP 2FA]
+    LOGIN --> ACCESS[Access Token: JWT RS256<br/>15 min validity]
+    LOGIN --> REFRESH[Refresh Token<br/>Stored in DB with jti<br/>Expires 14d]
+    ACCESS -->|Expired| REFRESH --> NEWACCESS[New Access Token<br/>Rotated Refresh]
+    ACCESS --> API[API Requests<br/>Protected Endpoints]
+    LOGOUT[Logout] -->|Revoke token| REFRESH
+    RESETPW[Forgot / Reset Password<br/>Email + Token] --> LOGIN
+    DELETE[Account Deletion: GDPR] --> TERMINATE[Anonymize Data + Invalidate Sessions]

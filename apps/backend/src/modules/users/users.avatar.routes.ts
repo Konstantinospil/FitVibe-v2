@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import multer from 'multer';
-import { requireAuth } from '../users/users.middleware';
-import { rateLimit } from '../common/rateLimiter';
-import { uploadAvatarHandler, getAvatarHandler, deleteAvatarHandler } from './users.avatar.controller';
+import { Router } from "express";
+import multer from "multer";
+import { requireAuth } from "./users.middleware.js";
+import { rateLimit } from "../common/rateLimiter.js";
+import { uploadAvatarHandler, getAvatarHandler, deleteAvatarHandler } from "./users.avatar.controller.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -12,22 +12,22 @@ const upload = multer({
 export const usersAvatarRouter = Router();
 
 usersAvatarRouter.post(
-  '/avatar',
-  rateLimit('user_avatar_upload', 5, 60),
+  "/avatar",
+  rateLimit("user_avatar_upload", 5, 60),
   requireAuth,
-  upload.single('avatar'),
-  uploadAvatarHandler
+  upload.single("avatar"),
+  uploadAvatarHandler,
 );
 
 usersAvatarRouter.get(
-  '/avatar/:id',
-  rateLimit('user_avatar_get', 60, 60),
-  getAvatarHandler
+  "/avatar/:id",
+  rateLimit("user_avatar_get", 60, 60),
+  getAvatarHandler,
 );
 
 usersAvatarRouter.delete(
-  '/avatar',
-  rateLimit('user_avatar_delete', 10, 60),
+  "/avatar",
+  rateLimit("user_avatar_delete", 10, 60),
   requireAuth,
-  deleteAvatarHandler
+  deleteAvatarHandler,
 );

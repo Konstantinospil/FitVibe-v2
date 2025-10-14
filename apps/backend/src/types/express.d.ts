@@ -11,6 +11,7 @@ declare global {
 
     interface Request {
       user?: User;      // attached in requireAuth
+      requestId?: string; // correlation ID injected per request
     }
   }
 }

@@ -1,0 +1,195 @@
+flowchart TB
+    %% =========================================================
+    %% Styles
+    %% =========================================================
+    classDef optional fill:#f7f7f7,stroke:#999,stroke-dasharray: 5 5,color:#444
+    classDef core fill:#fff,stroke:#333,color:#222
+
+    %% =========================================================
+    %% Client & Reverse Proxy
+    %% =========================================================
+    U[User Browser]:::core
+    NGINX[NGINX<br/>Reverse Proxy • TLS • HSTS • Static Assets]:::core
+    CERTBOT[Certbot:<br/>Let's Encrypt]:::core
+
+    U -->|HTTPS| NGINX
+    CERTBOT -->|TLS certs| NGINX
+
+    %% =========================================================
+    %% Frontend (Runtime & UI)
+    %% =========================================================
+    subgraph FE[Frontend: SPA]
+        direction TB
+        FE_APP[React 18: Vite build<br/>SPA Shell]:::core
+        FE_ROUTER[React Router DOM<br/>Client Routing]:::core
+        FE_HTTP[Axios<br/>401→/auth/refresh]:::core
+        FE_STATE[State: Zustand / Redux<br/>React Query: optional cache]:::core
+        FE_UI[TailwindCSS • Lucide Icons]:::core
+        FE_CHARTS[Recharts • Dashboards]:::core
+        FE_A11Y[Accessibility<br/>WCAG 2.1 AA, ARIA, Keyboard]:::core
+        FE_I18N[I18N:EN/DE tokens:<br/>future]:::optional
+    end
+
+    %% Static assets served to browser
+    NGINX -->|serve built assets| FE_APP
+    FE_APP --> FE_ROUTER
+    FE_APP --> FE_STATE
+    FE_APP --> FE_UI
+    FE_APP --> FE_CHARTS
+    FE_APP --> FE_A11Y
+    FE_APP -.-> FE_I18N
+
+    %% API calls from FE
+    FE_HTTP -->|/api: HTTPS| NGINX
+
+    %% =========================================================
+    %% Backend (Runtime & Framework)
+    %% =========================================================
+    subgraph BE[Backend: Node.js 20 + Express]
+        direction TB
+        BE_API[Express API Routers<br/>auth • users • exercises • sessions • progress • points • feed]:::core
+        BE_SEC[Security: Helmet • CORS allowlist • Rate limiting • CSRF • httpOnly Secure cookies]:::core
+        BE_AUTH[Auth: JWT: RS256 access<br/>Server-stored refresh: jti rotation & revocation]:::core
+        BE_VALID[Validation & Config:<br/>zod DTOs • zod+dotenv env schema]:::core
+        BE_UPLOADS[Uploads Abstraction:<br/>/uploads: dev • S3/GCS: prod]:::core
+        BE_EMAIL[Email Abstraction:<br/>SMTP • SES • SendGrid]:::core
+        BE_LOGS[Logging:<br/>pino/winston • morgan]:::core
+        BE_JOBS[Background Jobs: future:<br/>BullMQ / Temporal]:::optional
+        BE_CACHE[Redis: future:<br/>Caching • Rate limits]:::optional
+    end
+
+    %% Reverse proxy to backend
+    NGINX -->|reverse proxy| BE_API
+
+    BE_API --> BE_SEC
+    BE_API --> BE_AUTH
+    BE_API --> BE_VALID
+    BE_API --> BE_UPLOADS
+    BE_API --> BE_EMAIL
+    BE_API --> BE_LOGS
+    BE_API -.-> BE_JOBS
+    BE_API -.-> BE_CACHE
+
+    %% =========================================================
+    %% Database & Persistence
+    %% =========================================================
+    subgraph DB[Database & Persistence]
+        direction TB
+        DB_PG[PostgreSQL 18]:::core
+        DB_MIG[Knex.js Migrations & Seeds<br/>YYYYMMDDHHMM__*.ts]:::core
+        DB_POL[Indexes & Constraints • Soft deletes:<br/>lower username, partial idx, FK cascades]:::core
+        DB_BKP[Backups & Retention:<br/>Encrypted daily • RPO ≤ 24h • RTO ≤ 4h]:::core
+    end
+
+    BE_API --> DB_MIG --> DB_PG
+    DB_PG --> DB_POL
+    DB_PG --> DB_BKP
+
+    %% =========================================================
+    %% File & Media Storage
+    %% =========================================================
+    subgraph STORAGE[File & Media Storage]
+        direction TB
+        FS_DEV[Local /uploads: dev<br/>excluded from Git & Docker]:::core
+        FS_OBJ[Object Storage: prod:<br/>AWS S3 / GCS]:::core
+        FS_SCAN[Virus scan hook: optional]:::optional
+        FS_RULES[Media constraints:<br/>JPEG/PNG/WebP ≤ 5MB]:::core
+    end
+
+    BE_UPLOADS --> FS_DEV
+    BE_UPLOADS --> FS_OBJ
+    FS_OBJ -.-> FS_SCAN
+    BE_UPLOADS --> FS_RULES
+
+    %% =========================================================
+    %% Email & Notifications
+    %% =========================================================
+    subgraph MAIL[Email & Notifications]
+        direction TB
+        MAIL_ABS[Mailer Abstraction]:::core
+        MAIL_PROV[Providers: SMTP • SES • SendGrid]:::core
+        MAIL_BACKLOG[Unified notifications: email+push]:::optional
+    end
+
+    BE_EMAIL --> MAIL_ABS --> MAIL_PROV
+    MAIL_ABS -.-> MAIL_BACKLOG
+
+    %% =========================================================
+    %% Observability & Monitoring
+    %% =========================================================
+    subgraph OBS[Observability & Monitoring]
+        direction TB
+        OBS_METRICS[Metrics & Alerts:<br/>p95/p99 latency • 5xx • auth failures • DB saturation]:::core
+        OBS_TRACING[Tracing & Correlation IDs<br/>FE→BE propagation]:::core
+        OBS_PRIVACY[GDPR-aware logs: no PII]:::core
+    end
+
+    BE_LOGS --> OBS_TRACING
+    BE_API --> OBS_METRICS
+    DB_PG --> OBS_METRICS
+    BE_LOGS --> OBS_PRIVACY
+
+    %% =========================================================
+    %% Data Protection & Privacy
+    %% =========================================================
+    subgraph PRIV[Data Protection & Privacy]
+        direction TB
+        GDPR[GDPR: DSR endpoints: export/delete • Data minimization]:::core
+        COOKIES[Cookies: httpOnly • Secure • SameSite=Lax]:::core
+    end
+
+    FE_APP --> COOKIES
+    BE_SEC --> COOKIES
+    BE_API --> GDPR
+
+    %% =========================================================
+    %% Environments
+    %% =========================================================
+    ENVS[Environments:<br/>Local: dev • Staging: opt • Production]:::core
+    ENVS --> NGINX
+    ENVS --> BE_API
+    ENVS --> DB_PG
+
+    %% =========================================================
+    %% CI/CD, Build & Release, Infrastructure
+    %% =========================================================
+    subgraph CICD[CI/CD • Build & Release • Infra]
+        direction TB
+        CI[GitHub Actions CI:<br/>checkout • pnpm install • lint • test • build • push GHCR]:::core
+        REG[GHCR Registry:<br/>Docker images tagged: SHA + semver]:::core
+        CD[GitHub Actions CD:<br/>manual approval • SSH deploy]:::core
+        DOCKER[Docker / Compose:<br/>multi-stage builds • reproducible dev/prod]:::core
+        HOST[Target Host / Server:<br/>docker compose up -d]:::core
+        VER[Versioning & Rollback:<br/>/api/v1 • retain last good image]:::core
+        STATIC[Static assets caching via NGINX]:::core
+    end
+
+    CI --> REG
+    REG --> CD
+    CD --> HOST
+    HOST --> DOCKER
+    DOCKER --> NGINX
+    DOCKER --> BE_API
+    DOCKER --> DB_PG
+    NGINX --> STATIC
+    CI --> VER
+    CD --> VER
+
+    %% =========================================================
+    %% Monorepo Tooling
+    %% =========================================================
+    TOOLS[Monorepo Tooling:<br/>pnpm workspaces • turbo • ESLint • Prettier • TS base config]:::core
+    TOOLS --> CI
+    TOOLS --> FE_APP
+    TOOLS --> BE_API
+
+    %% =========================================================
+    %% Legend
+    %% =========================================================
+    subgraph LEGEND[Legend]
+        direction LR
+        L_OPT[Optional: Phase 2+]:::optional
+    end
+
+    %% Assign optional class
+    class FE_I18N,BE_JOBS,BE_CACHE,FS_SCAN,MAIL_BACKLOG optional

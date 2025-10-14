@@ -1,0 +1,12 @@
+flowchart LR
+  User[End User (Web/Mobile Web)] -->|HTTPS| FE[Frontend (React)]
+  FE -->|REST/JSON, JWT| BE[Backend (Node/Express)]
+  BE -->|SQL| DB[(PostgreSQL)]
+  BE -->|SMTP| Mail[Email Provider]
+  FE -->|Metrics (RUM)| Obs[Observability Stack]
+  BE -->|Metrics/Logs| Obs
+  subgraph Edge
+    RP[NGINX Reverse Proxy + TLS]
+  end
+  User -->|HTTPS| RP --> FE
+  User -->|HTTPS| RP --> BE

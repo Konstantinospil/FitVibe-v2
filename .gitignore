@@ -20,3 +20,6 @@ coverage/
 infra/docker/data/
 infra/docker/volumes/
 infra/docker/tmp/
+
+# Perf artifacts
+tests/perf/lhci-output/

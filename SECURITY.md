@@ -1,247 +1,147 @@
-# 🔒 FitVibe – Security Policy
+# FitVibe Security Policy
 
-> **Version:** 1.0  
-> **Last Updated:** 2025-10-06  
-> **Maintainer:** Konstantinos Pilpilidis (FitVibe Development Lead)  
-> **Contact:** kpilpilidis@gmail.com
-
----
-
-## 🧭 1. Purpose
-
-This document describes how the **FitVibe Training Planner & Logger Web App** protects user data, ensures compliance (GDPR, ISO 27001, TR-03174), and manages vulnerability reporting and disclosure.
+> Last updated: 2025-10-13  
+> Maintainer: Konstantinos Pilpilidis  
+> Security contact: kpilpilidis@gmail.com
 
 ---
 
-## 🧱 2. Supported Versions
+## 1. Purpose and Scope
 
-| Version | Supported | Notes |
-|----------|------------|-------|
-| `main` (production) | ✅ | Security patches only |
-| `develop` | ✅ | Under continuous integration |
-| All others | ❌ | No guaranteed updates |
-
-> Fixes are backported to the latest production release only.
+This policy explains how the FitVibe platform protects member data, how we collaborate with the security community, and the minimum expectations for anyone building or testing the system. It complements the Product Requirements Document (`apps/docs/1. Product Requirements Document.md`) and Technical Design Document (`apps/docs/2. Technical Design Document.md`), which describe the underlying controls in detail.
 
 ---
 
-## 🧩 3. Reporting a Vulnerability
+## 2. Supported Versions
 
-We take all reports seriously.  
-If you believe you’ve discovered a vulnerability or data exposure, **please contact us privately**:
+| Branch / Release | Supported | Notes |
+| ---------------- | --------- | ----- |
+| `main`           | Yes       | Production branch - receives security hotfixes. |
+| `develop`        | Yes       | Active integration branch - fixed when issues affect production readiness. |
+| Other branches   | No        | No guarantees; patch or rebase onto a supported branch. |
 
-- 📧 Email: **kpilpilidis@gmail.com** (PGP key fingerprint will be published in repository root)
-- ⏱️ Expected response: within **48 hours**
-- 🧾 Triage report: within **5 working days**
-
-Please include:
-- Description of the issue  
-- Affected endpoint or component  
-- Reproduction steps  
-- Potential impact  
-- Proof-of-concept exploit (if safe)
-
-Do **not** open public GitHub issues for security vulnerabilities.
+Fixes are backported to the latest production release only.
 
 ---
 
-## 🧪 4. Security Testing Guidelines
+## 3. Report a Vulnerability
 
-Security testing must follow **responsible disclosure** principles:
-- Never attempt denial-of-service or brute-force attacks on production systems.  
-- Use **staging environments** provided in your contributor onboarding.  
-- Never access data belonging to other users.  
-- Do not disclose vulnerabilities publicly until coordinated release is agreed.
+We prefer to work privately with researchers. If you believe you have found a vulnerability, email **kpilpilidis@gmail.com** with:
 
----
+- A clear description of the issue and potential impact.
+- Steps to reproduce or a minimal proof-of-concept.
+- Affected endpoints, components, or commit SHA (if known).
 
-## 🧰 5. Technical Controls
+Initial response: within 48 hours.  
+Triage update: within 5 business days.  
+Please avoid public GitHub issues or discussions.
 
-| Area | Control | Reference |
-|-------|----------|-----------|
-| **Authentication** | JWT RS256 + Refresh rotation (15 min / 14 days) | TDD § 10.2 |
-| **Transport** | HTTPS / TLS 1.3 only + HSTS + CSP | PRD § 6.6 |
-| **Data Protection** | AES-256 at rest (PostgreSQL TDE / S3 SSE) | PRD § 6.13 |
-| **Input Validation** | Zod schema validation on all requests | TDD § 8 |
-| **Logging** | Pino structured logs w/ correlation IDs; no PII | TDD § 13.1 |
-| **Access Control** | RBAC + hierarchical permission model | PRD § 5.3 |
-| **Rate Limiting** | 100 req / min per IP (adjustable) | PRD § 6.13 |
-| **Audit & Monitoring** | Prometheus + Grafana + Loki; anomaly alerts | TDD § 13.3 |
-| **Secrets Management** | `.env` + Docker secrets + GitHub Actions secrets | PRD § 6.12 |
+### Safe Harbor
 
----
+Good-faith security research is welcome. Following guidance from GitHub's security policy recommendations and the security.txt standard, we will not initiate legal action if you:
 
-## 🧾 6. Responsible Disclosure Process
+- Make every effort to avoid privacy violations, service disruption, or destruction of data.
+- Do not access or modify data that does not belong to you.
+- Give us a reasonable time to fix the issue before public disclosure.
+- Comply with applicable laws.
 
-1. Reporter contacts `kpilpilidis@gmail.com`  
-2. Security triage confirms receipt and reproduces issue  
-3. Severity rating assigned using **CVSS v3.1**  
-4. Fix developed and peer-reviewed in private branch  
-5. Patch deployed to staging, verified, and released  
-6. Public disclosure (if applicable) coordinated with reporter  
+### Security.txt
 
-No bounties are currently offered, but credit will be attributed in release notes for responsibly disclosed issues.
+The `/.well-known/security.txt` file is managed through the NGINX configuration (see `infra/nginx/`). Ensure deployments serve this endpoint so researchers can verify the current contact details and encryption keys.
 
 ---
 
-## ⚙️ 7. Development Security Requirements
+## 4. Coordinated Disclosure Lifecycle
 
-All contributors must:
-- Use **2FA** on GitHub and container registry accounts.  
-- Sign commits (`git config --global commit.gpgSign true`).  
-- Never commit `.env` or credentials.  
-- Use **security-scanned dependencies** (`pnpm audit`, `snyk test`).  
-- Run `pnpm test:security` locally before PR submission.  
-- Confirm PR checklist includes “No secrets committed”.
+1. Report received via email (see section 3).  
+2. Issue logged in the private security tracker (GitHub Security Advisories).  
+3. Severity scored using CVSS v3.1 and mapped to PRD risk classes.  
+4. Fix developed on a private branch, peer reviewed, and validated against automated tests (`pnpm lint`, `pnpm test`, `pnpm typecheck`).  
+5. Patch deployed to staging, then production after verification.  
+6. Reporter notified of resolution and public disclosure timeline.  
+7. Advisory published if user action is required (release notes plus SECURITY.md update).
 
----
-
-## 🔐 8. Data Protection & GDPR
-
-FitVibe follows **privacy-by-design** and **privacy-by-default** principles:
-
-| Obligation | Implementation |
-|-------------|----------------|
-| **User consent** | Explicit opt-in for analytics / community feed |
-| **Data minimization** | Only store fields needed for function |
-| **Right to access/export/delete** | `/users/export`, `/users/delete` endpoints |
-| **Retention** | Auto-purge after 24 months inactivity |
-| **Encryption** | TLS 1.3 in transit / AES-256 at rest |
-| **Logging policy** | Pseudonymized UUIDs; 7-day retention limit |
+We credit reporters in release notes when permitted.
 
 ---
 
-## 🧮 9. Continuous Security Monitoring
+## 5. Testing Guidelines for Researchers
 
-- Nightly **npm-audit / Snyk** scans  
-- Weekly **dependency update checks** via Renovate  
-- Automated **security test suite** (OWASP ZAP + k6)  
-- Prometheus alerts on:
-  - 5xx rate > 1 %  
-  - latency p95 > 600 ms  
-  - JWT key rotation > 14 days  
-  - failed login spike > 3σ baseline  
+- Use local or staging environments wherever possible.  
+- Do not run automated scanners against production without written approval.  
+- No denial-of-service, resource exhaustion, or brute-force testing.  
+- Never download, modify, or exfiltrate data that belongs to other users.  
+- Social engineering, phishing, or physical attacks are out of scope.  
+- Stop testing immediately if you encounter sensitive data and report your findings.
 
 ---
 
-## 🧩 10. Incident Response
+## 6. Security Controls Overview
 
-| Phase | Target Time | Action |
-|--------|--------------|--------|
-| **Detection** | ≤ 1 h | Alert triggered via monitoring |
-| **Containment** | ≤ 2 h | Disable affected services |
-| **Eradication** | ≤ 12 h | Patch & verify fix |
-| **Recovery** | ≤ 24 h | Restore service from backup |
-| **Post-mortem** | ≤ 72 h | Root-cause + preventive measures documented in ADR |
-
-All incidents are logged in `infra/security/incidents/YYYY-MM-DD.md`.
-
----
-
-## 11. Key Management & Rotation Policy
-
-This policy defines how **FitVibe** manages, rotates, and retires cryptographic keys used for authentication, encryption, and secure communication across all environments.
+| Area | Baseline Control | Reference |
+| ---- | ---------------- | --------- |
+| Authentication | OAuth2-style JWT access tokens (RS256) with rotating refresh tokens. | TDD section 4 and section 10 |
+| Transport | TLS 1.3, HSTS, modern cipher suites, security headers. | PRD section 6.6 |
+| Data Protection | Encrypted PostgreSQL and object storage, least-privilege IAM. | PRD section 6.13 |
+| Validation | Zod DTO validation and centralized sanitisation middleware. | TDD section 8 |
+| Logging and Monitoring | Pino JSON logs, OpenTelemetry traces, Prometheus and Grafana dashboards. | TDD section 13 |
+| Rate Limiting | Adaptive limits at the API gateway (NGINX) and application middleware. | PRD section 6.13 |
+| Secrets | Managed via environment templates (`.env.example`), GitHub Actions secrets, and Docker secrets. | PRD section 6.12 |
 
 ---
 
-### 11.1 Scope
+## 7. Secure Development Requirements
 
-Applies to the following key types:
-- **JWT signing keys** (RSA 4096-bit or ECDSA P-256)
-- **Database encryption keys** (AES-256)
-- **Transport Layer Security (TLS) certificates**
-- **Infrastructure secrets** (Docker, GitHub Actions, Prometheus, Grafana)
+All maintainers and contributors must:
 
----
-
-### 11.2 Key Generation
-
-- Keys are generated using OpenSSL or Node’s `crypto` module:
-  
-  ```bash
-  openssl genrsa -out jwt_private.pem 4096
-  openssl rsa -in jwt_private.pem -pubout -out jwt_public.pem
-  ```
-
-- Each environment (`dev`, `staging`, `prod`) has unique key pairs.
-- Private keys are never stored in version control.
-- Keys are stored securely via:
-  - GitHub Actions Secrets (CI/CD)
-  - Docker secrets (runtime)
-  - Hardware-backed vault or encrypted volume (`/etc/fitvibe/keys`)
+- Enable multi-factor authentication on GitHub and any cloud accounts used for FitVibe.  
+- Keep local environments patched and free of known malware.  
+- Never commit secrets, access tokens, or personal data (use `.env` files listed in `.gitignore`).  
+- Run `pnpm install`, `pnpm lint`, `pnpm test`, and `pnpm typecheck` before opening a pull request.  
+- Follow the conventions documented in `apps/docs/project-structure.md` and `CONTRIBUTING.md`.  
+- Use signed commits whenever possible (`git config --global commit.gpgSign true`).  
+- Document security-relevant changes in the pull request description, including migration or infrastructure impacts.
 
 ---
 
-### 11.3 Rotation Frequency
+## 8. Dependency and Supply-Chain Management
 
-| Key Type | Rotation Interval | Method |
-|-----------|------------------|---------|
-| JWT signing key | Every **14 days** | Automated, JWKS updated |
-| TLS certificate | Every **90 days** | Auto-renew via Let’s Encrypt |
-| DB encryption key | Every **6 months** | Re-encrypt inactive data |
-| Infrastructure secrets | Every **3 months** | Manual rotation & validation |
-
-Prometheus alerts trigger if JWT key age > **14 days** or rotation fails.
+- Automated dependency and vulnerability checks run via `.github/workflows/security-scan.yml`.  
+- Review third-party packages for licence compatibility and maintenance status before adding them.  
+- Run `pnpm audit --prod` for production dependencies and address high severity findings promptly.  
+- Frontend and backend images are built via CI (`.github/workflows/cd-prod.yml`) and scanned before release.  
+- Verify downloads via checksums or signatures when adding binary dependencies to `infra/`.
 
 ---
 
-### 11.4 Rotation Process
+## 9. Incident Response and Communication
 
-1. Generate new key pair  
-2. Publish updated JWKS at `/.well-known/jwks.json`  
-3. Mark previous key as *deprecated* (valid for 24 h overlap)  
-4. Revoke and archive old key (`archive/YYYY-MM-DD/`)  
-5. Verify new key usage for all services  
-6. Log rotation event (`audit.security.rotation`)  
+| Phase | Target Response | Notes |
+| ----- | --------------- | ----- |
+| Detection | <= 1 hour | Alert triggers via Prometheus or log anomaly detection. |
+| Containment | <= 2 hours | Isolate affected services, rotate credentials if necessary. |
+| Eradication | <= 12 hours | Apply patches, remove malicious artefacts, verify fix. |
+| Recovery | <= 24 hours | Restore services, re-enable traffic, run regression tests. |
+| Post-incident review | <= 72 hours | Document root cause, update runbooks under `infra/security/policies/`, and capture lessons learned in an ADR when appropriate. |
 
-Automated by `infra/scripts/rotate_keys.sh`.
-
----
-
-### 11.5 Storage & Access Control
-
-- Only **two authorized maintainers** have access to the private vault.
-- All key access logged via `auditd`.
-- Keys encrypted using **AES-256-GCM** at rest.
-- Two-person rule (4-eyes principle) required for production key operations.
-- Temporary key copies automatically deleted post-deployment.
+Security incidents are tracked in a private register; a sanitized summary is shared with stakeholders as part of release notes or governance updates.
 
 ---
 
-### 11.6 Revocation & Compromise Handling
+## 10. Contact and Encryption
 
-If compromise is suspected:
-1. Revoke key in JWKS (flag `revoked=true`)
-2. Invalidate all active sessions signed by the key
-3. Generate and deploy new key pair
-4. Notify affected users within **72 hours** (GDPR Art. 33)
-5. Record incident in `infra/security/incidents/YYYY-MM-DD.md`
+- Email: kpilpilidis@gmail.com  
+- PGP: fingerprint and public key will be published under `infra/security/pgp/fitvibe.asc` (work in progress).  
+- Signal (optional): details available on request after initial email contact.
 
 ---
 
-### 11.7 Audit & Verification
+## 11. External References
 
-- Quarterly key rotation reviews logged in `infra/security/audit/rotation_log.md`
-- Annual penetration test includes key lifecycle review
-- Records kept for **24 months**
-
----
-
-### 11.8 References
-
-- **PRD §6.13** – Security & Compliance  
-- **TDD §10** – Authentication & Security Layer  
-- **QA Plan §12** – Security Testing & Key Lifecycle  
-- **FitVibe SECURITY.md** – Overall Security Policy
+- GitHub Docs - "Adding a security policy to your repository" (best practice for communication and disclosure timelines).  
+- securitytxt.org - guidance for maintaining a compliant `security.txt`.  
+- Open Source Guides - "Best Practices for Maintainers" (expectations for transparent processes and contributor safety).
 
 ---
 
-## 🧩 12. Contact
-
-**Email:** `kpilpilidis@gmail.com`  
-**Lead:** Dr. Konstantinos Pilpilidis  
-**Key Fingerprint:** will be published with PGP key in repository root  
-
----
-
-*© 2025 FitVibe Development – All Rights Reserved.*
+Thank you for helping keep FitVibe members safe.

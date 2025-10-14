@@ -1,0 +1,1 @@
+name: Security Scan\n\non:\n  schedule:\n    - cron: '0 3 * * *'\n  workflow_dispatch:\n\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: github/codeql-action/init@v3\n        with:\n          languages: javascript\n      - uses: github/codeql-action/analyze@v3\n

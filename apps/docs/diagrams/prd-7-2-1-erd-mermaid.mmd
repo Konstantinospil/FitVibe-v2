@@ -1,0 +1,260 @@
+erDiagram
+    %% ==============================
+    %% USERS, SECURITY & IDENTITY
+    %% ==============================
+    USERS {
+        uuid id PK
+        string username UNIQUE           %% store as citext or LOWER(username) unique
+        string display_name
+        string password_hash             %% from conceptual model
+        string status                    %% active/suspended/deleted
+        string locale                    %% i18n preference
+        string preferred_lang            %% alias; optional
+        timestamp created_at
+        timestamp deleted_at             %% soft delete
+        string role_code FK              %% -> ROLES.code
+    }
+
+    ROLES {
+        string code PK
+        string description
+    }
+
+    USER_CONTACTS {
+        uuid id PK
+        uuid user_id FK
+        string type                      %% email, phone
+        string value UNIQUE
+        boolean is_primary
+        boolean is_recovery
+        boolean is_verified
+        timestamp verified_at
+        timestamp created_at
+    }
+
+    USER_STATIC {
+        uuid user_id PK FK
+        date date_of_birth
+        string gender_code FK            %% -> GENDERS.code
+    }
+
+    GENDERS {
+        string code PK
+        string description
+    }
+
+    USER_METRICS {
+        uuid id PK
+        uuid user_id FK
+        decimal weight
+        string unit                      %% kg/lb
+        string fitness_level_code FK     %% -> FITNESS_LEVELS.code
+        string training_frequency        %% e.g., 1-2/wk
+        string photo_url
+        timestamp recorded_at
+    }
+
+    FITNESS_LEVELS {
+        string code PK
+        string description
+    }
+
+    AUTH_SESSIONS {
+        uuid jti PK
+        uuid user_id FK
+        string user_agent
+        string ip
+        timestamp created_at
+        timestamp expires_at
+        timestamp revoked_at
+    }
+
+    USER_STATE_HISTORY {
+        uuid id PK
+        uuid user_id FK
+        string field                     %% e.g., locale, display_name
+        string old_value
+        string new_value
+        timestamp changed_at
+    }
+
+    TRANSLATION_CACHE {
+        uuid id PK
+        uuid hash UNIQUE                 %% md5(source||lang)::uuid (computed)
+        string source
+        string lang
+        string translated
+        timestamp created_at
+    }
+
+    %% ==============================
+    %% EXERCISES & SESSIONS
+    %% ==============================
+    EXERCISES {
+        uuid id PK
+        uuid owner FK                    %% who created it (optional)
+        string name
+        string type_code FK              %% -> EXERCISE_TYPES.code
+        string muscle_group
+        string equipment
+        jsonb tags                       %% JSONB + GIN
+        boolean is_public
+        string description_en
+        string description_de
+        timestamp created_at
+        timestamp archived_at
+    }
+
+    EXERCISE_TYPES {
+        string code PK
+        string description
+    }
+
+    SESSIONS {
+        uuid id PK
+        uuid owner_id FK
+        uuid plan_id FK
+        string title
+        timestamp planned_at
+        string recurrence_rule
+        timestamp started_at
+        timestamp completed_at
+        string status                    %% planned, in_progress, completed, canceled
+        string visibility                %% private/followers/public
+        integer calories
+        integer points                   %% redundant with USER_POINTS history; optional
+        string notes
+        timestamp created_at
+        timestamp deleted_at
+    }
+
+    SESSION_EXERCISES {
+        uuid id PK
+        uuid session_id FK
+        uuid exercise_id FK
+        int order_index
+        string notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    EXERCISE_SETS {
+        uuid id PK
+        uuid session_exercise_id FK
+        int order_index
+        int reps
+        numeric weight_kg
+        int distance_m
+        int duration_sec
+        int rpe
+        string notes
+        timestamp created_at
+    }
+
+    PLANNED_EXERCISE_ATTRIBUTES {
+        uuid id PK
+        uuid session_exercise_id FK
+        int sets
+        int reps
+        decimal load
+        decimal distance
+        interval duration
+        int rpe
+        interval rest
+        jsonb extras
+    }
+
+    ACTUAL_EXERCISE_ATTRIBUTES {
+        uuid id PK
+        uuid session_exercise_id FK
+        int sets
+        int reps
+        decimal load
+        decimal distance
+        interval duration
+        int rpe
+        interval rest
+        jsonb extras
+    }
+
+    %% ==============================
+    %% GAMIFICATION & COMMUNITY
+    %% ==============================
+    USER_POINTS {
+        uuid id PK
+        uuid user_id FK
+        string source_type               %% e.g., workout, streak, challenge
+        string algorithm_version
+        int points
+        timestamp awarded_at
+    }
+
+    BADGES {
+        uuid id PK
+        uuid user_id FK
+        string badge_type
+        timestamp awarded_at
+    }
+
+    FOLLOWERS {
+        uuid id PK
+        uuid follower_id FK
+        uuid following_id FK
+        timestamp created_at
+    }
+
+    MEDIA {
+        uuid id PK
+        uuid owner_id FK                 %% uploader
+        string target_type               %% 'session'|'exercise'|'profile'|...
+        uuid target_id
+        string storage_key               %% physical object key
+        string file_url                  %% optional public URL
+        string mime_type
+        string media_type                %% image|video|file (logical)
+        int bytes
+        timestamp created_at
+    }
+
+    %% ==============================
+    %% ANALYTICS (DERIVED)
+    %% ==============================
+    SESSION_SUMMARY {
+        uuid session_id PK               %% FK -> sessions.id
+        uuid owner
+        numeric total_volume
+        int exercise_count
+        string status
+        timestamp planned_for
+        timestamp completed_at
+        timestamp refreshed_at
+    }
+
+    %% ==============================
+    %% RELATIONSHIPS
+    %% ==============================
+    USERS ||--o{ USER_CONTACTS : has
+    USERS ||--|| USER_STATIC : has
+    USERS ||--o{ USER_METRICS : records
+    USERS ||--o{ USER_STATE_HISTORY : changes
+    USERS ||--o{ AUTH_SESSIONS : maintains
+    USERS ||--o{ EXERCISES : owns
+    USERS ||--o{ PLANS : owns
+    USERS ||--o{ SESSIONS : plans
+    USERS ||--o{ USER_POINTS : earns
+    USERS ||--o{ BADGES : awarded
+    USERS ||--o{ FOLLOWERS : connects
+    USERS ||--o{ MEDIA : uploads
+
+    USERS }o--|| ROLES : "has role"
+    USER_STATIC }o--|| GENDERS : "has gender"
+    USER_METRICS }o--|| FITNESS_LEVELS : "has fitness level"
+    EXERCISES }o--|| EXERCISE_TYPES : "has type"
+
+    PLANS ||--o{ SESSIONS : schedules
+    SESSIONS ||--o{ SESSION_EXERCISES : includes
+    SESSION_EXERCISES ||--o{ EXERCISE_SETS : actuals
+    SESSION_EXERCISES ||--o{ PLANNED_EXERCISE_ATTRIBUTES : planned
+    SESSION_EXERCISES ||--o{ ACTUAL_EXERCISE_ATTRIBUTES : actual
+
+    SESSIONS ||--o{ SESSION_SUMMARY : summarized_by

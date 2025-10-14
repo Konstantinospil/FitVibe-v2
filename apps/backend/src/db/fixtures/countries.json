@@ -1,0 +1,7 @@
+[
+  { "iso2": "US", "iso3": "USA", "name": "United States" },
+  { "iso2": "GB", "iso3": "GBR", "name": "United Kingdom" },
+  { "iso2": "DE", "iso3": "DEU", "name": "Germany" },
+  { "iso2": "GR", "iso3": "GRC", "name": "Greece" },
+  { "iso2": "AU", "iso3": "AUS", "name": "Australia" }
+]

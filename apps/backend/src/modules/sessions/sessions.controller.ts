@@ -1,29 +1,39 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { z } from 'zod';
 import { getAll, getOne, createOne, updateOne, cancelOne } from './sessions.service';
 
 const statusEnum = z.enum(['planned', 'in_progress', 'completed', 'canceled']);
+const visibilityEnum = z.enum(['private', 'public']);
 
 const createSchema = z.object({
   plan_id: z.string().uuid().nullable().optional(),
-  name: z.string().min(2).max(100),
-  date: z.string().datetime(),
-  notes: z.string().max(1000).nullable().optional()
+  title: z.string().min(2).max(100),
+  planned_at: z.string().datetime(),
+  visibility: visibilityEnum.optional(),
+  notes: z.string().max(1000).nullable().optional(),
+  recurrence_rule: z.string().max(255).nullable().optional(),
 });
 
 const updateSchema = z.object({
   plan_id: z.string().uuid().nullable().optional(),
-  name: z.string().min(2).max(100).optional(),
-  date: z.string().datetime().optional(),
+  title: z.string().min(2).max(100).optional(),
+  planned_at: z.string().datetime().optional(),
   status: statusEnum.optional(),
-  notes: z.string().max(1000).nullable().optional()
+  visibility: visibilityEnum.optional(),
+  notes: z.string().max(1000).nullable().optional(),
+  recurrence_rule: z.string().max(255).nullable().optional(),
+  started_at: z.string().datetime().optional(),
+  completed_at: z.string().datetime().optional(),
+  calories: z.number().int().min(0).nullable().optional(),
+  points: z.number().int().min(0).nullable().optional(),
+  deleted_at: z.string().datetime().optional(),
 });
 
 const querySchema = z.object({
   status: statusEnum.optional(),
   plan_id: z.string().uuid().optional(),
-  date_from: z.string().datetime().optional(),
-  date_to: z.string().datetime().optional(),
+  planned_from: z.string().datetime().optional(),
+  planned_to: z.string().datetime().optional(),
   search: z.string().trim().max(100).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   offset: z.coerce.number().int().min(0).max(10000).default(0)
@@ -67,3 +77,4 @@ export async function deleteSessionHandler(req: Request, res: Response) {
   await cancelOne(userId, id);
   res.status(204).send();
 }
+

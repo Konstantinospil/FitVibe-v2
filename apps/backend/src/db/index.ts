@@ -1,11 +1,13 @@
-import knex, { Knex } from 'knex';
-import config from './knexfile.js';
-import { db as staticDb } from './connection.js';
+import knex, { Knex } from "knex";
+import config from "./knexfile.js";
+import { db as connectionDb } from "./connection.js";
 
-const env = process.env.NODE_ENV || 'development';
-export const db: Knex = (config as any)[env]
-  ? knex((config as any)[env])
-  : staticDb;
+const env = process.env.NODE_ENV ?? "development";
+const configurations = config as Record<string, Knex.Config>;
 
-export * from './connection.js';
+export const db: Knex = configurations[env]
+  ? knex(configurations[env])
+  : connectionDb;
+
+export * from "./connection.js";
 export default db;

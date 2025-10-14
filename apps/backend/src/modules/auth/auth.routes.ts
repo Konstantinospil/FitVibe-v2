@@ -7,16 +7,20 @@ import {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  listSessions,
+  revokeSessions,
   jwksHandler,
 } from "./auth.controller.js";
 import { rateLimit } from "../common/rateLimiter.js";
-import { validate } from "../common/validation.js";
+import { validate } from "../../utils/validation.js";
 import {
   RegisterSchema,
   LoginSchema,
   ForgotPasswordSchema,
   ResetPasswordSchema,
+  RevokeSessionsSchema,
 } from "./auth.schemas.js";
+import { requireAccessToken } from "./auth.middleware.js";
 
 export const authRouter = Router();
 
@@ -38,4 +42,20 @@ authRouter.post(
   resetPassword,
 );
 
+authRouter.get(
+  "/sessions",
+  rateLimit("auth_sessions", 60, 60),
+  requireAccessToken,
+  listSessions,
+);
+authRouter.post(
+  "/sessions/revoke",
+  rateLimit("auth_sessions_revoke", 10, 60),
+  requireAccessToken,
+  validate(RevokeSessionsSchema),
+  revokeSessions,
+);
+
 authRouter.get("/jwks", jwksHandler);
+
+

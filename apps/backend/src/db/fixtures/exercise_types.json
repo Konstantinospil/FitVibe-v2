@@ -1,0 +1,7 @@
+[
+  { "code": "strength", "description": "Strength & resistance training" },
+  { "code": "cardio", "description": "Cardiovascular and endurance work" },
+  { "code": "mobility", "description": "Mobility and flexibility drills" },
+  { "code": "skill", "description": "Skill, coordination, and technique practice" },
+  { "code": "recovery", "description": "Active recovery or regeneration sessions" }
+]

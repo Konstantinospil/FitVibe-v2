@@ -1,5 +1,16 @@
-import { spawnSync } from 'child_process';
+import db from "../index.js";
 
-console.log('↩️ Rolling back all migrations...');
-const result = spawnSync('npx', ['knex', 'migrate:rollback', '--all', '--knexfile', 'src/db/knexfile.ts'], { stdio: 'inherit' });
-process.exit(result.status ?? 0);
+async function main(): Promise<void> {
+  try {
+    console.log("[db] Rolling back all migrations...");
+    await db.migrate.rollback(undefined, true);
+    console.log("[db] Rollback completed.");
+  } finally {
+    await db.destroy();
+  }
+}
+
+main().catch((error) => {
+  console.error("Failed to roll back migrations.", error);
+  process.exit(1);
+});

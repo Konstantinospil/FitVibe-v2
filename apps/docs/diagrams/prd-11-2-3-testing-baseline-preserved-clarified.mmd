@@ -1,0 +1,4 @@
+flowchart TD
+    Lint --> TypeCheck
+    TypeCheck --> Test[Jest: Run Unit & Integration Tests]
+    Test --> Build

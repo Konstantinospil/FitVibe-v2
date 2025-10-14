@@ -1,25 +1,102 @@
 name: CD
+
 on:
   workflow_dispatch:
     inputs:
-      backend_tag:
-        description: 'Backend image tag'
+      backend_digest:
+        description: "Backend image digest (sha256:...)"
+        required: true
+      frontend_digest:
+        description: "Frontend image digest (sha256:...)"
+        required: true
+      release_tag:
+        description: "Semantic version to deploy (e.g. v1.2.3)"
+        required: true
+      previous_backend_digest:
+        description: "Optional fallback backend digest for rollback"
         required: false
-      frontend_tag:
-        description: 'Frontend image tag'
-        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
 
 jobs:
   deploy:
+    name: Deploy to Production
     runs-on: ubuntu-latest
+    environment:
+      name: production
     steps:
-      - name: Deploy via SSH
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare deployment values
+        id: vars
+        shell: bash
+        run: |
+          echo "backend_image=${{ env.IMAGE_PREFIX }}/fitvibe-backend@${{ inputs.backend_digest }}" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${{ env.IMAGE_PREFIX }}/fitvibe-frontend@${{ inputs.frontend_digest }}" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ inputs.previous_backend_digest }}" ]; then
+            echo "rollback_image=${{ env.IMAGE_PREFIX }}/fitvibe-backend@${{ inputs.previous_backend_digest }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "rollback_image=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Verify backend signature
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: cosign verify --keyless ${{ steps.vars.outputs.backend_image }}
+
+      - name: Verify frontend signature
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: cosign verify --keyless ${{ steps.vars.outputs.frontend_image }}
+
+      - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.SSH_KEY }}
+          envs: BACKEND_IMAGE,FRONTEND_IMAGE,ROLLBACK_IMAGE,STACK_VERSION
           script: |
+            set -eo pipefail
+
             cd ~/fitvibe
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d
+
+            export BACKEND_IMAGE="${BACKEND_IMAGE}"
+            export FRONTEND_IMAGE="${FRONTEND_IMAGE}"
+            export STACK_VERSION="${STACK_VERSION}"
+
+            compose="docker compose -f infra/docker/prod/docker-compose.prod.yml"
+
+            deploy_stack() {
+              $compose pull backend frontend
+              $compose up -d --remove-orphans
+              $compose exec -T backend node dist/db/utils/migrateAll.js
+              $compose exec -T backend node dist/db/utils/postDeploy.js
+              $compose exec -T backend node dist/db/utils/verifyIntegrity.js
+              curl -fsS http://127.0.0.1:4000/health
+              curl -fsS http://127.0.0.1:4000/metrics
+            }
+
+            if ! deploy_stack; then
+              echo "Deployment failed, initiating rollback..." >&2
+              if [ -n "${ROLLBACK_IMAGE}" ]; then
+                export BACKEND_IMAGE="${ROLLBACK_IMAGE}"
+                $compose pull backend
+                $compose up -d --remove-orphans
+              fi
+              exit 1
+            fi
+        env:
+          BACKEND_IMAGE: ${{ steps.vars.outputs.backend_image }}
+          FRONTEND_IMAGE: ${{ steps.vars.outputs.frontend_image }}
+          ROLLBACK_IMAGE: ${{ steps.vars.outputs.rollback_image }}
+          STACK_VERSION: ${{ inputs.release_tag }}

@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> Registered: POST /auth/register (unverified)
+    Registered --> Verified: GET /auth/verify?token
+    Verified --> LoggedIn: POST /auth/login (access+refresh)
+    LoggedIn --> Refreshed: POST /auth/refresh (rotate+revoke old)
+    LoggedIn --> LoggedOut: POST /auth/logout
+    LoggedIn --> 2FA: TOTP required (if enabled)
+    LoggedIn --> Locked: too many failed attempts
+    Locked --> Cooldown: time-based unlock
+    Cooldown --> LoggedIn

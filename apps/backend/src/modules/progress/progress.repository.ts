@@ -12,8 +12,9 @@ export async function fetchSummary(userId: string, period: number): Promise<Prog
 
   const sessionsRow = await db('sessions as sess')
     .count<{ count: string }[]>('* as count')
-    .where({ 'sess.user_id': userId, 'sess.status': 'completed' })
-    .andWhere('sess.date', '>=', cutoff)
+    .where({ 'sess.owner_id': userId, 'sess.status': 'completed' })
+    .whereNotNull('sess.completed_at')
+    .andWhere('sess.completed_at', '>=', cutoff)
     .first();
 
   const sessions_completed = parseInt(sessionsRow?.count ?? '0', 10);
@@ -21,10 +22,11 @@ export async function fetchSummary(userId: string, period: number): Promise<Prog
   const sums = await db('exercise_sets as s')
     .join('session_exercises as se', 'se.id', 's.session_exercise_id')
     .join('sessions as sess', 'sess.id', 'se.session_id')
-    .where({ 'sess.user_id': userId, 'sess.status': 'completed' })
-    .andWhere('sess.date', '>=', cutoff)
+    .where({ 'sess.owner_id': userId, 'sess.status': 'completed' })
+    .whereNotNull('sess.completed_at')
+    .andWhere('sess.completed_at', '>=', cutoff)
     .select(db.raw('COALESCE(SUM(s.reps),0) as total_reps'))
-    .select(db.raw('COALESCE(SUM(COALESCE(s.reps,0) * COALESCE(s.weight,0)),0) as total_volume'))
+    .select(db.raw('COALESCE(SUM(COALESCE(s.reps,0) * COALESCE(s.weight_kg,0)),0) as total_volume'))
     .select(db.raw('COALESCE(SUM(COALESCE(s.duration_sec,0)),0) as total_duration_sec'))
     .first();
 
@@ -53,12 +55,13 @@ export async function fetchTrends(userId: string, period: number, groupBy: Trend
   const rows = await db('exercise_sets as s')
     .join('session_exercises as se', 'se.id', 's.session_exercise_id')
     .join('sessions as sess', 'sess.id', 'se.session_id')
-    .where({ 'sess.user_id': userId, 'sess.status': 'completed' })
-    .andWhere('sess.date', '>=', cutoff)
-    .groupByRaw(`date_trunc('${bucket}', sess.date)`)
-    .select(db.raw(`date_trunc('${bucket}', sess.date) as bucket_start`))
+    .where({ 'sess.owner_id': userId, 'sess.status': 'completed' })
+    .whereNotNull('sess.completed_at')
+    .andWhere('sess.completed_at', '>=', cutoff)
+    .groupByRaw(`date_trunc('${bucket}', sess.completed_at)`)
+    .select(db.raw(`date_trunc('${bucket}', sess.completed_at) as bucket_start`))
     .select(db.raw('COUNT(DISTINCT sess.id) as sessions'))
-    .select(db.raw('COALESCE(SUM(COALESCE(s.reps,0) * COALESCE(s.weight,0)),0) as volume'))
+    .select(db.raw('COALESCE(SUM(COALESCE(s.reps,0) * COALESCE(s.weight_kg,0)),0) as volume'))
     .orderBy('bucket_start', 'asc');
 
   return rows.map((r: any) => ({
@@ -75,13 +78,13 @@ export async function fetchExerciseBreakdown(userId: string, period: number): Pr
     .join('session_exercises as se', 'se.id', 's.session_exercise_id')
     .join('sessions as sess', 'sess.id', 'se.session_id')
     .join('exercises as e', 'e.id', 'se.exercise_id')
-    .where({ 'sess.user_id': userId, 'sess.status': 'completed' })
-    .andWhere('sess.date', '>=', cutoff)
+    .where({ 'sess.owner_id': userId, 'sess.status': 'completed' })
+    .andWhere('sess.completed_at', '>=', cutoff)
     .groupBy('e.type_code')
     .select('e.type_code')
     .select(db.raw('COUNT(DISTINCT sess.id) as sessions'))
     .select(db.raw('COALESCE(SUM(s.reps),0) as total_reps'))
-    .select(db.raw('COALESCE(SUM(COALESCE(s.reps,0) * COALESCE(s.weight,0)),0) as total_volume'))
+    .select(db.raw('COALESCE(SUM(COALESCE(s.reps,0) * COALESCE(s.weight_kg,0)),0) as total_volume'))
     .select(db.raw('COALESCE(SUM(COALESCE(s.duration_sec,0)),0) as total_duration_sec'))
     .orderBy('e.type_code', 'asc');
 
@@ -109,3 +112,6 @@ export async function fetchPlansProgress(userId: string): Promise<PlanProgress[]
     completed_count: Number(r.completed_count ?? 0),
   }));
 }
+
+
+

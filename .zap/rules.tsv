@@ -1,0 +1,3 @@
+# RuleId\tRisk\tConfidence\tAction
+# Add suppressions as needed, e.g.:
+# 10061\t1\t1\tIGNORE

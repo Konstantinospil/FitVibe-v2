@@ -1,0 +1,1 @@
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';\n\ndiag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);\n\nexport function initializeTracing(): void {\n  // TODO: wire OpenTelemetry SDK\n}\n

@@ -7,16 +7,21 @@ import {
   verifyEmail as doVerifyEmail,
   requestPasswordReset,
   resetPassword as doResetPassword,
+  listSessions as doListSessions,
+  revokeSessions as doRevokeSessions,
 } from "./auth.service.js";
-import { env, JWKS } from "../../config/env.js";
+import jwt from "jsonwebtoken";
+import { env, JWKS, RSA_KEYS } from "../../config/env.js";
 import {
   RegisterSchema,
   LoginSchema,
   ForgotPasswordSchema,
   ResetPasswordSchema,
+  RevokeSessionsSchema,
 } from "./auth.schemas.js";
 import type { z } from "zod";
-import { HttpError } from "../../utils/httpError.js";
+import type { LoginContext } from "./auth.types.js";
+import { HttpError } from "../../utils/http.js";
 
 function setRefreshCookie(res: Response, token: string) {
   res.cookie(env.REFRESH_COOKIE_NAME, token, {
@@ -47,6 +52,48 @@ function clearAuthCookies(res: Response) {
   };
   res.clearCookie(env.REFRESH_COOKIE_NAME, options);
   res.clearCookie(env.ACCESS_COOKIE_NAME, options);
+}
+
+function extractClientIp(req: Request): string | null {
+  const forwarded = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim();
+  const ip = forwarded || req.ip;
+  return ip ?? null;
+}
+
+function bearerToken(header?: string): string | null {
+  if (!header || typeof header !== "string") return null;
+  const [scheme, value] = header.split(" ");
+  if (!value || scheme.toLowerCase() !== "bearer") return null;
+  return value;
+}
+
+function currentSessionId(req: Request): string | null {
+  const token =
+    (req.cookies?.[env.ACCESS_COOKIE_NAME] as string | undefined) ??
+    bearerToken(req.headers.authorization ?? undefined);
+  if (!token) return null;
+  try {
+    const decoded = jwt.verify(token, RSA_KEYS.publicKey, { algorithms: ["RS256"] }) as { sid?: string };
+    return typeof decoded.sid === "string" ? decoded.sid : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildAuthContext(req: Request, res: Response): LoginContext {
+  return {
+    userAgent: req.get("user-agent") ?? null,
+    ip: extractClientIp(req),
+    requestId: (req as any).requestId ?? (res.locals.requestId as string | undefined) ?? null,
+  };
+}
+
+function getAuthenticatedUser(req: Request): { sub?: string; sid?: string; role?: string } | null {
+  const payload = (req as any).user;
+  if (payload && typeof payload === "object") {
+    return payload;
+  }
+  return null;
 }
 
 type RegisterInput = z.infer<typeof RegisterSchema>;
@@ -88,10 +135,11 @@ export async function verifyEmail(req: Request, res: Response, next: NextFunctio
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const credentials: LoginInput = LoginSchema.parse(req.body);
-    const { user, tokens } = await doLogin(credentials);
+    const context = buildAuthContext(req, res);
+    const { user, tokens, session } = await doLogin(credentials, context);
     setAccessCookie(res, tokens.accessToken);
     setRefreshCookie(res, tokens.refreshToken);
-    return res.json({ user });
+    return res.json({ user, session });
   } catch (error) {
     next(error);
   }
@@ -103,7 +151,8 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
     if (!token) {
       throw new HttpError(401, "UNAUTHENTICATED", "Missing refresh token");
     }
-    const { user, newRefresh, accessToken } = await doRefresh(token);
+    const context = buildAuthContext(req, res);
+    const { user, newRefresh, accessToken } = await doRefresh(token, context);
     setRefreshCookie(res, newRefresh);
     setAccessCookie(res, accessToken);
     return res.json({ user });
@@ -115,7 +164,8 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     const token = req.cookies?.[env.REFRESH_COOKIE_NAME] as string | undefined;
-    await doLogout(token);
+    const context = buildAuthContext(req, res);
+    await doLogout(token, context);
     clearAuthCookies(res);
     return res.status(204).send();
   } catch (error) {
@@ -146,6 +196,57 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
     await doResetPassword(payload.token, payload.newPassword);
     clearAuthCookies(res);
     return res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function listSessions(req: Request, res: Response, next: NextFunction) {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser?.sub;
+    if (!userId) {
+      throw new HttpError(401, "UNAUTHENTICATED", "Missing authentication context");
+    }
+    const sessionId = authUser?.sid ?? currentSessionId(req);
+    const sessions = await doListSessions(userId, sessionId ?? null);
+    return res.json({ sessions });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function revokeSessions(req: Request, res: Response, next: NextFunction) {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser?.sub;
+    if (!userId) {
+      throw new HttpError(401, "UNAUTHENTICATED", "Missing authentication context");
+    }
+    const payload = RevokeSessionsSchema.parse(req.body ?? {});
+    const sessionId = authUser?.sid ?? currentSessionId(req);
+    if (payload.revokeOthers && !sessionId) {
+      throw new HttpError(400, "AUTH_SESSION_UNKNOWN", "Current session is required to revoke others");
+    }
+    const context = buildAuthContext(req, res);
+    const result = await doRevokeSessions(userId, {
+      sessionId: payload.sessionId ?? undefined,
+      revokeAll: payload.revokeAll ?? false,
+      revokeOthers: payload.revokeOthers ?? false,
+      currentSessionId: sessionId,
+      context,
+    });
+
+    const revokingCurrent =
+      Boolean(payload.revokeAll) ||
+      (payload.sessionId ? payload.sessionId === sessionId : false);
+
+    if (revokingCurrent || payload.revokeAll) {
+      clearAuthCookies(res);
+      return res.status(204).send();
+    }
+
+    return res.json({ revoked: result.revoked });
   } catch (error) {
     next(error);
   }
