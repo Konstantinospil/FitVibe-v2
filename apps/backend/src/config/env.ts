@@ -38,6 +38,7 @@ const EnvSchema = z.object({
   JWT_PUBLIC_KEY: z.string().optional(),
   JWT_PRIVATE_KEY_PATH: z.string().default("./keys/jwt_rs256.key"),
   JWT_PUBLIC_KEY_PATH: z.string().default("./keys/jwt_rs256.pub"),
+  MEDIA_STORAGE_ROOT: z.string().default("./storage"),
 });
 
 const raw = EnvSchema.parse(process.env);
@@ -123,6 +124,7 @@ export const env = {
   },
   typesCacheTtl: raw.TYPES_CACHE_TTL_SEC,
   appBaseUrl: raw.APP_BASE_URL,
+  mediaStorageRoot: raw.MEDIA_STORAGE_ROOT,
 } as const;
 
 export const RSA_KEYS = {

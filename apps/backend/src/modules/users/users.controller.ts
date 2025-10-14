@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import archiver from "archiver";
-import sharp from "sharp";
-import NodeCache from "node-cache";
 import { z } from "zod";
 import {
   getMe,
@@ -10,11 +8,14 @@ import {
   updatePassword,
   deactivate,
   collectUserData,
+  listContacts,
+  updatePrimaryEmail,
+  updatePhoneNumber,
+  verifyContact,
+  removeContact,
+  changeStatus,
 } from "./users.service.js";
-import { insertAudit } from "../common/audit.util.js";
 import { passwordPolicy } from "../auth/auth.schemas.js";
-
-const avatarCache = new NodeCache({ stdTTL: 300 });
 
 const usernameSchema = z
   .string()
@@ -24,8 +25,9 @@ const usernameSchema = z
 
 const updateProfileSchema = z.object({
   username: usernameSchema.optional(),
+  displayName: z.string().min(1).max(120).optional(),
   locale: z.string().max(10).optional(),
-  bio: z.string().max(300).optional(),
+  preferredLang: z.string().max(5).optional(),
 });
 
 const changePasswordSchema = z.object({
@@ -33,27 +35,22 @@ const changePasswordSchema = z.object({
   newPassword: passwordPolicy,
 });
 
-export async function uploadAvatarHandler(req: Request, res: Response) {
-  const userId = req.user?.sub;
-  if (!userId) return res.status(401).json({ error: "Unauthorized" });
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+const emailSchema = z.object({
+  email: z.string().email().max(254),
+});
 
-  const buffer = await sharp(req.file.buffer).resize(256, 256).png({ quality: 80 }).toBuffer();
-  const base64 = buffer.toString("base64");
-  avatarCache.set(userId, base64);
+const phoneSchema = z.object({
+  phone: z.string().min(5).max(32),
+  isRecovery: z.boolean().optional(),
+});
 
-  await insertAudit(userId, "user_avatar_upload", { size: buffer.length });
-  return res.json({ success: true, preview: `data:image/png;base64,${base64}` });
-}
+const contactIdSchema = z.object({
+  contactId: z.string().uuid(),
+});
 
-export async function getAvatarHandler(req: Request, res: Response) {
-  const { id } = req.params;
-  const base64 = avatarCache.get<string>(id);
-  if (!base64) return res.status(404).send("Avatar not found");
-  const img = Buffer.from(base64, "base64");
-  res.set("Content-Type", "image/png");
-  return res.send(img);
-}
+const statusSchema = z.object({
+  status: z.enum(["pending_verification", "active", "archived", "pending_deletion"]),
+});
 
 export async function me(req: Request, res: Response) {
   const userId = req.user?.sub;
@@ -95,8 +92,8 @@ export async function changePassword(req: Request, res: Response) {
 export async function deactivateAccount(req: Request, res: Response) {
   const userId = req.user?.sub;
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
-  await deactivate(userId);
-  return res.status(204).send();
+  const profile = await deactivate(userId);
+  return res.status(200).json(profile);
 }
 
 export async function exportData(req: Request, res: Response) {
@@ -118,4 +115,66 @@ export async function getById(req: Request, res: Response) {
   const user = await getMe(id);
   if (!user) return res.status(404).json({ error: "User not found" });
   return res.json(user);
+}
+
+export async function listUserContacts(req: Request, res: Response) {
+  const userId = req.user?.sub;
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  const contacts = await listContacts(userId);
+  return res.json(contacts);
+}
+
+export async function updateEmail(req: Request, res: Response) {
+  const userId = req.user?.sub;
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  const parsed = emailSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const profile = await updatePrimaryEmail(userId, parsed.data.email);
+  return res.json(profile);
+}
+
+export async function updatePhone(req: Request, res: Response) {
+  const userId = req.user?.sub;
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  const parsed = phoneSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const profile = await updatePhoneNumber(userId, parsed.data.phone, parsed.data.isRecovery ?? true);
+  return res.json(profile);
+}
+
+export async function verifyContactHandler(req: Request, res: Response) {
+  const userId = req.user?.sub;
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  const parsed = contactIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const contact = await verifyContact(userId, parsed.data.contactId);
+  return res.json(contact);
+}
+
+export async function removeContactHandler(req: Request, res: Response) {
+  const userId = req.user?.sub;
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+  const parsed = contactIdSchema.safeParse(req.params);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  await removeContact(userId, parsed.data.contactId);
+  return res.status(204).send();
+}
+
+export async function adminChangeStatus(req: Request, res: Response) {
+  const actorId = req.user?.sub ?? null;
+  const { id } = req.params;
+  const parsed = statusSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() });
+  }
+  const profile = await changeStatus(actorId, id, parsed.data.status);
+  return res.json(profile);
 }

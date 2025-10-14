@@ -1,21 +1,104 @@
 import { db } from "../../db/connection.js";
 
+const USERS_TABLE = "users";
+const CONTACTS_TABLE = "user_contacts";
+
+export interface AuthUserRecord {
+  id: string;
+  username: string;
+  display_name: string;
+  locale: string;
+  preferred_lang: string;
+  status: string;
+  role_code: string;
+  password_hash: string;
+  created_at: string;
+  updated_at: string;
+  primary_email: string | null;
+  email_verified: boolean;
+}
+
+function userQuery() {
+  return db<AuthUserRecord>(`${USERS_TABLE} as u`)
+    .leftJoin(`${CONTACTS_TABLE} as c`, function () {
+      this.on("c.user_id", "=", "u.id")
+        .andOn("c.type", "=", db.raw("?", ["email"]))
+        .andOn("c.is_primary", "=", db.raw("true"));
+    })
+    .select(
+      "u.id",
+      "u.username",
+      "u.display_name",
+      "u.locale",
+      "u.preferred_lang",
+      "u.status",
+      "u.role_code",
+      "u.password_hash",
+      "u.created_at",
+      "u.updated_at",
+      db.raw("c.value as primary_email"),
+      db.raw("COALESCE(c.is_verified, false) as email_verified"),
+    );
+}
+
 export async function findUserByEmail(email: string) {
-  return db("users").where({ email: email.toLowerCase() }).first();
+  const normalized = email.toLowerCase();
+  return userQuery()
+    .whereRaw("LOWER(c.value) = ?", [normalized])
+    .first();
 }
 
 export async function findUserByUsername(username: string) {
-  return db("users")
-    .whereRaw("LOWER(username) = ?", [username.toLowerCase()])
+  return userQuery()
+    .whereRaw("LOWER(u.username) = ?", [username.toLowerCase()])
     .first();
 }
 
 export async function findUserById(id: string) {
-  return db("users").where({ id }).first();
+  return userQuery().where("u.id", id).first();
 }
 
-export async function createUser(row: any) {
-  return db("users").insert(row).returning("*");
+export async function createUser(input: {
+  id: string;
+  username: string;
+  display_name: string;
+  locale?: string;
+  preferred_lang?: string;
+  status: string;
+  role_code: string;
+  password_hash: string;
+  primaryEmail: string;
+  emailVerified?: boolean;
+}) {
+  const now = new Date().toISOString();
+  return db.transaction(async (trx) => {
+    await trx(USERS_TABLE).insert({
+      id: input.id,
+      username: input.username,
+      display_name: input.display_name,
+      locale: input.locale ?? "en-US",
+      preferred_lang: input.preferred_lang ?? "en",
+      status: input.status,
+      role_code: input.role_code,
+      password_hash: input.password_hash,
+      created_at: now,
+      updated_at: now,
+    });
+
+    await trx(CONTACTS_TABLE).insert({
+      id: crypto.randomUUID(),
+      user_id: input.id,
+      type: "email",
+      value: input.primaryEmail.toLowerCase(),
+      is_primary: true,
+      is_recovery: true,
+      is_verified: input.emailVerified ?? false,
+      verified_at: input.emailVerified ? now : null,
+      created_at: now,
+    });
+
+    return userQuery().transacting(trx).where("u.id", input.id).first();
+  });
 }
 
 export async function updateUserStatus(userId: string, status: string) {

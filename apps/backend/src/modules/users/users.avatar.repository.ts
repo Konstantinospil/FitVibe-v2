@@ -1,26 +1,73 @@
 import { db } from "../../db/connection.js";
 
-export async function saveUserAvatarBase64(userId: string, base64: string) {
-  return db("users")
-    .where({ id: userId })
-    .update({
-      avatar_base64: base64,
-      avatar_updated_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+const MEDIA_TABLE = "media";
+const TARGET_TYPE = "user_avatar";
+
+interface AvatarMeta {
+  id: string;
+  storage_key: string;
+  file_url: string;
+  mime_type: string | null;
+  bytes: number | null;
 }
 
-export async function getUserAvatarBase64(userId: string): Promise<string | null> {
-  const row = await db("users").select("avatar_base64").where({ id: userId }).first();
-  return row?.avatar_base64 ?? null;
+export async function saveUserAvatarMetadata(
+  userId: string,
+  meta: { storageKey: string; fileUrl: string; mimeType: string; bytes: number },
+): Promise<{ previousKey: string | null; record: AvatarMeta }> {
+  const existing = await db<AvatarMeta>(MEDIA_TABLE)
+    .where({ owner_id: userId, target_type: TARGET_TYPE, target_id: userId })
+    .first();
+
+  if (existing) {
+    await db(MEDIA_TABLE)
+      .where({ id: existing.id })
+      .update({
+        storage_key: meta.storageKey,
+        file_url: meta.fileUrl,
+        mime_type: meta.mimeType,
+        bytes: meta.bytes,
+      });
+
+    const updated = await db<AvatarMeta>(MEDIA_TABLE).where({ id: existing.id }).first();
+    return {
+      previousKey: existing.storage_key,
+      record: (updated ?? existing) as AvatarMeta,
+    };
+  }
+
+  const [created] = await db<AvatarMeta>(MEDIA_TABLE)
+    .insert({
+      owner_id: userId,
+      target_type: TARGET_TYPE,
+      target_id: userId,
+      storage_key: meta.storageKey,
+      file_url: meta.fileUrl,
+      mime_type: meta.mimeType,
+      media_type: "image",
+      bytes: meta.bytes,
+      created_at: new Date().toISOString(),
+    })
+    .returning("*");
+
+  return {
+    previousKey: null,
+    record: created,
+  };
 }
 
-export async function clearUserAvatar(userId: string) {
-  return db("users")
-    .where({ id: userId })
-    .update({
-      avatar_base64: null,
-      avatar_updated_at: null,
-      updated_at: new Date().toISOString(),
-    });
+export async function getUserAvatarMetadata(userId: string): Promise<AvatarMeta | null> {
+  const row = await db<AvatarMeta>(MEDIA_TABLE)
+    .where({ owner_id: userId, target_type: TARGET_TYPE, target_id: userId })
+    .first();
+  return row ?? null;
+}
+
+export async function deleteUserAvatarMetadata(userId: string): Promise<AvatarMeta | null> {
+  const existing = await db<AvatarMeta>(MEDIA_TABLE)
+    .where({ owner_id: userId, target_type: TARGET_TYPE, target_id: userId })
+    .first();
+  if (!existing) return null;
+  await db(MEDIA_TABLE).where({ id: existing.id }).del();
+  return existing;
 }

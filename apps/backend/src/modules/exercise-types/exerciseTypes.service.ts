@@ -1,22 +1,10 @@
 import { listExerciseTypes, getExerciseType, getTranslatedExerciseTypes, createExerciseType, updateExerciseType, deleteExerciseType } from './exerciseTypes.repository.js';
 import { ExerciseType } from './exerciseTypes.types.js';
-import { db } from '../../db/connection.js';
-import crypto from 'crypto';
 import NodeCache from "node-cache";
 import { env } from "../../config/env.js";
+import { insertAudit } from "../common/audit.util.js";
 
 const cache = new NodeCache({ stdTTL: env.typesCacheTtl });
-
-async function insertAudit(user_id: string, action: string, meta?: any) {
-  await db('audit_log').insert({
-    id: crypto.randomUUID(),
-    actor_user_id: user_id,
-    action,
-    entity: 'exercise_types',
-    metadata: meta,
-    created_at: new Date().toISOString()
-  });
-}
 
 function invalidateTypesCache() {
   for (const k of cache.keys()) {
@@ -48,7 +36,15 @@ export async function addType(dto: ExerciseType, userId?: string) {
   if (exists) throw Object.assign(new Error('Type code already exists'), { status: 409 });
   await createExerciseType(dto);
   invalidateTypesCache();
-  if (userId) await insertAudit(userId, 'create_type', { code: dto.code });
+  if (userId) {
+    await insertAudit({
+      actorUserId: userId,
+      entity: "exercise_types",
+      action: "create",
+      entityId: dto.code,
+      metadata: { code: dto.code },
+    });
+  }
   return getExerciseType(dto.code);
 }
 
@@ -57,7 +53,15 @@ export async function editType(code: string, updates: Partial<ExerciseType>, use
   if (!existing) throw Object.assign(new Error('Exercise type not found'), { status: 404 });
   await updateExerciseType(code, updates);
   invalidateTypesCache();
-  if (userId) await insertAudit(userId, 'update_type', { code });
+  if (userId) {
+    await insertAudit({
+      actorUserId: userId,
+      entity: "exercise_types",
+      action: "update",
+      entityId: code,
+      metadata: { code },
+    });
+  }
   return getExerciseType(code);
 }
 
@@ -66,5 +70,13 @@ export async function removeType(code: string, userId?: string) {
   if (!existing) throw Object.assign(new Error('Exercise type not found'), { status: 404 });
   invalidateTypesCache();
   await deleteExerciseType(code);
-  if (userId) await insertAudit(userId, 'delete_type', { code });
+  if (userId) {
+    await insertAudit({
+      actorUserId: userId,
+      entity: "exercise_types",
+      action: "delete",
+      entityId: code,
+      metadata: { code },
+    });
+  }
 }

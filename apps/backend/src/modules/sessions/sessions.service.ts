@@ -1,5 +1,5 @@
 ﻿import { v4 as uuidv4 } from 'uuid';
-import { db } from '../../db/connection';
+import { db } from '../../db/connection.js';
 import {
   listSessions,
   getSessionById,
@@ -16,7 +16,7 @@ import {
   PaginatedResult
 } from './sessions.types';
 import { recomputeProgress } from '../plans/plans.service';
-import { insertAudit } from '../common/audit.util';
+import { insertAudit } from '../common/audit.util.js';
 
 const allowedTransitions: Record<string, string[]> = {
   planned: ['in_progress', 'completed', 'canceled'],
@@ -57,7 +57,13 @@ export async function createOne(userId: string, dto: CreateSessionDTO) {
   };
 
   await createSession(row);
-  await insertAudit(userId, 'session_create', row);
+  await insertAudit({
+    actorUserId: userId,
+    entity: 'sessions',
+    action: 'create',
+    entityId: row.id,
+    metadata: row,
+  });
   if (row.plan_id) await recomputeProgress(userId, row.plan_id);
 
   return getSessionById(row.id, userId);
@@ -89,7 +95,13 @@ export async function updateOne(userId: string, id: string, dto: UpdateSessionDT
   if (affected === 0) throw Object.assign(new Error('Session not found'), { status: 404 });
 
   const updated = await getSessionById(id, userId);
-  await insertAudit(userId, 'session_update', { id, changes: dto });
+  await insertAudit({
+    actorUserId: userId,
+    entity: 'sessions',
+    action: 'update',
+    entityId: id,
+    metadata: { changes: dto },
+  });
   if (updated?.plan_id) await recomputeProgress(userId, updated.plan_id);
   return updated;
 }
@@ -102,7 +114,12 @@ export async function cancelOne(userId: string, id: string) {
   }
   const affected = await cancelSession(id, userId);
   if (affected === 0) throw Object.assign(new Error('Session not found'), { status: 404 });
-  await insertAudit(userId, 'session_cancel', { id });
+  await insertAudit({
+    actorUserId: userId,
+    entity: 'sessions',
+    action: 'cancel',
+    entityId: id,
+  });
   if (current.plan_id) await recomputeProgress(userId, current.plan_id);
 }
 

@@ -1,16 +1,32 @@
-import { db } from '../../db/connection';
+import crypto from "crypto";
+import { db } from "../../db/connection.js";
 
-export async function insertAudit(userId: string, action: string, payload: Record<string, any> = {}) {
+export interface AuditLogPayload {
+  actorUserId?: string | null;
+  entity: string;
+  action: string;
+  entityId?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export async function insertAudit({
+  actorUserId = null,
+  entity,
+  action,
+  entityId = null,
+  metadata = {},
+}: AuditLogPayload) {
   try {
-    const id = (globalThis.crypto?.randomUUID?.() ?? require('crypto').randomUUID());
-    await db('audit_log').insert({
-      id,
-      user_id: userId,
+    await db("audit_log").insert({
+      id: crypto.randomUUID(),
+      actor_user_id: actorUserId,
+      entity,
       action,
-      payload: JSON.stringify(payload),
+      entity_id: entityId,
+      metadata,
       created_at: new Date().toISOString(),
     });
-  } catch (err) {
-    console.error('[AUDIT]', action, err);
+  } catch (error) {
+    console.error("[AUDIT]", action, error);
   }
 }

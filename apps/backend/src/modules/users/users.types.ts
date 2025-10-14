@@ -1,35 +1,46 @@
+export type UserStatus = "pending_verification" | "active" | "archived" | "pending_deletion";
+
+export interface UserContact {
+  id: string;
+  type: "email" | "phone";
+  value: string;
+  isPrimary: boolean;
+  isRecovery: boolean;
+  isVerified: boolean;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
 export interface UserSafe {
   id: string;
-  email: string;
   username: string;
+  displayName: string;
+  locale: string;
+  preferredLang: string;
   role: string;
-  status: string;
-  created_at: string;
-  profile?: any;
+  status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+  primaryEmail: string | null;
+  phoneNumber: string | null;
 }
 
-export interface UserMutable {
-  locale?: string;
-  bio?: string;
-  username?: string;
-}
-
-export interface UpdateProfileNameDTO {
-  username?: string;
-  locale?: UserMutable;
-  bio?: UserMutable;
-}
-
-export interface UpdateProfileBioDTO {
-  username?: UserMutable;
-  locale?: UserMutable;
-  bio?: string;
+export interface UserDetail extends UserSafe {
+  contacts: UserContact[];
 }
 
 export interface UpdateProfileDTO {
-  username?: UserMutable;
-  locale?: UserMutable;
-  bio?: string;
+  username?: string;
+  displayName?: string;
+  locale?: string;
+  preferredLang?: string;
+}
+
+export interface ContactUpsertDTO {
+  type: "email" | "phone";
+  value: string;
+  isPrimary?: boolean;
+  isRecovery?: boolean;
 }
 
 export interface ChangePasswordDTO {

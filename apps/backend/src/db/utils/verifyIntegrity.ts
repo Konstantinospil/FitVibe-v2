@@ -10,6 +10,7 @@ const TABLES = [
   "user_contacts",
   "auth_sessions",
   "user_state_history",
+  "audit_log",
   "user_metrics",
   "exercises",
   "sessions",
