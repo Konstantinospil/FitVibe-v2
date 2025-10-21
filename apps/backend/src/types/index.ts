@@ -1,1 +1,2 @@
-export type UUID = string;\nexport type IsoDateString = string;\n
+export type UUID = string;
+export type IsoDateString = string;

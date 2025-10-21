@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 import bcrypt from "bcryptjs";
 
 const ADMIN_ID = "11111111-1111-1111-1111-111111111111";
@@ -39,4 +39,3 @@ export async function seed(knex: Knex): Promise<void> {
 
   await knex("users").insert(users).onConflict("id").ignore();
 }
-

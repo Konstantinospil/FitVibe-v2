@@ -4,7 +4,7 @@
  * Usage: mount after cookieParser and before routes.
  */
 
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import csurf from "csurf";
 import { env } from "../config/env.js";
 
@@ -20,7 +20,7 @@ export const csrfProtection = csurf({
 // helper to return token to frontend (frontend reads this and sends header)
 export function csrfTokenRoute(req: Request, res: Response) {
   // req.csrfToken() requires csurf() to have run (so cookie secret exists)
-  const token = (req as any).csrfToken?.() ?? null;
+  const token = typeof req.csrfToken === "function" ? req.csrfToken() : null;
   res.json({ csrfToken: token });
 }
 
@@ -28,28 +28,38 @@ export function csrfTokenRoute(req: Request, res: Response) {
 export function validateOrigin(allowedOrigins: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     const method = req.method.toUpperCase();
-    if (["GET", "HEAD", "OPTIONS"].includes(method)) return next();
+    if (["GET", "HEAD", "OPTIONS"].includes(method)) {
+      return next();
+    }
 
-    const origin = req.headers["origin"] as string | undefined;
-    const referer = req.headers["referer"] as string | undefined;
+    const origin = req.headers["origin"];
+    const referer = req.headers["referer"];
 
     if (origin) {
-      if (allowedOrigins.includes(origin)) return next();
-      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Origin not allowed" }});
+      if (allowedOrigins.includes(origin)) {
+        return next();
+      }
+      return res.status(403).json({ error: { code: "FORBIDDEN", message: "Origin not allowed" } });
     }
 
     if (referer) {
       // naive host check
       try {
         const refererHost = new URL(referer).origin;
-        if (allowedOrigins.includes(refererHost)) return next();
-        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Referer not allowed" }});
+        if (allowedOrigins.includes(refererHost)) {
+          return next();
+        }
+        return res.status(403).json({
+          error: { code: "FORBIDDEN", message: "Referer not allowed" },
+        });
       } catch {
-        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Invalid referer" }});
+        return res.status(403).json({ error: { code: "FORBIDDEN", message: "Invalid referer" } });
       }
     }
 
     // No origin/referer header => for browser requests this is suspicious for state changes
-    return res.status(403).json({ error: { code: "FORBIDDEN", message: "Missing Origin/Referer header" }});
+    return res.status(403).json({
+      error: { code: "FORBIDDEN", message: "Missing Origin/Referer header" },
+    });
   };
 }

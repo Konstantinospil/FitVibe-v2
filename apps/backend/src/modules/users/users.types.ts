@@ -11,6 +11,13 @@ export interface UserContact {
   createdAt: string;
 }
 
+export interface UserAvatar {
+  url: string;
+  mimeType: string | null;
+  bytes: number | null;
+  updatedAt: string | null;
+}
+
 export interface UserSafe {
   id: string;
   username: string;
@@ -23,6 +30,7 @@ export interface UserSafe {
   updatedAt: string;
   primaryEmail: string | null;
   phoneNumber: string | null;
+  avatar: UserAvatar | null;
 }
 
 export interface UserDetail extends UserSafe {
@@ -34,6 +42,17 @@ export interface UpdateProfileDTO {
   displayName?: string;
   locale?: string;
   preferredLang?: string;
+}
+
+export interface CreateUserDTO {
+  username: string;
+  displayName: string;
+  email: string;
+  password: string;
+  role: string;
+  locale?: string;
+  preferredLang?: string;
+  status?: UserStatus;
 }
 
 export interface ContactUpsertDTO {

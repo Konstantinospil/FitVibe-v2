@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const ROLES = [
   { code: "admin", description: "Platform administrator" },
@@ -10,4 +10,3 @@ const ROLES = [
 export async function seed(knex: Knex): Promise<void> {
   await knex("roles").insert(ROLES).onConflict("code").ignore();
 }
-

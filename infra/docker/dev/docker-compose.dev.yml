@@ -31,7 +31,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "5173:80"   # local dev browser → nginx:80
+      - "5173:80" # local dev browser → nginx:80
 
   nginx:
     image: nginx:stable-alpine

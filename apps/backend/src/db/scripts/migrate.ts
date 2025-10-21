@@ -1,16 +1,18 @@
 import db from "../index.js";
+import { logger } from "../../config/logger.js";
+import { toErrorPayload } from "../../utils/error.utils.js";
 
 async function main(): Promise<void> {
   try {
-    console.log("[db] Applying migrations...");
+    logger.info("[db] Applying migrations...");
     await db.migrate.latest();
-    console.log("[db] Migrations applied.");
+    logger.info("[db] Migrations applied.");
   } finally {
     await db.destroy();
   }
 }
 
-main().catch((error) => {
-  console.error("Database migrations failed", error);
+main().catch((error: unknown) => {
+  logger.error(toErrorPayload(error), "Database migrations failed");
   process.exit(1);
 });

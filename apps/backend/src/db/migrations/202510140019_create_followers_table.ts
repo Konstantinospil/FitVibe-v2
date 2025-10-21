@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const FOLLOWERS_UNIQUE = "followers_follower_following_unique";
 const FOLLOWERS_NO_SELF = "followers_no_self_follow";

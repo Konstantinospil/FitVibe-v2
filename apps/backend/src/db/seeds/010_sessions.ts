@@ -1,4 +1,4 @@
-﻿import { Knex } from "knex";
+﻿import type { Knex } from "knex";
 
 const now = new Date();
 const upcoming = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2);
@@ -45,4 +45,3 @@ export async function seed(knex: Knex): Promise<void> {
   await knex.raw("SELECT public.ensure_monthly_partitions();");
   await knex("sessions").insert(SESSIONS).onConflict("id").ignore();
 }
-

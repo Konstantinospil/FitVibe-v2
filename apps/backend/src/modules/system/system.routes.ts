@@ -3,8 +3,9 @@
  * Health & system status routes
  * B-CC-6 — readiness/liveness probe
  */
-import { Router, Request, Response } from "express";
-import pkg from "../../../package.json" assert { type: "json" };
+import type { Request, Response } from "express";
+import { Router } from "express";
+import pkg from "../../../package.json";
 
 const router = Router();
 

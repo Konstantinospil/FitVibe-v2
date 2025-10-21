@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const now = new Date();
 
@@ -32,8 +32,5 @@ const ACTUAL = [
 ];
 
 export async function seed(knex: Knex): Promise<void> {
-  await knex("actual_exercise_attributes")
-    .insert(ACTUAL)
-    .onConflict("session_exercise_id")
-    .merge();
+  await knex("actual_exercise_attributes").insert(ACTUAL).onConflict("session_exercise_id").merge();
 }

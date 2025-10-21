@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const TRANSLATION_CACHE_HASH_UNIQUE = "translation_cache_hash_unique";
 
@@ -12,7 +12,7 @@ export async function up(knex: Knex): Promise<void> {
   });
 
   await knex.raw(
-    'ALTER TABLE translation_cache ADD COLUMN hash uuid GENERATED ALWAYS AS ((md5(source || lang))::uuid) STORED;',
+    "ALTER TABLE translation_cache ADD COLUMN hash uuid GENERATED ALWAYS AS ((md5(source || lang))::uuid) STORED;",
   );
   await knex.raw(
     `ALTER TABLE translation_cache ADD CONSTRAINT ${TRANSLATION_CACHE_HASH_UNIQUE} UNIQUE (hash);`,
@@ -23,7 +23,6 @@ export async function down(knex: Knex): Promise<void> {
   await knex.raw(
     `ALTER TABLE translation_cache DROP CONSTRAINT IF EXISTS ${TRANSLATION_CACHE_HASH_UNIQUE};`,
   );
-  await knex.raw('ALTER TABLE translation_cache DROP COLUMN IF EXISTS hash;');
+  await knex.raw("ALTER TABLE translation_cache DROP COLUMN IF EXISTS hash;");
   await knex.schema.dropTableIfExists("translation_cache");
 }
-

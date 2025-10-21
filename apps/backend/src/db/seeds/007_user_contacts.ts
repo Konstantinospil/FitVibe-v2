@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const CONTACTS = [
   {
@@ -39,4 +39,3 @@ const CONTACTS = [
 export async function seed(knex: Knex): Promise<void> {
   await knex("user_contacts").insert(CONTACTS).onConflict("id").ignore();
 }
-

@@ -1,1 +1,3 @@
-module.exports = {\n  extends: ['./eslint.config.js'],\n};\n
+module.exports = {
+  extends: ["./eslint.config.js"],
+};

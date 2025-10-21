@@ -1,1 +1,10 @@
-export interface Pagination {\n  limit: number;\n  offset: number;\n}\n\nexport function createPagination(page = 1, pageSize = 25): Pagination {\n  const limit = Math.max(1, pageSize);\n  const offset = Math.max(0, (page - 1) * limit);\n  return { limit, offset };\n}\n
+export interface Pagination {
+  limit: number;
+  offset: number;
+}
+
+export function createPagination(page = 1, pageSize = 25): Pagination {
+  const limit = Math.max(1, pageSize);
+  const offset = Math.max(0, (page - 1) * limit);
+  return { limit, offset };
+}

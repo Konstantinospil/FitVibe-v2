@@ -7,4 +7,3 @@ const port = env.PORT;
 app.listen(port, () => {
   logger.info({ port }, "FitVibe Backend running");
 });
-

@@ -1,7 +1,53 @@
+import crypto from "crypto";
+import type { Knex } from "knex";
 import { db } from "../../db/connection.js";
 
 const USERS_TABLE = "users";
 const CONTACTS_TABLE = "user_contacts";
+
+interface RefreshTokenInsert {
+  id: string;
+  user_id: string;
+  token_hash: string;
+  session_jti: string;
+  expires_at: string;
+  created_at: string;
+  revoked_at?: string | null;
+}
+
+export interface RefreshTokenRecord extends RefreshTokenInsert {
+  revoked_at: string | null;
+}
+
+interface AuthTokenInsert {
+  id: string;
+  user_id: string;
+  token_type: string;
+  token_hash: string;
+  expires_at: string;
+  created_at: string;
+  consumed_at?: string | null;
+}
+
+export interface AuthTokenRecord extends AuthTokenInsert {
+  consumed_at: string | null;
+}
+
+interface AuthSessionInsert {
+  jti: string;
+  user_id: string;
+  user_agent: string | null;
+  ip: string | null;
+  created_at: string;
+  expires_at: string;
+  revoked_at?: string | null;
+  last_active_at?: string | null;
+}
+
+export interface AuthSessionRecord extends AuthSessionInsert {
+  revoked_at: string | null;
+  last_active_at: string | null;
+}
 
 export interface AuthUserRecord {
   id: string;
@@ -38,24 +84,22 @@ function userQuery() {
       "u.updated_at",
       db.raw("c.value as primary_email"),
       db.raw("COALESCE(c.is_verified, false) as email_verified"),
-    );
+    ) satisfies Knex.QueryBuilder<AuthUserRecord, AuthUserRecord[]>;
 }
 
-export async function findUserByEmail(email: string) {
+export async function findUserByEmail(email: string): Promise<AuthUserRecord | undefined> {
   const normalized = email.toLowerCase();
-  return userQuery()
-    .whereRaw("LOWER(c.value) = ?", [normalized])
-    .first();
+  return userQuery().whereRaw("LOWER(c.value) = ?", [normalized]).first<AuthUserRecord>();
 }
 
-export async function findUserByUsername(username: string) {
+export async function findUserByUsername(username: string): Promise<AuthUserRecord | undefined> {
   return userQuery()
     .whereRaw("LOWER(u.username) = ?", [username.toLowerCase()])
-    .first();
+    .first<AuthUserRecord>();
 }
 
-export async function findUserById(id: string) {
-  return userQuery().where("u.id", id).first();
+export async function findUserById(id: string): Promise<AuthUserRecord | undefined> {
+  return userQuery().where("u.id", id).first<AuthUserRecord>();
 }
 
 export async function createUser(input: {
@@ -69,7 +113,7 @@ export async function createUser(input: {
   password_hash: string;
   primaryEmail: string;
   emailVerified?: boolean;
-}) {
+}): Promise<AuthUserRecord | undefined> {
   const now = new Date().toISOString();
   return db.transaction(async (trx) => {
     await trx(USERS_TABLE).insert({
@@ -97,32 +141,38 @@ export async function createUser(input: {
       created_at: now,
     });
 
-    return userQuery().transacting(trx).where("u.id", input.id).first();
+    return userQuery().transacting(trx).where("u.id", input.id).first<AuthUserRecord>();
   });
 }
 
 export async function updateUserStatus(userId: string, status: string) {
-  return db("users")
-    .where({ id: userId })
-    .update({ status, updated_at: new Date().toISOString() });
+  return db("users").where({ id: userId }).update({ status, updated_at: new Date().toISOString() });
 }
 
 export async function updateUserPassword(userId: string, passwordHash: string) {
-  return db("users")
-    .where({ id: userId })
-    .update({ password_hash: passwordHash, updated_at: new Date().toISOString() });
+  return db("users").where({ id: userId }).update({
+    password_hash: passwordHash,
+    updated_at: new Date().toISOString(),
+  });
 }
 
-export async function insertRefreshToken(row: any) {
-  return db("refresh_tokens").insert(row).returning("*");
+export async function insertRefreshToken(row: RefreshTokenInsert): Promise<RefreshTokenRecord[]> {
+  return db<RefreshTokenRecord>("refresh_tokens").insert(row).returning("*");
 }
 
 export async function revokeRefreshByHash(token_hash: string) {
-  return db("refresh_tokens").where({ token_hash }).update({ revoked_at: new Date().toISOString() });
+  return db("refresh_tokens")
+    .where({ token_hash })
+    .update({ revoked_at: new Date().toISOString() });
 }
 
-export async function getRefreshByHash(token_hash: string) {
-  return db("refresh_tokens").where({ token_hash }).whereNull("revoked_at").first();
+export async function getRefreshByHash(
+  token_hash: string,
+): Promise<RefreshTokenRecord | undefined> {
+  return db<RefreshTokenRecord>("refresh_tokens")
+    .where({ token_hash })
+    .whereNull("revoked_at")
+    .first();
 }
 
 export async function revokeRefreshByUserId(user_id: string) {
@@ -130,7 +180,9 @@ export async function revokeRefreshByUserId(user_id: string) {
 }
 
 export async function revokeRefreshBySession(session_jti: string) {
-  return db("refresh_tokens").where({ session_jti }).update({ revoked_at: new Date().toISOString() });
+  return db("refresh_tokens")
+    .where({ session_jti })
+    .update({ revoked_at: new Date().toISOString() });
 }
 
 export async function revokeRefreshByUserExceptSession(user_id: string, session_jti: string) {
@@ -140,20 +192,25 @@ export async function revokeRefreshByUserExceptSession(user_id: string, session_
     .update({ revoked_at: new Date().toISOString() });
 }
 
-export async function findRefreshTokenRaw(token_hash: string) {
-  return db("refresh_tokens").where({ token_hash }).first();
+export async function findRefreshTokenRaw(
+  token_hash: string,
+): Promise<RefreshTokenRecord | undefined> {
+  return db<RefreshTokenRecord>("refresh_tokens").where({ token_hash }).first();
 }
 
-export async function createAuthToken(row: any) {
-  return db("auth_tokens").insert(row).returning("*");
+export async function createAuthToken(row: AuthTokenInsert): Promise<AuthTokenRecord[]> {
+  return db<AuthTokenRecord>("auth_tokens").insert(row).returning("*");
 }
 
 export async function deleteAuthTokensByType(userId: string, tokenType: string) {
   return db("auth_tokens").where({ user_id: userId, token_type: tokenType }).del();
 }
 
-export async function findAuthToken(tokenType: string, tokenHash: string) {
-  return db("auth_tokens")
+export async function findAuthToken(
+  tokenType: string,
+  tokenHash: string,
+): Promise<AuthTokenRecord | undefined> {
+  return db<AuthTokenRecord>("auth_tokens")
     .where({ token_type: tokenType, token_hash: tokenHash })
     .whereNull("consumed_at")
     .first();
@@ -186,21 +243,26 @@ export async function purgeAuthTokensOlderThan(tokenType: string, olderThan: Dat
     .del();
 }
 
-export async function createAuthSession(row: any) {
-  return db("auth_sessions").insert(row).returning("*");
+export async function createAuthSession(row: AuthSessionInsert): Promise<AuthSessionRecord[]> {
+  return db<AuthSessionRecord>("auth_sessions").insert(row).returning("*");
 }
 
-export async function findSessionById(jti: string) {
-  return db("auth_sessions").where({ jti }).first();
+export async function findSessionById(jti: string): Promise<AuthSessionRecord | undefined> {
+  return db<AuthSessionRecord>("auth_sessions").where({ jti }).first();
 }
 
-export async function listSessionsByUserId(user_id: string) {
-  return db("auth_sessions")
-    .where({ user_id })
-    .orderBy("created_at", "desc");
+export async function listSessionsByUserId(user_id: string): Promise<AuthSessionRecord[]> {
+  return db<AuthSessionRecord>("auth_sessions").where({ user_id }).orderBy("created_at", "desc");
 }
 
-export async function updateSession(jti: string, patch: { expires_at?: string; user_agent?: string | null; ip?: string | null }) {
+export async function updateSession(
+  jti: string,
+  patch: {
+    expires_at?: string;
+    user_agent?: string | null;
+    ip?: string | null;
+  },
+) {
   return db("auth_sessions").where({ jti }).update(patch);
 }
 
@@ -209,9 +271,7 @@ export async function revokeSessionById(jti: string) {
 }
 
 export async function revokeSessionsByUserId(user_id: string, excludeJti?: string) {
-  const query = db("auth_sessions")
-    .where({ user_id })
-    .whereNull("revoked_at");
+  const query = db("auth_sessions").where({ user_id }).whereNull("revoked_at");
   if (excludeJti) {
     query.andWhereNot({ jti: excludeJti });
   }

@@ -4,15 +4,15 @@ The `infra` workspace defines how FitVibe is deployed, observed, and secured acr
 
 ## Contents
 
-| Path                          | Description                                                   |
-| ----------------------------- | ------------------------------------------------------------- |
-| `docker/`                     | Docker Compose stacks and service Dockerfiles                 |
-| `docker/dev/compose.dev.yml`  | Local developer stack (backend, frontend, postgres, nginx)    |
-| `docker/prod/compose.prod.yml`| Production-oriented stack                                     |
-| `nginx/`                      | Base NGINX configuration and site definitions                 |
-| `observability/`              | Prometheus scrape configs and Grafana dashboards              |
-| `scripts/`                    | Helper shell scripts for migrating, seeding, and rollbacks    |
-| `security/policies/`          | Operational policies (password rotation, key management, ...) |
+| Path                           | Description                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `docker/`                      | Docker Compose stacks and service Dockerfiles                 |
+| `docker/dev/compose.dev.yml`   | Local developer stack (backend, frontend, postgres, nginx)    |
+| `docker/prod/compose.prod.yml` | Production-oriented stack                                     |
+| `nginx/`                       | Base NGINX configuration and site definitions                 |
+| `observability/`               | Prometheus scrape configs and Grafana dashboards              |
+| `scripts/`                     | Helper shell scripts for migrating, seeding, and rollbacks    |
+| `security/policies/`           | Operational policies (password rotation, key management, ...) |
 
 ## Local Stack
 

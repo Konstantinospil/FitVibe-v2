@@ -1,16 +1,18 @@
 import db from "../index.js";
+import { logger } from "../../config/logger.js";
+import { toErrorPayload } from "../../utils/error.utils.js";
 
 async function main(): Promise<void> {
   try {
-    console.log("[db] Running database seeds...");
+    logger.info("[db] Running database seeds...");
     await db.seed.run();
-    console.log("[db] Seeds completed.");
+    logger.info("[db] Seeds completed.");
   } finally {
     await db.destroy();
   }
 }
 
-main().catch((error) => {
-  console.error("Failed to run database seeds.", error);
+main().catch((error: unknown) => {
+  logger.error(toErrorPayload(error), "Failed to run database seeds.");
   process.exit(1);
 });

@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const FITNESS_LEVELS = [
   { code: "beginner", description: "Getting started with consistent training" },
@@ -10,4 +10,3 @@ const FITNESS_LEVELS = [
 export async function seed(knex: Knex): Promise<void> {
   await knex("fitness_levels").insert(FITNESS_LEVELS).onConflict("code").ignore();
 }
-

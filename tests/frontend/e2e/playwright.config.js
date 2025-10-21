@@ -12,8 +12,7 @@ module.exports = defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command:
-      "pnpm --filter @fitvibe/frontend exec pnpm run preview -- --host 0.0.0.0 --port 4173",
+    command: "pnpm --filter @fitvibe/frontend exec pnpm run preview -- --host 0.0.0.0 --port 4173",
     port: 4173,
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,

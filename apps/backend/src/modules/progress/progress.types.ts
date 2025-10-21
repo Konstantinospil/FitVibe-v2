@@ -7,7 +7,7 @@ export interface ProgressSummary {
   avg_volume_per_session: number;
 }
 
-export type TrendGroupBy = 'day' | 'week';
+export type TrendGroupBy = "day" | "week";
 
 export interface TrendPoint {
   date: string;

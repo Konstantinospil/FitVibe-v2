@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const USER_POINTS_INDEX = "user_points_user_id_awarded_at_idx";
 

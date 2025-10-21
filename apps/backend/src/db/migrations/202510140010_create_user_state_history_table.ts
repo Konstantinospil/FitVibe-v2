@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const USER_STATE_INDEX = "user_state_history_user_id_changed_at_idx";
 

@@ -1,9 +1,10 @@
-import type { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
+
 import { verifyAccess } from "../services/tokens.js";
 
-export function authenticate(req: Request, res: Response, next: NextFunction){
+export function authenticate(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization;
-  if(!auth) {
+  if (!auth) {
     return res.status(401).json({
       error: {
         code: "UNAUTHENTICATED",
@@ -13,11 +14,11 @@ export function authenticate(req: Request, res: Response, next: NextFunction){
     });
   }
   const token = auth.split(" ")[1];
-  try{
+  try {
     const payload = verifyAccess(token);
-    (req as any).user = payload;
+    req.user = payload;
     return next();
-  }catch{
+  } catch {
     return res.status(401).json({
       error: {
         code: "UNAUTHENTICATED",

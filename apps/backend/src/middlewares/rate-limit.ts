@@ -1,5 +1,5 @@
-import { RateLimiterMemory } from 'rate-limiter-flexible';
-import { Request, Response, NextFunction } from 'express';
+import { RateLimiterMemory } from "rate-limiter-flexible";
+import type { NextFunction, Request, Response } from "express";
 
 const limiters = new Map<string, RateLimiterMemory>();
 
@@ -16,19 +16,19 @@ function getLimiter(key: string, points = 60, duration = 60) {
  */
 export function rateLimit(key: string, points = 60, duration = 60) {
   const limiter = getLimiter(key, points, duration);
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-      await limiter.consume(String(ip));
-      return next();
-    } catch {
-      res.status(429).json({
-        error: {
-          code: "RATE_LIMITED",
-          message: "Too many requests",
-          requestId: res.locals.requestId,
-        },
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+    limiter
+      .consume(String(ip))
+      .then(() => next())
+      .catch(() => {
+        res.status(429).json({
+          error: {
+            code: "RATE_LIMITED",
+            message: "Too many requests",
+            requestId: res.locals.requestId,
+          },
+        });
       });
-    }
   };
 }

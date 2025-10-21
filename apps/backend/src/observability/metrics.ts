@@ -21,15 +21,19 @@ const httpRequestsTotal = new client.Counter({
 register.registerMetric(httpRequestDuration);
 register.registerMetric(httpRequestsTotal);
 
-const resolveRouteLabel = (req: Request): string => {
-  if (req.route?.path) {
-    return `${req.baseUrl}${req.route.path}` || req.route.path;
+function resolveRouteLabel(req: Request): string {
+  const maybeRoute: unknown = req.route;
+  if (maybeRoute && typeof maybeRoute === "object" && "path" in maybeRoute) {
+    const routePath = (maybeRoute as { path?: unknown }).path;
+    if (typeof routePath === "string" && routePath.length > 0) {
+      return req.baseUrl ? `${req.baseUrl}${routePath}` : routePath;
+    }
   }
   if (req.baseUrl) {
     return req.baseUrl;
   }
   return req.originalUrl.split("?")[0];
-};
+}
 
 export function metricsMiddleware(req: Request, res: Response, next: NextFunction) {
   const endTimer = httpRequestDuration.startTimer({
@@ -52,6 +56,6 @@ export function metricsMiddleware(req: Request, res: Response, next: NextFunctio
 
 export async function metricsRoute(_req: Request, res: Response) {
   res.set("Content-Type", register.contentType);
-  res.end(await register.metrics());
+  const metrics = await register.metrics();
+  res.end(metrics);
 }
-

@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const REFRESH_INDEX = "refresh_tokens_user_session_idx";
 const AUTH_TOKEN_INDEX = "auth_tokens_type_hash_idx";
@@ -51,7 +51,9 @@ export async function up(knex: Knex): Promise<void> {
         table.timestamp("rotated_at", { useTz: true }).nullable();
       });
     }
-    await knex.raw(`CREATE INDEX IF NOT EXISTS ${REFRESH_INDEX} ON refresh_tokens (user_id, session_jti)`);
+    await knex.raw(
+      `CREATE INDEX IF NOT EXISTS ${REFRESH_INDEX} ON refresh_tokens (user_id, session_jti)`,
+    );
   }
 
   const hasAuthTokens = await knex.schema.hasTable("auth_tokens");
@@ -100,4 +102,3 @@ export async function down(knex: Knex): Promise<void> {
     await knex.schema.dropTable("auth_tokens");
   }
 }
-

@@ -1,11 +1,11 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const now = new Date();
 
 const EXERCISES = [
   {
     id: "77777777-7777-7777-7777-777777777777",
-    owner: null,
+    owner_id: null,
     name: "Back Squat",
     type_code: "strength",
     muscle_group: "Lower Body",
@@ -20,7 +20,7 @@ const EXERCISES = [
   },
   {
     id: "88888888-8888-8888-8888-888888888888",
-    owner: "22222222-2222-2222-2222-222222222222",
+    owner_id: "22222222-2222-2222-2222-222222222222",
     name: "Tempo Run 5K",
     type_code: "cardio",
     muscle_group: "Cardio",

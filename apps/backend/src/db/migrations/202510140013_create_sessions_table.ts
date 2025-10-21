@@ -1,4 +1,4 @@
-﻿import { Knex } from "knex";
+﻿import type { Knex } from "knex";
 
 const SESSIONS_TABLE = "sessions";
 const IDX_OWNER = "idx_sessions_owner";
@@ -28,12 +28,8 @@ export async function up(knex: Knex): Promise<void> {
     ) PARTITION BY RANGE (planned_at);
   `);
 
-  await knex.raw(
-    `CREATE INDEX IF NOT EXISTS ${IDX_OWNER} ON ${SESSIONS_TABLE}(owner_id);`,
-  );
-  await knex.raw(
-    `CREATE INDEX IF NOT EXISTS ${IDX_STATUS} ON ${SESSIONS_TABLE}(status);`,
-  );
+  await knex.raw(`CREATE INDEX IF NOT EXISTS ${IDX_OWNER} ON ${SESSIONS_TABLE}(owner_id);`);
+  await knex.raw(`CREATE INDEX IF NOT EXISTS ${IDX_STATUS} ON ${SESSIONS_TABLE}(status);`);
   await knex.raw(
     `CREATE INDEX IF NOT EXISTS ${IDX_PLANNED_AT} ON ${SESSIONS_TABLE}(planned_at DESC);`,
   );
@@ -49,4 +45,3 @@ export async function down(knex: Knex): Promise<void> {
   await knex.raw(`DROP INDEX IF EXISTS ${IDX_OWNER};`);
   await knex.raw(`DROP TABLE IF EXISTS ${SESSIONS_TABLE} CASCADE;`);
 }
-

@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { db } from "../../db/connection.js";
+import { logger } from "../../config/logger.js";
 
 export interface AuditLogPayload {
   actorUserId?: string | null;
@@ -27,6 +28,6 @@ export async function insertAudit({
       created_at: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("[AUDIT]", action, error);
+    logger.error({ err: error, action }, "[AUDIT] insert failed");
   }
 }

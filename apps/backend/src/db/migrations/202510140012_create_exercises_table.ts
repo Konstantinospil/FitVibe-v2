@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const EXERCISES_TAGS_INDEX = "exercises_tags_gin_idx";
 const EXERCISES_OWNER_ACTIVE_INDEX = "exercises_owner_active_idx";
@@ -23,10 +23,7 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete("SET NULL");
     table.string("muscle_group").nullable();
     table.string("equipment").nullable();
-    table
-      .jsonb("tags")
-      .notNullable()
-      .defaultTo(knex.raw("'[]'::jsonb"));
+    table.jsonb("tags").notNullable().defaultTo(knex.raw("'[]'::jsonb"));
     table.boolean("is_public").notNullable().defaultTo(true);
     table.text("description_en").nullable();
     table.text("description_de").nullable();
@@ -36,7 +33,9 @@ export async function up(knex: Knex): Promise<void> {
   });
 
   await knex.raw(`CREATE INDEX ${EXERCISES_TAGS_INDEX} ON exercises USING GIN (tags);`);
-  await knex.raw(`CREATE INDEX ${EXERCISES_OWNER_ACTIVE_INDEX} ON exercises(owner) WHERE archived_at IS NULL;`);
+  await knex.raw(
+    `CREATE INDEX ${EXERCISES_OWNER_ACTIVE_INDEX} ON exercises(owner) WHERE archived_at IS NULL;`,
+  );
 }
 
 export async function down(knex: Knex): Promise<void> {
@@ -44,4 +43,3 @@ export async function down(knex: Knex): Promise<void> {
   await knex.raw(`DROP INDEX IF EXISTS ${EXERCISES_TAGS_INDEX};`);
   await knex.schema.dropTableIfExists("exercises");
 }
-

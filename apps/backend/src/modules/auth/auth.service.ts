@@ -29,20 +29,20 @@ import {
   updateSession,
   revokeSessionById,
   revokeSessionsByUserId,
-} from "./auth.repository.js";
-import {
+} from "./auth.repository";
+import type {
   JwtPayload,
   LoginDTO,
   LoginContext,
   RefreshTokenPayload,
   RegisterDTO,
-  RevokeSessionsInput,
   SessionRevokeOptions,
   SessionView,
   SessionRecord,
   TokenPair,
   UserSafe,
 } from "./auth.types.js";
+import type { AuthUserRecord } from "./auth.repository.js";
 import { env, RSA_KEYS } from "../../config/env.js";
 import { HttpError } from "../../utils/http.js";
 import { assertPasswordPolicy } from "./passwordPolicy.js";
@@ -62,16 +62,28 @@ const TOKEN_TYPES = {
 
 const SESSION_EXPIRY_MS = REFRESH_TTL * 1000;
 
+function asError(err: unknown): Error {
+  return err instanceof Error
+    ? err
+    : new Error(typeof err === "string" ? err : JSON.stringify(err));
+}
+
 function nextSessionExpiry(): string {
   return new Date(Date.now() + SESSION_EXPIRY_MS).toISOString();
 }
 
 function sanitizeUserAgent(userAgent?: string | null): string | null {
-  if (!userAgent) return null;
+  if (!userAgent) {
+    return null;
+  }
   return userAgent.length > 512 ? userAgent.slice(0, 512) : userAgent;
 }
 
-async function recordAuditEvent(userId: string | null, action: string, metadata: Record<string, unknown> = {}) {
+async function recordAuditEvent(
+  userId: string | null,
+  action: string,
+  metadata: Record<string, unknown> = {},
+) {
   try {
     await db("audit_log").insert({
       id: uuidv4(),
@@ -81,8 +93,9 @@ async function recordAuditEvent(userId: string | null, action: string, metadata:
       metadata,
       created_at: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error("[audit] failed", action, error);
+  } catch (error: unknown) {
+    const err = asError(error);
+    console.error("[audit] failed", action, err);
   }
 }
 
@@ -95,15 +108,11 @@ function signAccess(payload: Omit<JwtPayload, "iat" | "exp" | "jti">) {
 }
 
 function signRefresh(payload: Pick<RefreshTokenPayload, "sub" | "sid">) {
-  return jwt.sign(
-    { sub: payload.sub, sid: payload.sid, typ: "refresh" },
-    RSA_KEYS.privateKey,
-    {
-      algorithm: "RS256",
-      expiresIn: REFRESH_TTL,
-      jwtid: uuidv4(),
-    },
-  );
+  return jwt.sign({ sub: payload.sub, sid: payload.sid, typ: "refresh" }, RSA_KEYS.privateKey, {
+    algorithm: "RS256",
+    expiresIn: REFRESH_TTL,
+    jwtid: uuidv4(),
+  });
 }
 
 function generateToken(): { raw: string; hash: string } {
@@ -121,7 +130,11 @@ async function issueAuthToken(userId: string, type: string, ttlSeconds: number) 
     const windowStart = new Date(now - RESEND_WINDOW_MS);
     const recentAttempts = await countAuthTokensSince(userId, type, windowStart);
     if (recentAttempts >= EMAIL_VERIFICATION_RESEND_LIMIT) {
-      throw new HttpError(429, "AUTH_TOO_MANY_REQUESTS", "Verification limit reached. Please try again later.");
+      throw new HttpError(
+        429,
+        "AUTH_TOO_MANY_REQUESTS",
+        "Verification limit reached. Please try again later.",
+      );
     }
   }
 
@@ -140,12 +153,12 @@ async function issueAuthToken(userId: string, type: string, ttlSeconds: number) 
   return raw;
 }
 
-function toSafeUser(record: any): UserSafe {
+function toSafeUser(record: AuthUserRecord): UserSafe {
   return {
     id: record.id,
-    email: record.email,
+    email: record.primary_email ?? "",
     username: record.username,
-    role: record.role,
+    role: record.role_code,
     status: record.status,
     created_at: record.created_at,
   };
@@ -162,7 +175,11 @@ export async function register(
 
   if (existingByEmail || existingByUsername) {
     if (existingByEmail && existingByEmail.status === "pending_verification") {
-      const token = await issueAuthToken(existingByEmail.id, TOKEN_TYPES.EMAIL_VERIFICATION, EMAIL_VERIFICATION_TTL);
+      const token = await issueAuthToken(
+        existingByEmail.id,
+        TOKEN_TYPES.EMAIL_VERIFICATION,
+        EMAIL_VERIFICATION_TTL,
+      );
       return { verificationToken: token, user: toSafeUser(existingByEmail) };
     }
     throw new HttpError(409, "AUTH_CONFLICT", "Unable to complete registration");
@@ -174,13 +191,12 @@ export async function register(
 
   await createUser({
     id,
-    email,
     username,
-    password_hash,
-    role: "user",
+    display_name: dto.profile?.display_name ?? username,
     status: "pending_verification",
-    created_at: now,
-    updated_at: now,
+    role_code: "user",
+    password_hash,
+    primaryEmail: email,
   });
 
   await db("user_profiles").insert({
@@ -194,7 +210,11 @@ export async function register(
     updated_at: now,
   });
 
-  const verificationToken = await issueAuthToken(id, TOKEN_TYPES.EMAIL_VERIFICATION, EMAIL_VERIFICATION_TTL);
+  const verificationToken = await issueAuthToken(
+    id,
+    TOKEN_TYPES.EMAIL_VERIFICATION,
+    EMAIL_VERIFICATION_TTL,
+  );
   const user = await findUserById(id);
   return { verificationToken, user: user ? toSafeUser(user) : undefined };
 }
@@ -224,7 +244,11 @@ export async function verifyEmail(token: string): Promise<UserSafe> {
 export async function login(
   dto: LoginDTO,
   context: LoginContext = {},
-): Promise<{ user: UserSafe; tokens: TokenPair; session: { id: string; expiresAt: string } }> {
+): Promise<{
+  user: UserSafe;
+  tokens: TokenPair;
+  session: { id: string; expiresAt: string };
+}> {
   const user = await findUserByEmail(dto.email.toLowerCase());
   if (!user || user.status !== "active") {
     throw new HttpError(401, "AUTH_INVALID_CREDENTIALS", "Invalid credentials");
@@ -260,7 +284,7 @@ export async function login(
   });
 
   const tokens: TokenPair = {
-    accessToken: signAccess({ sub: user.id, role: user.role, sid: sessionId }),
+    accessToken: signAccess({ sub: user.id, role: user.role_code, sid: sessionId }),
     refreshToken,
     accessExpiresIn: ACCESS_TTL,
   };
@@ -272,7 +296,11 @@ export async function login(
     requestId: context.requestId ?? null,
   });
 
-  return { user: toSafeUser(user), tokens, session: { id: sessionId, expiresAt: sessionExpiresAt } };
+  return {
+    user: toSafeUser(user),
+    tokens,
+    session: { id: sessionId, expiresAt: sessionExpiresAt },
+  };
 }
 
 export async function refresh(
@@ -290,17 +318,23 @@ export async function refresh(
     const token_hash = crypto.createHash("sha256").update(refreshToken).digest("hex");
     const rec = await getRefreshByHash(token_hash);
     if (!rec) {
-      const historical = await findRefreshTokenRaw(token_hash);
-      if (historical?.session_jti) {
-        await revokeSessionById(historical.session_jti);
-        await revokeRefreshBySession(historical.session_jti);
-        await recordAuditEvent(historical.user_id ?? null, "auth.refresh_reuse", {
-          sessionId: historical.session_jti,
-          requestId: context.requestId ?? null,
-          ip: context.ip ?? null,
-          userAgent: sanitizeUserAgent(context.userAgent),
-          outcome: "failure",
-        });
+      try {
+        const historical = await findRefreshTokenRaw(token_hash);
+        if (historical?.session_jti) {
+          await revokeSessionById(historical.session_jti);
+          await revokeRefreshBySession(historical.session_jti);
+          await recordAuditEvent(historical.user_id ?? null, "auth.refresh_reuse", {
+            sessionId: historical.session_jti,
+            requestId: context.requestId ?? null,
+            ip: context.ip ?? null,
+            userAgent: sanitizeUserAgent(context.userAgent),
+            outcome: "failure",
+          });
+        }
+      } catch (error: unknown) {
+        if (error instanceof HttpError) {
+          throw error;
+        }
       }
       throw new HttpError(401, "AUTH_INVALID_REFRESH", "Invalid refresh token");
     }
@@ -359,7 +393,11 @@ export async function refresh(
       created_at: new Date().toISOString(),
     });
 
-    const patch: { expires_at: string; user_agent?: string | null; ip?: string | null } = {
+    const patch: {
+      expires_at: string;
+      user_agent?: string | null;
+      ip?: string | null;
+    } = {
       expires_at: newExpiry,
     };
     if (context.userAgent) {
@@ -381,9 +419,13 @@ export async function refresh(
     return {
       user: toSafeUser(user),
       newRefresh,
-      accessToken: signAccess({ sub: user.id, role: user.role, sid: session.jti }),
+      accessToken: signAccess({
+        sub: user.id,
+        role: user.role_code,
+        sid: session.jti,
+      }),
     };
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof HttpError) {
       throw error;
     }
@@ -391,8 +433,13 @@ export async function refresh(
   }
 }
 
-export async function logout(refreshToken: string | undefined, context: LoginContext = {}): Promise<void> {
-  if (!refreshToken) return;
+export async function logout(
+  refreshToken: string | undefined,
+  context: LoginContext = {},
+): Promise<void> {
+  if (!refreshToken) {
+    return;
+  }
   const token_hash = crypto.createHash("sha256").update(refreshToken).digest("hex");
   let decoded: RefreshTokenPayload | null = null;
   try {
@@ -445,7 +492,10 @@ export async function resetPassword(token: string, newPassword: string): Promise
   if (!user) {
     throw new HttpError(404, "AUTH_USER_NOT_FOUND", "User not found");
   }
-  assertPasswordPolicy(newPassword, { email: user.email, username: user.username });
+  assertPasswordPolicy(newPassword, {
+    email: user.primary_email ?? undefined,
+    username: user.username,
+  });
 
   const password_hash = await bcrypt.hash(newPassword, 12);
   await updateUserPassword(record.user_id, password_hash);
@@ -454,7 +504,10 @@ export async function resetPassword(token: string, newPassword: string): Promise
   await revokeRefreshByUserId(record.user_id);
 }
 
-export async function listSessions(userId: string, currentSessionId: string | null = null): Promise<SessionView[]> {
+export async function listSessions(
+  userId: string,
+  currentSessionId: string | null = null,
+): Promise<SessionView[]> {
   const sessions = (await listSessionsByUserId(userId)) as SessionRecord[];
   return sessions.map((session) => ({
     id: session.jti,
@@ -467,7 +520,10 @@ export async function listSessions(userId: string, currentSessionId: string | nu
   }));
 }
 
-export async function revokeSessions(userId: string, options: SessionRevokeOptions): Promise<{ revoked: number }> {
+export async function revokeSessions(
+  userId: string,
+  options: SessionRevokeOptions,
+): Promise<{ revoked: number }> {
   const { sessionId, revokeAll, revokeOthers, currentSessionId = null, context = {} } = options;
   const now = new Date().toISOString();
   let revokedCount = 0;
@@ -516,9 +572,15 @@ export async function revokeSessions(userId: string, options: SessionRevokeOptio
 
   if (revokeOthers) {
     if (!currentSessionId) {
-      throw new HttpError(400, "AUTH_INVALID_SCOPE", "Current session id required to revoke other sessions");
+      throw new HttpError(
+        400,
+        "AUTH_INVALID_SCOPE",
+        "Current session id required to revoke other sessions",
+      );
     }
-    const targets = sessions.filter((session) => !session.revoked_at && session.jti !== currentSessionId);
+    const targets = sessions.filter(
+      (session) => !session.revoked_at && session.jti !== currentSessionId,
+    );
     if (targets.length) {
       await revokeSessionsByUserId(userId, currentSessionId);
       await revokeRefreshByUserExceptSession(userId, currentSessionId);

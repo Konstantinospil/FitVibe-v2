@@ -1,2 +1,1 @@
-export { rateLimit } from '../../middlewares/rate-limit.js';
-
+export { rateLimit } from "../../middlewares/rate-limit.js";

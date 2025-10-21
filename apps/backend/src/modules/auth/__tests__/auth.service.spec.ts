@@ -1,15 +1,10 @@
-// @ts-nocheck
 import { listSessions, revokeSessions } from "../auth.service.js";
+import type { AuthSessionRecord } from "../auth.repository.js";
+import * as authRepository from "../auth.repository.js";
 
-jest.mock("../auth.repository.js", () => ({
-  __esModule: true,
-  listSessionsByUserId: jest.fn(),
-  revokeSessionsByUserId: jest.fn(),
-  revokeRefreshByUserExceptSession: jest.fn(),
-  findSessionById: jest.fn(),
-}));
+jest.mock("../auth.repository.js");
 
-const repo = jest.requireMock("../auth.repository.js");
+const repo = jest.mocked(authRepository);
 
 jest.mock("../../../db/index.js", () => ({
   __esModule: true,
@@ -31,26 +26,23 @@ describe("auth.service session helpers", () => {
 
   it("marks the current session when listing", async () => {
     const now = new Date().toISOString();
-    repo.listSessionsByUserId.mockResolvedValue([
-      {
-        jti: "current",
-        user_id: "user-1",
-        user_agent: "Chrome",
-        ip: "10.0.0.1",
-        created_at: now,
-        expires_at: now,
-        revoked_at: null,
-      },
-      {
-        jti: "other",
-        user_id: "user-1",
-        user_agent: "Safari",
-        ip: "10.0.0.2",
-        created_at: now,
-        expires_at: now,
-        revoked_at: null,
-      },
-    ]);
+    const baseSession: AuthSessionRecord = {
+      jti: "current",
+      user_id: "user-1",
+      user_agent: "Chrome",
+      ip: "10.0.0.1",
+      created_at: now,
+      expires_at: now,
+      revoked_at: null,
+      last_active_at: now,
+    };
+    const otherSession: AuthSessionRecord = {
+      ...baseSession,
+      jti: "other",
+      user_agent: "Safari",
+      ip: "10.0.0.2",
+    };
+    repo.listSessionsByUserId.mockResolvedValue([baseSession, otherSession]);
 
     const sessions = await listSessions("user-1", "current");
 
@@ -65,10 +57,18 @@ describe("auth.service session helpers", () => {
 
   it("revokes other sessions when requested", async () => {
     const now = new Date().toISOString();
-    repo.listSessionsByUserId.mockResolvedValue([
-      { jti: "current", user_id: "user-1", revoked_at: null, created_at: now, expires_at: now },
-      { jti: "old", user_id: "user-1", revoked_at: null, created_at: now, expires_at: now },
-    ]);
+    const current: AuthSessionRecord = {
+      jti: "current",
+      user_id: "user-1",
+      user_agent: null,
+      ip: null,
+      created_at: now,
+      expires_at: now,
+      revoked_at: null,
+      last_active_at: now,
+    };
+    const old: AuthSessionRecord = { ...current, jti: "old" };
+    repo.listSessionsByUserId.mockResolvedValue([current, old]);
     repo.revokeSessionsByUserId.mockResolvedValue(1);
     repo.revokeRefreshByUserExceptSession.mockResolvedValue(1);
 

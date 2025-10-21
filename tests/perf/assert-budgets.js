@@ -26,9 +26,7 @@ function ensureThreshold(metricName, threshold) {
   }
   const thresholdRecord = metric.thresholds?.[threshold];
   if (!thresholdRecord) {
-    console.error(
-      `Missing threshold "${threshold}" for metric "${metricName}".`,
-    );
+    console.error(`Missing threshold "${threshold}" for metric "${metricName}".`);
     process.exit(1);
   }
   if (!(thresholdRecord.ok === true || thresholdRecord.ok === "true")) {

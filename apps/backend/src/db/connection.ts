@@ -1,5 +1,8 @@
-import knex, { Knex } from "knex";
+import type { Knex } from "knex";
+import knex from "knex";
+
 import { DB_CONFIG } from "./db.config.js";
+import { logger } from "../config/logger.js";
 
 export const db: Knex = knex({
   client: "pg",
@@ -11,9 +14,9 @@ export const db: Knex = knex({
 export async function testConnection(): Promise<void> {
   try {
     await db.raw("SELECT 1 + 1 AS result");
-    console.log("Database connection successful");
+    logger.info("Database connection successful");
   } catch (error) {
-    console.error("Database connection failed", error);
+    logger.error({ err: error }, "Database connection failed");
     process.exit(1);
   }
 }

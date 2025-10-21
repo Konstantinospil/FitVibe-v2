@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import sharp from "sharp";
 import { insertAudit } from "../common/audit.util.js";
+import { logger } from "../../config/logger.js";
 import {
   saveUserAvatarMetadata,
   getUserAvatarMetadata,
@@ -13,13 +14,19 @@ import {
 } from "../../services/mediaStorage.service.js";
 
 const ALLOWED_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/jpg"]);
-const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB per PRD
 
 export async function uploadAvatarHandler(req: Request, res: Response) {
   const userId = req.user?.sub as string;
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  if (!ALLOWED_MIME.has(req.file.mimetype)) return res.status(400).json({ error: "Unsupported file type" });
-  if (req.file.size > MAX_BYTES) return res.status(400).json({ error: "File too large (max 2MB)" });
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  if (!ALLOWED_MIME.has(req.file.mimetype)) {
+    return res.status(400).json({ error: "Unsupported file type" });
+  }
+  if (req.file.size > MAX_BYTES) {
+    return res.status(400).json({ error: "File too large (max 5MB)" });
+  }
 
   const processed = await sharp(req.file.buffer)
     .rotate()
@@ -48,10 +55,12 @@ export async function uploadAvatarHandler(req: Request, res: Response) {
     metadata: { size: fileMeta.bytes, mime: "image/png" },
   });
 
-  res.json({
+  res.status(201).json({
     success: true,
     fileUrl: publicUrl,
     bytes: fileMeta.bytes,
+    mimeType: "image/png",
+    updatedAt: record.created_at,
     preview: `data:image/png;base64,${processed.toString("base64")}`,
   });
 }
@@ -59,14 +68,16 @@ export async function uploadAvatarHandler(req: Request, res: Response) {
 export async function getAvatarHandler(req: Request, res: Response) {
   const { id } = req.params;
   const metadata = await getUserAvatarMetadata(id);
-  if (!metadata) return res.status(404).send("Avatar not found");
+  if (!metadata) {
+    return res.status(404).send("Avatar not found");
+  }
   try {
     const buffer = await readStorageObject(metadata.storage_key);
     res.set("Content-Type", metadata.mime_type ?? "image/png");
     res.set("Cache-Control", "private, max-age=300");
     return res.send(buffer);
   } catch (error) {
-    console.error("[avatar] read failed", error);
+    logger.error({ err: error }, "[avatar] read failed");
     return res.status(404).send("Avatar not found");
   }
 }

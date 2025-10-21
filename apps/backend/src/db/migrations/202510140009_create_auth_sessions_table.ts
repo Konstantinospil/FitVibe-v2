@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const AUTH_SESSION_INDEX = "auth_sessions_user_id_expires_idx";
 

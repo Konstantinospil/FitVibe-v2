@@ -1,4 +1,4 @@
-﻿import { Knex } from "knex";
+﻿import type { Knex } from "knex";
 
 const TABLE = "plans";
 const IDX_OWNER = "idx_plans_owner";

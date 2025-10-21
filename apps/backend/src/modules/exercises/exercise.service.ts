@@ -1,5 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
-import { db } from '../../db/connection.js';
+import { v4 as uuidv4 } from "uuid";
+import { db } from "../../db/connection.js";
+import { HttpError } from "../../utils/http.js";
 import {
   listExercises,
   getExercise,
@@ -7,76 +8,234 @@ import {
   updateExercise,
   archiveExercise,
   getExerciseRaw,
-} from './exercise.repository.js';
-import {
+} from "./exercise.repository.js";
+import type {
   CreateExerciseDTO,
   UpdateExerciseDTO,
   ExerciseQuery,
   PaginatedResult,
   Exercise,
-} from './exercise.types.js';
+} from "./exercise.types.js";
 
-export async function getAll(userId: string, query: ExerciseQuery): Promise<PaginatedResult<Exercise>> {
-  return listExercises(userId, query);
+const ERROR_NOT_FOUND = "EXERCISE_NOT_FOUND";
+const ERROR_FORBIDDEN = "EXERCISE_FORBIDDEN";
+const ERROR_DUPLICATE = "EXERCISE_DUPLICATE";
+const ERROR_INVALID_TYPE = "EXERCISE_INVALID_TYPE";
+
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase();
 }
 
-export async function getOne(id: string, userId: string) {
-  const ex = await getExercise(id, userId);
-  if (!ex) throw Object.assign(new Error('Exercise not found'), { status: 404 });
-  return ex;
+function sanitizeNullable(value?: string | null): string | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+}
+
+function sanitizeTags(tags?: string[]): string[] {
+  if (!tags) {
+    return [];
+  }
+  const unique = new Set<string>();
+  for (const tag of tags) {
+    const trimmed = tag.trim().toLowerCase();
+    if (trimmed) {
+      unique.add(trimmed);
+    }
+  }
+  return Array.from(unique).slice(0, 25);
+}
+
+type ExerciseTypeRow = {
+  code: string;
+};
+
+async function ensureTypeExists(typeCode: string) {
+  const trimmed = typeCode.trim();
+  const type = await db<ExerciseTypeRow>("exercise_types").where({ code: trimmed }).first();
+  if (!type) {
+    throw new HttpError(400, ERROR_INVALID_TYPE, "Invalid exercise type");
+  }
+}
+
+async function ensureNameUnique(ownerId: string | null, name: string, excludeId?: string) {
+  const normalized = normalizeName(name);
+  const query = db<Exercise>("exercises")
+    .whereRaw("LOWER(name) = ?", [normalized])
+    .andWhere((builder) => {
+      if (ownerId === null) {
+        builder.whereNull("owner_id");
+      } else {
+        builder.where("owner_id", ownerId);
+      }
+    })
+    .whereNull("archived_at");
+
+  if (excludeId) {
+    query.andWhereNot({ id: excludeId });
+  }
+
+  const existing = await query.first<Exercise>();
+  if (existing) {
+    throw new HttpError(409, ERROR_DUPLICATE, "Exercise name already exists in this library scope");
+  }
+}
+
+export async function getAll(
+  userId: string,
+  query: ExerciseQuery,
+  isAdmin = false,
+): Promise<PaginatedResult<Exercise>> {
+  return listExercises(userId, query, isAdmin);
+}
+
+export async function getOne(id: string, userId: string, isAdmin = false) {
+  const exercise = isAdmin ? await getExerciseRaw(id) : await getExercise(id, userId);
+  if (!exercise || (!isAdmin && exercise.owner_id && exercise.owner_id !== userId)) {
+    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+  }
+  if (!isAdmin && exercise.archived_at) {
+    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+  }
+  return exercise;
 }
 
 export async function createOne(userId: string, dto: CreateExerciseDTO, isAdmin = false) {
-  const validType = await db('exercise_types').where({ code: dto.type_code }).first();
-  if (!validType) throw Object.assign(new Error('Invalid exercise type'), { status: 400 });
+  if (!isAdmin) {
+    if (dto.owner_id && dto.owner_id !== userId) {
+      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot assign exercises to another user");
+    }
+    if (dto.owner_id === null) {
+      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot create global exercises");
+    }
+  }
+
+  await ensureTypeExists(dto.type_code);
+
+  const resolvedOwnerId = isAdmin ? (dto.owner_id === undefined ? null : dto.owner_id) : userId;
+
+  await ensureNameUnique(resolvedOwnerId, dto.name);
 
   const exercise: Exercise = {
     id: uuidv4(),
-    name: dto.name,
-    type_code: dto.type_code,
-    owner_user_id: isAdmin ? (dto.owner_user_id ?? null) : userId,
-    default_metrics: dto.default_metrics || {},
-    is_archived: false,
+    name: dto.name.trim(),
+    type_code: dto.type_code.trim(),
+    owner_id: resolvedOwnerId,
+    muscle_group: sanitizeNullable(dto.muscle_group),
+    equipment: sanitizeNullable(dto.equipment),
+    tags: sanitizeTags(dto.tags),
+    is_public: dto.is_public ?? (resolvedOwnerId === null ? true : false),
+    description_en: sanitizeNullable(dto.description_en),
+    description_de: sanitizeNullable(dto.description_de),
+    archived_at: null,
   };
 
   await createExercise(exercise);
-  // if admin created global or for another user, fetch raw; else user-scoped
-  const fetchRaw = isAdmin && (exercise.owner_user_id === null || exercise.owner_user_id !== userId);
-  return fetchRaw ? getExerciseRaw(exercise.id) : getExercise(exercise.id, userId);
+
+  let created: Exercise | undefined;
+  if (isAdmin && resolvedOwnerId !== null && resolvedOwnerId !== userId) {
+    created = await getExerciseRaw(exercise.id);
+  } else {
+    const scopeId = resolvedOwnerId ?? userId;
+    created = await getExercise(exercise.id, scopeId);
+  }
+
+  if (!created) {
+    throw new HttpError(500, "EXERCISE_CREATE_FAILED", "Unable to load created exercise");
+  }
+
+  return created;
 }
 
-export async function updateOne(id: string, userId: string, dto: UpdateExerciseDTO, isAdmin = false) {
-  const rec = await getExerciseRaw(id);
-  if (!rec) throw Object.assign(new Error('Exercise not found'), { status: 404 });
-  const ownerId = rec.owner_user_id as string | null;
-  // allow admin to override ownership; only forbid when NOT admin and not owner
-  if (ownerId && ownerId !== userId && !isAdmin) {
-    throw Object.assign(new Error('Forbidden'), { status: 403 });
+export async function updateOne(
+  id: string,
+  userId: string,
+  dto: UpdateExerciseDTO,
+  isAdmin = false,
+) {
+  const existing = await getExerciseRaw(id);
+  if (!existing) {
+    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
   }
-  // global (owner null) requires admin to modify
-  if (!ownerId && !isAdmin) {
-    throw Object.assign(new Error('Forbidden'), { status: 403 });
+
+  const ownerId = existing.owner_id ?? null;
+  if (!isAdmin) {
+    if (ownerId === null || ownerId !== userId) {
+      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot update this exercise");
+    }
   }
+
   if (dto.type_code) {
-    const validType = await db('exercise_types').where({ code: dto.type_code }).first();
-      if (!validType) throw Object.assign(new Error('Invalid exercise type'), { status: 400 });
+    await ensureTypeExists(dto.type_code);
   }
-  const affected = await updateExercise(id, dto);
-  if (affected === 0) throw Object.assign(new Error('Exercise not found'), { status: 404 });
-  // admin may be updating global; fetch with or without user scope
-  return isAdmin ? getExerciseRaw(id) : getExercise(id, userId);
+
+  if (dto.name) {
+    await ensureNameUnique(ownerId, dto.name, id);
+  }
+
+  const updates: Partial<Exercise> = {};
+  if (dto.name !== undefined) {
+    updates.name = dto.name.trim();
+  }
+  if (dto.type_code !== undefined) {
+    updates.type_code = dto.type_code.trim();
+  }
+  if (dto.muscle_group !== undefined) {
+    updates.muscle_group = sanitizeNullable(dto.muscle_group);
+  }
+  if (dto.equipment !== undefined) {
+    updates.equipment = sanitizeNullable(dto.equipment);
+  }
+  if (dto.tags !== undefined) {
+    updates.tags = sanitizeTags(dto.tags);
+  }
+  if (dto.is_public !== undefined) {
+    updates.is_public = dto.is_public;
+  }
+  if (dto.description_en !== undefined) {
+    updates.description_en = sanitizeNullable(dto.description_en);
+  }
+  if (dto.description_de !== undefined) {
+    updates.description_de = sanitizeNullable(dto.description_de);
+  }
+
+  const affected = await updateExercise(id, updates);
+  if (affected === 0) {
+    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+  }
+
+  if (isAdmin) {
+    const refreshed = await getExerciseRaw(id);
+    if (!refreshed) {
+      throw new HttpError(500, "EXERCISE_REFRESH_FAILED", "Unable to load updated exercise");
+    }
+    return refreshed;
+  }
+
+  const refreshed = await getExercise(id, userId);
+  if (!refreshed) {
+    throw new HttpError(500, "EXERCISE_REFRESH_FAILED", "Unable to load updated exercise");
+  }
+  return refreshed;
 }
 
 export async function archiveOne(id: string, userId: string, isAdmin = false) {
-  const rec = await getExerciseRaw(id);
-  if (!rec) throw Object.assign(new Error('Exercise not found'), { status: 404 });
-  const ownerId = rec.owner_user_id as string | null;
-  if (ownerId && ownerId !== userId && !isAdmin) {
-    throw Object.assign(new Error('Forbidden'), { status: 403 });
+  const existing = await getExerciseRaw(id);
+  if (!existing) {
+    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
   }
-  if (!ownerId && !isAdmin) {
-    throw Object.assign(new Error('Forbidden'), { status: 403 });
+
+  const ownerId = existing.owner_id ?? null;
+  if (!isAdmin) {
+    if (ownerId === null || ownerId !== userId) {
+      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot archive this exercise");
+    }
   }
+
   const affected = await archiveExercise(id);
-  if (affected === 0) throw Object.assign(new Error('Exercise not found'), { status: 404 });
+  if (affected === 0) {
+    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+  }
 }

@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const AUDIT_TABLE = "audit_log";
 const AUDIT_ACTOR_INDEX = "audit_log_actor_created_idx";

@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const USER_METRICS_INDEX = "user_metrics_user_id_recorded_at_idx";
 
@@ -38,4 +38,3 @@ export async function down(knex: Knex): Promise<void> {
   });
   await knex.schema.dropTableIfExists("user_metrics");
 }
-

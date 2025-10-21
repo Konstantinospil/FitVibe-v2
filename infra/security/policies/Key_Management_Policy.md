@@ -1,10 +1,11 @@
-# 🔑 FitVibe – Key Management & Rotation Policy
-
-> **Version:** 1.0  
-> **Last Updated:** 2025-10-06  
-> **Maintainer:** Konstantinos Pilpilidis (FitVibe Development Lead)  
-> **Contact:** security@fitvibe.dev
-
+---
+title: "FitVibe Key Management Policy"
+version: "v.1"
+status: "Accepted"
+owner: "Konstantinos Pilpilidis (Dr.)"
+date: "2025-10-18"
+license: "MIT"
+contact: "kpilpilidis@gmail.com"
 ---
 
 ## 🔐 1. Purpose
@@ -16,6 +17,7 @@ This policy defines how **FitVibe** manages, rotates, and retires cryptographic 
 ## 🧭 2. Scope
 
 Applies to the following key types:
+
 - **JWT signing keys** (RSA 4096-bit or ECDSA P-256)
 - **Database encryption keys** (AES-256)
 - **Transport Layer Security (TLS) certificates**
@@ -41,11 +43,11 @@ Applies to the following key types:
 
 ## ⏱️ 4. Rotation Frequency
 
-| Key Type | Rotation Interval | Method |
-|-----------|------------------|---------|
-| JWT signing key | Every **14 days** | Automated, JWKS updated |
-| TLS certificate | Every **90 days** | Auto-renew via Let’s Encrypt |
-| DB encryption key | Every **6 months** | Re-encrypt inactive data |
+| Key Type               | Rotation Interval  | Method                       |
+| ---------------------- | ------------------ | ---------------------------- |
+| JWT signing key        | Every **14 days**  | Automated, JWKS updated      |
+| TLS certificate        | Every **90 days**  | Auto-renew via Let’s Encrypt |
+| DB encryption key      | Every **6 months** | Re-encrypt inactive data     |
 | Infrastructure secrets | Every **3 months** | Manual rotation & validation |
 
 Prometheus alerts trigger if JWT key age > **14 days** or rotation fails.
@@ -54,12 +56,12 @@ Prometheus alerts trigger if JWT key age > **14 days** or rotation fails.
 
 ## 🔄 5. Rotation Process
 
-1. Generate new key pair  
-2. Publish updated JWKS at `/.well-known/jwks.json`  
-3. Mark previous key as *deprecated* (valid for 24 h overlap)  
-4. Revoke and archive old key (`archive/YYYY-MM-DD/`)  
-5. Verify new key usage for all services  
-6. Log rotation event (`audit.security.rotation`)  
+1. Generate new key pair
+2. Publish updated JWKS at `/.well-known/jwks.json`
+3. Mark previous key as _deprecated_ (valid for 24 h overlap)
+4. Revoke and archive old key (`archive/YYYY-MM-DD/`)
+5. Verify new key usage for all services
+6. Log rotation event (`audit.security.rotation`)
 
 Automated by `infra/scripts/rotate_keys.sh`.
 
@@ -78,6 +80,7 @@ Automated by `infra/scripts/rotate_keys.sh`.
 ## 🚨 7. Revocation & Compromise Handling
 
 If compromise is suspected:
+
 1. Revoke key in JWKS (flag `revoked=true`)
 2. Invalidate all active sessions signed by the key
 3. Generate and deploy new key pair
@@ -96,11 +99,11 @@ If compromise is suspected:
 
 ## 📚 9. References
 
-- **PRD §6.13** – Security & Compliance  
-- **TDD §10** – Authentication & Security Layer  
-- **QA Plan §12** – Security Testing & Key Lifecycle  
+- **PRD §6.13** – Security & Compliance
+- **TDD §10** – Authentication & Security Layer
+- **QA Plan §12** – Security Testing & Key Lifecycle
 - **FitVibe SECURITY.md** – Overall Security Policy
 
 ---
 
-*© 2025 FitVibe Development – All Rights Reserved.*
+_© 2025 FitVibe Development – All Rights Reserved._

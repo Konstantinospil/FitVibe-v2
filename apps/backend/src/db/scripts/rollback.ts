@@ -1,16 +1,18 @@
 import db from "../index.js";
+import { logger } from "../../config/logger.js";
+import { toErrorPayload } from "../../utils/error.utils.js";
 
 async function main(): Promise<void> {
   try {
-    console.log("[db] Rolling back migrations...");
+    logger.info("[db] Rolling back migrations...");
     await db.migrate.rollback(undefined, true);
-    console.log("[db] Rollback complete.");
+    logger.info("[db] Rollback complete.");
   } finally {
     await db.destroy();
   }
 }
 
-main().catch((error) => {
-  console.error("Database rollback failed", error);
+main().catch((error: unknown) => {
+  logger.error(toErrorPayload(error), "Database rollback failed");
   process.exit(1);
 });

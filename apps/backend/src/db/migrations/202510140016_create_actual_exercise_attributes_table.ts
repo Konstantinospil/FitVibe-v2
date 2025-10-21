@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("actual_exercise_attributes", (table) => {
@@ -18,10 +18,7 @@ export async function up(knex: Knex): Promise<void> {
     table.specificType("duration", "interval").nullable();
     table.integer("rpe").nullable();
     table.specificType("rest", "interval").nullable();
-    table
-      .jsonb("extras")
-      .notNullable()
-      .defaultTo(knex.raw("'{}'::jsonb"));
+    table.jsonb("extras").notNullable().defaultTo(knex.raw("'{}'::jsonb"));
     table.timestamp("recorded_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
   });
 }
@@ -29,4 +26,3 @@ export async function up(knex: Knex): Promise<void> {
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("actual_exercise_attributes");
 }
-

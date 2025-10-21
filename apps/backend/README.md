@@ -18,12 +18,12 @@ cp apps/backend/.env.example apps/backend/.env
 
 Key variables:
 
-| Variable                  | Purpose                                        |
-| ------------------------- | ---------------------------------------------- |
-| `DATABASE_URL` or `PG*`   | Connection string or discrete connection parts |
-| `JWT_PRIVATE_KEY_PATH`    | RSA private key for signing tokens             |
-| `JWT_PUBLIC_KEY_PATH`     | RSA public key for verification                |
-| `CSRF_ENABLED`            | Toggle CSRF protection (defaults to false)     |
+| Variable                | Purpose                                        |
+| ----------------------- | ---------------------------------------------- |
+| `DATABASE_URL` or `PG*` | Connection string or discrete connection parts |
+| `JWT_PRIVATE_KEY_PATH`  | RSA private key for signing tokens             |
+| `JWT_PUBLIC_KEY_PATH`   | RSA public key for verification                |
+| `CSRF_ENABLED`          | Toggle CSRF protection (defaults to false)     |
 
 ## Scripts
 

@@ -1,10 +1,11 @@
 import { spawnSync } from "child_process";
+import { logger } from "../../config/logger.js";
 import { DB_CONFIG } from "../db.config.js";
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 const file = `backup_${DB_CONFIG.database}_${timestamp}.sql`;
 
-console.log(`Creating database backup: ${file}`);
+logger.info(`Creating database backup: ${file}`);
 
 const result = spawnSync(
   "pg_dump",
@@ -21,8 +22,8 @@ const result = spawnSync(
 );
 
 if ((result.status ?? 1) === 0) {
-  console.log("Backup completed successfully.");
+  logger.info("Backup completed successfully.");
 } else {
-  console.error("Backup failed.");
+  logger.error("Backup failed.");
   process.exit(result.status ?? 1);
 }

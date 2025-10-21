@@ -1,49 +1,53 @@
-export interface MetricTargets {
-  reps?: number;
-  weight?: number;
-  duration_sec?: number;
-  distance?: number;
-}
-export type MetricUnit = 'kg' | 'lb' | 'km' | 'mi' | 'sec' | 'min';
-export type MetricMeasure = 'weight' | 'reps' | 'duration' | 'distance' | 'rpe';
-export interface MetricSpec {
-  unit?: MetricUnit;
-  measure?: MetricMeasure;
-  targets?: MetricTargets;
-}
-
 export interface Exercise {
   id: string;
   name: string;
-  type_code: string;
-  owner_user_id?: string | null;
-  default_metrics?: MetricSpec;
-  is_archived?: boolean;
+  type_code: string | null;
+  owner_id: string | null;
+  muscle_group: string | null;
+  equipment: string | null;
+  tags: string[];
+  is_public: boolean;
+  description_en: string | null;
+  description_de: string | null;
   created_at?: string;
   updated_at?: string;
+  archived_at?: string | null;
 }
 
 export interface CreateExerciseDTO {
   name: string;
   type_code: string;
-  default_metrics?: Partial<MetricSpec>;
-  owner_user_id?: string | null; // admin may specify; normal users ignored
+  muscle_group?: string | null;
+  equipment?: string | null;
+  tags?: string[];
+  is_public?: boolean;
+  description_en?: string | null;
+  description_de?: string | null;
+  owner_id?: string | null; // admin may set to specific user or null for global
 }
 
 export interface UpdateExerciseDTO {
   name?: string;
   type_code?: string;
-  default_metrics?: Partial<MetricSpec>;
+  muscle_group?: string | null;
+  equipment?: string | null;
+  tags?: string[];
+  is_public?: boolean;
+  description_en?: string | null;
+  description_de?: string | null;
 }
 
 export interface ExerciseQuery {
-  search?: string;
+  q?: string;
   type_code?: string;
   include_archived?: boolean;
   limit?: number;
   offset?: number;
-  owner_user_id?: string | null; // admin may specify; normal users ignored
-
+  owner_id?: string | null;
+  muscle_group?: string;
+  equipment?: string;
+  tags?: string[];
+  is_public?: boolean;
 }
 
 export interface PaginatedResult<T> {

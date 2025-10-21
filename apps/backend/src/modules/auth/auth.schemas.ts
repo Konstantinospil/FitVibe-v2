@@ -15,7 +15,10 @@ export const RegisterSchema = z.object({
     .string()
     .min(3)
     .max(50)
-    .regex(/^[a-zA-Z0-9_\-.]+$/, "Username may only contain letters, numbers, underscores, dots, or dashes"),
+    .regex(
+      /^[a-zA-Z0-9_\-.]+$/,
+      "Username may only contain letters, numbers, underscores, dots, or dashes",
+    ),
   password: passwordPolicy,
   profile: z
     .object({
@@ -48,11 +51,11 @@ export const RevokeSessionsSchema = z
     revokeAll: z.boolean().optional(),
     revokeOthers: z.boolean().optional(),
   })
-  .refine(
-    (data) => Boolean(data.sessionId || data.revokeAll || data.revokeOthers),
-    { message: "Provide sessionId or revoke scope", path: ["sessionId"] },
-  )
-  .refine(
-    (data) => !(data.revokeAll && data.revokeOthers),
-    { message: "Cannot combine revokeAll and revokeOthers", path: ["revokeAll"] },
-  );
+  .refine((data) => Boolean(data.sessionId || data.revokeAll || data.revokeOthers), {
+    message: "Provide sessionId or revoke scope",
+    path: ["sessionId"],
+  })
+  .refine((data) => !(data.revokeAll && data.revokeOthers), {
+    message: "Cannot combine revokeAll and revokeOthers",
+    path: ["revokeAll"],
+  });

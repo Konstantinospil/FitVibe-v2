@@ -3,6 +3,7 @@ import { z } from "zod";
 import fs from "node:fs";
 import path from "node:path";
 import { createHash, generateKeyPairSync, createPublicKey } from "node:crypto";
+import { logger } from "./logger.js";
 
 loadEnv();
 
@@ -44,12 +45,19 @@ const EnvSchema = z.object({
 const raw = EnvSchema.parse(process.env);
 
 const parseBoolean = (value: string | undefined, fallback: boolean): boolean => {
-  if (value === undefined) return fallback;
+  if (value === undefined) {
+    return fallback;
+  }
   return TRUE_VALUES.has(value.trim().toLowerCase());
 };
 
 const parseList = (value: string | undefined): string[] =>
-  value ? value.split(",").map((entry) => entry.trim()).filter(Boolean) : [];
+  value
+    ? value
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    : [];
 
 const normalizeKey = (value?: string) => value?.replace(/\\n/g, "\n").trim();
 
@@ -71,21 +79,26 @@ if (!publicKey && raw.JWT_PUBLIC_KEY_PATH) {
 }
 
 if (!privateKey || !publicKey) {
-  const { privateKey: generatedPrivateKey, publicKey: generatedPublicKey } = generateKeyPairSync("rsa", {
-    modulusLength: 2048,
-  });
+  const { privateKey: generatedPrivateKey, publicKey: generatedPublicKey } = generateKeyPairSync(
+    "rsa",
+    {
+      modulusLength: 2048,
+    },
+  );
   if (!privateKey) {
     privateKey = generatedPrivateKey.export({ type: "pkcs1", format: "pem" }).toString();
-    console.warn("[env] JWT_PRIVATE_KEY not provided; generated ephemeral development key.");
+    logger.warn("[env] JWT_PRIVATE_KEY not provided; generated ephemeral development key.");
   }
   if (!publicKey) {
     publicKey = generatedPublicKey.export({ type: "pkcs1", format: "pem" }).toString();
-    console.warn("[env] JWT_PUBLIC_KEY not provided; generated ephemeral development key.");
+    logger.warn("[env] JWT_PUBLIC_KEY not provided; generated ephemeral development key.");
   }
 }
 
 if (!privateKey || !publicKey) {
-  throw new Error("Unable to resolve RSA key pair for JWT signing. Please set JWT_PRIVATE_KEY/JWT_PUBLIC_KEY.");
+  throw new Error(
+    "Unable to resolve RSA key pair for JWT signing. Please set JWT_PRIVATE_KEY/JWT_PUBLIC_KEY.",
+  );
 }
 
 const allowedOrigins = parseList(raw.ALLOWED_ORIGINS);
@@ -128,13 +141,13 @@ export const env = {
 } as const;
 
 export const RSA_KEYS = {
-  privateKey: privateKey!,
-  publicKey: publicKey!,
+  privateKey: privateKey,
+  publicKey: publicKey,
 };
 
-const publicKeyObject = createPublicKey(publicKey!);
+const publicKeyObject = createPublicKey(publicKey);
 const jwk = publicKeyObject.export({ format: "jwk" }) as JsonWebKey;
-const kid = createHash("sha256").update(publicKey!).digest("base64url").slice(0, 16);
+const kid = createHash("sha256").update(publicKey).digest("base64url").slice(0, 16);
 
 export const JWKS = {
   keys: [

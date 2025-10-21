@@ -1,16 +1,23 @@
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import morgan from "morgan";
 
 import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 const stream: morgan.StreamOptions = {
   write: (message: string) => {
     const trimmed = message.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      return;
+    }
 
     try {
-      const payload = JSON.parse(trimmed);
+      const parsed = JSON.parse(trimmed) as unknown;
+      const payload = isRecord(parsed) ? parsed : { message: parsed, raw: parsed };
       logger.info(payload, "http_request");
     } catch {
       logger.info({ message: trimmed }, "http_request");
@@ -18,8 +25,10 @@ const stream: morgan.StreamOptions = {
   },
 };
 
-const skip: morgan.SkipFunction = (req, _res) => {
-  if (env.NODE_ENV === "test") return true;
+const skip: (req: Request, res: Response) => boolean = (req, _res) => {
+  if (env.NODE_ENV === "test") {
+    return true;
+  }
   const route = req.originalUrl.split("?")[0];
   return route === "/health" || route === "/metrics";
 };

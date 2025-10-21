@@ -4,16 +4,16 @@ This workspace is the single source of truth for product requirements, technical
 
 ## Directory Overview
 
-| Path                                | Purpose                                                |
-| ----------------------------------- | ------------------------------------------------------ |
-| `1. Product Requirements Document.md` | Business goals, user journeys, and feature scope      |
-| `2. Technical Design Document.md`     | System architecture, data flows, and integration plans |
-| `3. Testing and Quality Assurance Plan.md` | Test strategy, quality gates, and release criteria |
-| `4. Tasks.md`                         | Work breakdown and delivery tracking                   |
-| `adr/`                                | Architecture Decision Records                          |
-| `diagrams/`                           | Mermaid diagrams referenced by the PRD and TDD         |
-| `policies/`                           | Governance artefacts (security, compliance, etc.)      |
-| `project-structure.md`                | Canonical filesystem blueprint for the repository      |
+| Path                                       | Purpose                                                |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `1. Product Requirements Document.md`      | Business goals, user journeys, and feature scope       |
+| `2. Technical Design Document.md`          | System architecture, data flows, and integration plans |
+| `3. Testing and Quality Assurance Plan.md` | Test strategy, quality gates, and release criteria     |
+| `4. Tasks.md`                              | Work breakdown and delivery tracking                   |
+| `adr/`                                     | Architecture Decision Records                          |
+| `diagrams/`                                | Mermaid diagrams referenced by the PRD and TDD         |
+| `policies/`                                | Governance artefacts (security, compliance, etc.)      |
+| `project-structure.md`                     | Canonical filesystem blueprint for the repository      |
 
 ## Working With the Docs
 

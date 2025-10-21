@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const PRIMARY_CONTACT_INDEX = "user_contacts_primary_unique";
 
@@ -32,4 +32,3 @@ export async function down(knex: Knex): Promise<void> {
   await knex.raw(`DROP INDEX IF EXISTS ${PRIMARY_CONTACT_INDEX};`);
   await knex.schema.dropTableIfExists("user_contacts");
 }
-

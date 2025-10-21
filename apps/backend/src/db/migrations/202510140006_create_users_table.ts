@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("users", (table) => {
@@ -8,7 +8,13 @@ export async function up(knex: Knex): Promise<void> {
     table.string("locale").notNullable().defaultTo("en-US");
     table.string("preferred_lang").notNullable().defaultTo("en");
     table.string("status").notNullable().defaultTo("active");
-    table.string("role_code").notNullable().references("code").inTable("roles").onUpdate("CASCADE").onDelete("RESTRICT");
+    table
+      .string("role_code")
+      .notNullable()
+      .references("code")
+      .inTable("roles")
+      .onUpdate("CASCADE")
+      .onDelete("RESTRICT");
     table.string("password_hash").notNullable();
     table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
     table.timestamp("updated_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
@@ -19,4 +25,3 @@ export async function up(knex: Knex): Promise<void> {
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("users");
 }
-

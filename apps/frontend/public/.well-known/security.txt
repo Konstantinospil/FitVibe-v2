@@ -1,0 +1,9 @@
+# security.txt for FitVibe (RFC 9116)
+Contact: mailto:kpilpilidis@gmail.com
+Preferred-Languages: en, de
+# Replace the placeholders below with your live URLs when available:
+Policy: https://REPLACE_WITH_YOUR_DOMAIN/SECURITY.md
+Encryption: https://REPLACE_WITH_YOUR_DOMAIN/infra/security/pgp/fitvibe.asc
+Acknowledgments: https://REPLACE_WITH_YOUR_DOMAIN/security/acknowledgments
+Canonical: https://REPLACE_WITH_YOUR_DOMAIN/.well-known/security.txt
+Expires: 2026-10-18T06:45:46+00:00

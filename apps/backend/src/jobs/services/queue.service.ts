@@ -1,1 +1,14 @@
-export interface QueueJob {\n  name: string;\n  payload: Record<string, unknown>;\n}\n\nexport class QueueService {\n  enqueue(_job: QueueJob): void {\n    // TODO: implement queue producer\n  }\n\n  async process(): Promise<void> {\n    // TODO: implement queue consumer\n  }\n}\n
+export interface QueueJob {
+  name: string;
+  payload: Record<string, unknown>;
+}
+
+export class QueueService {
+  enqueue(_job: QueueJob): void {
+    // TODO: implement queue producer
+  }
+
+  async process(): Promise<void> {
+    // TODO: implement queue consumer
+  }
+}

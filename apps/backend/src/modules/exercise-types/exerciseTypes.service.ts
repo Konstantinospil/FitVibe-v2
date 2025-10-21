@@ -1,5 +1,12 @@
-import { listExerciseTypes, getExerciseType, getTranslatedExerciseTypes, createExerciseType, updateExerciseType, deleteExerciseType } from './exerciseTypes.repository.js';
-import { ExerciseType } from './exerciseTypes.types.js';
+import {
+  listExerciseTypes,
+  getExerciseType,
+  getTranslatedExerciseTypes,
+  createExerciseType,
+  updateExerciseType,
+  deleteExerciseType,
+} from "./exerciseTypes.repository.js";
+import type { ExerciseType } from "./exerciseTypes.types.js";
 import NodeCache from "node-cache";
 import { env } from "../../config/env.js";
 import { insertAudit } from "../common/audit.util.js";
@@ -8,18 +15,20 @@ const cache = new NodeCache({ stdTTL: env.typesCacheTtl });
 
 function invalidateTypesCache() {
   for (const k of cache.keys()) {
-    if (k.startsWith('types_')) cache.del(k);
+    if (k.startsWith("types_")) {
+      cache.del(k);
+    }
   }
 }
 
-export async function getAllTypes(locale?: string) {
-  const key = locale ? `types_${locale}` : 'types_default';
-  const cached = cache.get(key);
-  if (cached) return cached;
+export async function getAllTypes(locale?: string): Promise<ExerciseType[]> {
+  const key = locale ? `types_${locale}` : "types_default";
+  const cached = cache.get<ExerciseType[]>(key);
+  if (cached) {
+    return cached;
+  }
 
-  const types = locale
-    ? await getTranslatedExerciseTypes(locale)
-    : await listExerciseTypes();
+  const types = locale ? await getTranslatedExerciseTypes(locale) : await listExerciseTypes();
 
   cache.set(key, types);
   return types;
@@ -27,13 +36,20 @@ export async function getAllTypes(locale?: string) {
 
 export async function getOneType(code: string): Promise<ExerciseType | null> {
   const type = await getExerciseType(code);
-  if (!type) return null;
+  if (!type) {
+    return null;
+  }
   return type;
 }
 
-export async function addType(dto: ExerciseType, userId?: string) {
+export async function addType(
+  dto: ExerciseType,
+  userId?: string,
+): Promise<ExerciseType | undefined> {
   const exists = await getExerciseType(dto.code);
-  if (exists) throw Object.assign(new Error('Type code already exists'), { status: 409 });
+  if (exists) {
+    throw Object.assign(new Error("Type code already exists"), { status: 409 });
+  }
   await createExerciseType(dto);
   invalidateTypesCache();
   if (userId) {
@@ -48,9 +64,15 @@ export async function addType(dto: ExerciseType, userId?: string) {
   return getExerciseType(dto.code);
 }
 
-export async function editType(code: string, updates: Partial<ExerciseType>, userId?: string) {
+export async function editType(
+  code: string,
+  updates: Partial<ExerciseType>,
+  userId?: string,
+): Promise<ExerciseType | undefined> {
   const existing = await getExerciseType(code);
-  if (!existing) throw Object.assign(new Error('Exercise type not found'), { status: 404 });
+  if (!existing) {
+    throw Object.assign(new Error("Exercise type not found"), { status: 404 });
+  }
   await updateExerciseType(code, updates);
   invalidateTypesCache();
   if (userId) {
@@ -65,9 +87,11 @@ export async function editType(code: string, updates: Partial<ExerciseType>, use
   return getExerciseType(code);
 }
 
-export async function removeType(code: string, userId?: string) {
+export async function removeType(code: string, userId?: string): Promise<void> {
   const existing = await getExerciseType(code);
-  if (!existing) throw Object.assign(new Error('Exercise type not found'), { status: 404 });
+  if (!existing) {
+    throw Object.assign(new Error("Exercise type not found"), { status: 404 });
+  }
   invalidateTypesCache();
   await deleteExerciseType(code);
   if (userId) {

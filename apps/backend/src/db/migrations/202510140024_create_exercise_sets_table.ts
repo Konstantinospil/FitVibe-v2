@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const TABLE = "exercise_sets";
 const IDX_SESSION_SET = "idx_exercise_sets_session";
@@ -28,9 +28,7 @@ export async function up(knex: Knex): Promise<void> {
     table.unique(["session_exercise_id", "order_index"]);
   });
 
-  await knex.raw(
-    `CREATE INDEX IF NOT EXISTS ${IDX_SESSION_SET} ON ${TABLE}(session_exercise_id);`,
-  );
+  await knex.raw(`CREATE INDEX IF NOT EXISTS ${IDX_SESSION_SET} ON ${TABLE}(session_exercise_id);`);
   await knex.raw(
     `CREATE INDEX IF NOT EXISTS ${IDX_ORDER} ON ${TABLE}(session_exercise_id, order_index);`,
   );

@@ -1,29 +1,28 @@
 {
-    "extends":  "../../tsconfig.json",
-    "compilerOptions":  {
-                            "target":  "ES2022",
-                            "module":  "commonjs",
-                            "rootDir":  "src",
-                            "outDir":  "dist",
-                            "strict":  true,
-                            "esModuleInterop":  true,
-                            "skipLibCheck":  true,
-                            "resolveJsonModule":  true,
-                            "types":  [
-                                          "node",
-                                          "jest"
-                                      ]
-                        },
-    "include":  [
-                    "src/*.ts",
-                    "src/config/**/*.ts",
-                    "src/db/**/*.ts",
-                    "src/middlewares/**/*.ts",
-                    "src/observability/**/*.ts",
-                    "src/api/**/*.ts",
-                    "src/services/**/*.ts",
-                    "src/utils/**/*.ts",
-                    "src/modules/**/*.ts",
-                    "src/jobs/**/*.ts"
-                ]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
+  },
+  "include": [
+    "src/*.ts",
+    "src/config/**/*.ts",
+    "src/db/**/*.ts",
+    "src/middlewares/**/*.ts",
+    "src/observability/**/*.ts",
+    "src/api/**/*.ts",
+    "src/services/**/*.ts",
+    "src/utils/**/*.ts",
+    "src/modules/**/*.ts",
+    "src/modules/**/*.d.ts",
+    "src/jobs/**/*.ts",
+    "src/types/**/*.d.ts"
+  ]
 }

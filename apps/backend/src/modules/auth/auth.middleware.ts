@@ -1,13 +1,17 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { env, RSA_KEYS } from "../../config/env.js";
+import type { NextFunction, Request, Response } from "express";
+
+import { env } from "../../config/env.js";
 import { HttpError } from "../../utils/http.js";
-import type { JwtPayload } from "./auth.types.js";
+import { verifyAccess } from "../../services/tokens.js";
 
 function bearerToken(header?: string | null): string | null {
-  if (!header) return null;
+  if (!header) {
+    return null;
+  }
   const [scheme, value] = header.split(" ");
-  if (!value || scheme.toLowerCase() !== "bearer") return null;
+  if (!value || scheme.toLowerCase() !== "bearer") {
+    return null;
+  }
   return value;
 }
 
@@ -20,12 +24,10 @@ export function requireAccessToken(req: Request, _res: Response, next: NextFunct
   }
 
   try {
-    const payload = jwt.verify(token, RSA_KEYS.publicKey, {
-      algorithms: ["RS256"],
-    }) as JwtPayload;
-    (req as any).user = payload;
+    const payload = verifyAccess(token);
+    req.user = payload;
     return next();
-  } catch (error) {
+  } catch {
     return next(new HttpError(401, "UNAUTHENTICATED", "Invalid or expired access token"));
   }
 }

@@ -21,41 +21,50 @@ import {
   RevokeSessionsSchema,
 } from "./auth.schemas.js";
 import { requireAccessToken } from "./auth.middleware.js";
+import { asyncHandler } from "../../utils/async-handler.js";
 
 export const authRouter = Router();
 
-authRouter.post("/register", rateLimit("auth_register", 10, 60), validate(RegisterSchema), register);
-authRouter.get("/verify", rateLimit("auth_verify", 60, 60), verifyEmail);
-authRouter.post("/login", rateLimit("auth_login", 10, 60), validate(LoginSchema), login);
-authRouter.post("/refresh", rateLimit("auth_refresh", 60, 60), refresh);
-authRouter.post("/logout", rateLimit("auth_logout", 60, 60), logout);
+authRouter.post(
+  "/register",
+  rateLimit("auth_register", 10, 60),
+  validate(RegisterSchema),
+  asyncHandler(register),
+);
+authRouter.get("/verify", rateLimit("auth_verify", 60, 60), asyncHandler(verifyEmail));
+authRouter.post(
+  "/login",
+  rateLimit("auth_login", 10, 60),
+  validate(LoginSchema),
+  asyncHandler(login),
+);
+authRouter.post("/refresh", rateLimit("auth_refresh", 60, 60), asyncHandler(refresh));
+authRouter.post("/logout", rateLimit("auth_logout", 60, 60), asyncHandler(logout));
 authRouter.post(
   "/password/forgot",
   rateLimit("auth_pw_forgot", 5, 60),
   validate(ForgotPasswordSchema),
-  forgotPassword,
+  asyncHandler(forgotPassword),
 );
 authRouter.post(
   "/password/reset",
   rateLimit("auth_pw_reset", 5, 60),
   validate(ResetPasswordSchema),
-  resetPassword,
+  asyncHandler(resetPassword),
 );
 
 authRouter.get(
   "/sessions",
   rateLimit("auth_sessions", 60, 60),
   requireAccessToken,
-  listSessions,
+  asyncHandler(listSessions),
 );
 authRouter.post(
   "/sessions/revoke",
   rateLimit("auth_sessions_revoke", 10, 60),
   requireAccessToken,
   validate(RevokeSessionsSchema),
-  revokeSessions,
+  asyncHandler(revokeSessions),
 );
 
-authRouter.get("/jwks", jwksHandler);
-
-
+authRouter.get("/jwks", asyncHandler(jwksHandler));

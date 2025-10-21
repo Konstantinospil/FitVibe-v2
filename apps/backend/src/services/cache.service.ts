@@ -1,1 +1,19 @@
-export class CacheService {\n  private store = new Map<string, unknown>();\n\n  get<T>(key: string): T | undefined {\n    return this.store.get(key) as T | undefined;\n  }\n\n  set<T>(key: string, value: T): void {\n    this.store.set(key, value);\n  }\n\n  delete(key: string): void {\n    this.store.delete(key);\n  }\n\n  clear(): void {\n    this.store.clear();\n  }\n}\n
+export class CacheService {
+  private store = new Map<string, unknown>();
+
+  get<T>(key: string): T | undefined {
+    return this.store.get(key) as T | undefined;
+  }
+
+  set<T>(key: string, value: T): void {
+    this.store.set(key, value);
+  }
+
+  delete(key: string): void {
+    this.store.delete(key);
+  }
+
+  clear(): void {
+    this.store.clear();
+  }
+}

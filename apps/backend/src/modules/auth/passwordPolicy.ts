@@ -23,7 +23,11 @@ export function assertPasswordPolicy(password: string, context?: PasswordContext
   if (context?.email) {
     const localPart = context.email.split("@")[0];
     if (localPart && lowered.includes(localPart.toLowerCase())) {
-      throw new HttpError(400, "AUTH_PASSWORD_IDENTIFIER", "Password cannot contain your email address");
+      throw new HttpError(
+        400,
+        "AUTH_PASSWORD_IDENTIFIER",
+        "Password cannot contain your email address",
+      );
     }
   }
 }

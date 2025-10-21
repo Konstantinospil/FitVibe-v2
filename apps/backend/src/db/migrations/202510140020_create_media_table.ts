@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 const MEDIA_TARGET_INDEX = "media_target_type_id_idx";
 
@@ -33,4 +33,3 @@ export async function down(knex: Knex): Promise<void> {
   });
   await knex.schema.dropTableIfExists("media");
 }
-

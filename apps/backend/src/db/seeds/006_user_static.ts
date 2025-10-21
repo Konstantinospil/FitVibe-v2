@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 export async function seed(knex: Knex): Promise<void> {
   const rows = [
@@ -20,4 +20,3 @@ export async function seed(knex: Knex): Promise<void> {
 
   await knex("user_static").insert(rows).onConflict("user_id").merge();
 }
-

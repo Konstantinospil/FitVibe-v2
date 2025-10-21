@@ -2,7 +2,12 @@ import { Router } from "express";
 import multer from "multer";
 import { requireAuth } from "./users.middleware.js";
 import { rateLimit } from "../common/rateLimiter.js";
-import { uploadAvatarHandler, getAvatarHandler, deleteAvatarHandler } from "./users.avatar.controller.js";
+import { asyncHandler } from "../../utils/async-handler.js";
+import {
+  uploadAvatarHandler,
+  getAvatarHandler,
+  deleteAvatarHandler,
+} from "./users.avatar.controller.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -16,18 +21,18 @@ usersAvatarRouter.post(
   rateLimit("user_avatar_upload", 5, 60),
   requireAuth,
   upload.single("avatar"),
-  uploadAvatarHandler,
+  asyncHandler(uploadAvatarHandler),
 );
 
 usersAvatarRouter.get(
   "/avatar/:id",
   rateLimit("user_avatar_get", 60, 60),
-  getAvatarHandler,
+  asyncHandler(getAvatarHandler),
 );
 
 usersAvatarRouter.delete(
   "/avatar",
   rateLimit("user_avatar_delete", 10, 60),
   requireAuth,
-  deleteAvatarHandler,
+  asyncHandler(deleteAvatarHandler),
 );

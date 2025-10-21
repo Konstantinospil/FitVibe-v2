@@ -4,11 +4,7 @@ const path = require("node:path");
 
 const envExamplePath = path.resolve(process.cwd(), ".env.example");
 
-const REQUIRED_FLAGS = [
-  "FEATURE_SOCIAL_FEED",
-  "FEATURE_COACH_DASHBOARD",
-  "FEATURE_INSIGHTS",
-];
+const REQUIRED_FLAGS = ["FEATURE_SOCIAL_FEED", "FEATURE_COACH_DASHBOARD", "FEATURE_INSIGHTS"];
 
 function main() {
   const contents = fs.readFileSync(envExamplePath, "utf8");
@@ -30,15 +26,11 @@ function main() {
 
   if (missing.length > 0 || misconfigured.length > 0) {
     if (missing.length > 0) {
-      console.error(
-        `Missing feature flag defaults in .env.example: ${missing.join(", ")}`,
-      );
+      console.error(`Missing feature flag defaults in .env.example: ${missing.join(", ")}`);
     }
     if (misconfigured.length > 0) {
       for (const issue of misconfigured) {
-        console.error(
-          `Feature flag ${issue.flag} must default to "false" but is "${issue.value}"`,
-        );
+        console.error(`Feature flag ${issue.flag} must default to "false" but is "${issue.value}"`);
       }
     }
     process.exit(1);

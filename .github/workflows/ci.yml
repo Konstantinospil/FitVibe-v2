@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
 
 permissions:
@@ -156,7 +156,7 @@ jobs:
         run: pnpm audit --prod --audit-level=high
 
       - name: Snyk scan
-        if: ${{ secrets.SNYK_TOKEN != '' }}
+        if: ${{ env.SNYK_TOKEN != '' }}
         uses: snyk/actions/node@master
         with:
           command: test
@@ -164,9 +164,9 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Secret scan
-        uses: trufflesecurity/trufflehog-actions-scan@v0.13.3
+        uses: trufflesecurity/trufflehog@3.63.3
         with:
-          scanSecrets: true
+          scan_secrets: true
 
       - name: Container vulnerability scan
         uses: aquasecurity/trivy-action@0.22.0
@@ -217,7 +217,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install k6
-        uses: grafana/setup-k6@v1
+        uses: k6io/setup-k6@v0.2.0
 
       - name: Start mock services
         run: |
@@ -242,7 +242,7 @@ jobs:
 
       - name: Run Lighthouse CI
         env:
-          LHCI_PORT: '4173'
+          LHCI_PORT: "4173"
         run: pnpm exec lhci autorun --config=tests/perf/lighthouserc.json --exit-on-error
 
       - name: Upload performance artifacts
@@ -376,12 +376,12 @@ jobs:
 
       - name: Sign backend image
         env:
-          COSIGN_EXPERIMENTAL: '1'
+          COSIGN_EXPERIMENTAL: "1"
         run: cosign sign --yes --keyless ${{ env.BACKEND_IMAGE }}@${{ steps.backend.outputs.digest }}
 
       - name: Sign frontend image
         env:
-          COSIGN_EXPERIMENTAL: '1'
+          COSIGN_EXPERIMENTAL: "1"
         run: cosign sign --yes --keyless ${{ env.FRONTEND_IMAGE }}@${{ steps.frontend.outputs.digest }}
 
       - name: Generate backend SBOM

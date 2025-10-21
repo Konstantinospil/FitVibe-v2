@@ -46,8 +46,7 @@ function normalizeError(err: unknown): HttpError {
 
 export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
   const normalized = normalizeError(err);
-  const requestId = res.locals.requestId as string | undefined;
-
+  const requestId = typeof res.locals.requestId === "string" ? res.locals.requestId : undefined;
   logger.error(
     {
       err,

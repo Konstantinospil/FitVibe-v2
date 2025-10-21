@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import helmet from "helmet";
-import cors, { CorsOptions } from "cors";
+import type { CorsOptions } from "cors";
+import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import { randomUUID } from "node:crypto";
@@ -11,9 +12,11 @@ import { csrfProtection, csrfTokenRoute, validateOrigin } from "./middlewares/cs
 import { httpLogger } from "./middlewares/request-logger.js";
 import { errorHandler } from "./middlewares/error.handler.js";
 import { metricsMiddleware, metricsRoute } from "./observability/metrics.js";
+import { asyncHandler } from "./utils/async-handler.js";
 
 import { authRouter } from "./api/auth.routes.js";
 import { usersRouter } from "./api/users.routes.js";
+import { exerciseTypesRouter } from "./api/exerciseTypes.routes.js";
 import { exercisesRouter } from "./api/exercises.routes.js";
 import { sessionsRouter } from "./api/sessions.routes.js";
 import { progressRouter } from "./api/progress.routes.js";
@@ -40,7 +43,7 @@ app.use(httpLogger);
 
 if (env.metricsEnabled) {
   app.use(metricsMiddleware);
-  app.get("/metrics", metricsRoute);
+  app.get("/metrics", asyncHandler(metricsRoute));
 }
 
 const corsOrigins = env.allowedOrigins;
@@ -50,7 +53,9 @@ const corsOptions: CorsOptions = corsOrigins.length
         if (!origin || corsOrigins.includes(origin)) {
           return callback(null, true);
         }
-        const error: Error & { status?: number; code?: string } = new Error("Origin not allowed by CORS");
+        const error: Error & { status?: number; code?: string } = new Error(
+          "Origin not allowed by CORS",
+        );
         error.status = 403;
         error.code = "FORBIDDEN";
         return callback(error);
@@ -84,6 +89,7 @@ if (env.csrf.enabled) {
 
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/users", usersRouter);
+apiRouter.use("/exercise-types", exerciseTypesRouter);
 apiRouter.use("/exercises", exercisesRouter);
 apiRouter.use("/sessions", sessionsRouter);
 apiRouter.use("/progress", progressRouter);
@@ -110,4 +116,3 @@ app.use(errorHandler);
 export const appInstance = app;
 
 export default app;
-

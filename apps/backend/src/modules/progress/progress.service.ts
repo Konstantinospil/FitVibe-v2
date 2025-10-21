@@ -1,14 +1,27 @@
 import NodeCache from "node-cache";
 import { insertAudit } from "../common/audit.util.js";
-import { ExercisesPayload, ProgressSummary, TrendGroupBy, TrendsPayload } from "./progress.types";
-import { fetchExerciseBreakdown, fetchPlansProgress, fetchSummary, fetchTrends } from "./progress.repository";
+import type {
+  ExercisesPayload,
+  PlanProgress,
+  ProgressSummary,
+  TrendGroupBy,
+  TrendsPayload,
+} from "./progress.types.js";
+import {
+  fetchExerciseBreakdown,
+  fetchPlansProgress,
+  fetchSummary,
+  fetchTrends,
+} from "./progress.repository";
 
 const cache = new NodeCache({ stdTTL: 60 });
 
 export async function getSummary(userId: string, period: number): Promise<ProgressSummary> {
   const key = `summary:${userId}:${period}`;
   const cached = cache.get<ProgressSummary>(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
 
   const res = await fetchSummary(userId, period);
   cache.set(key, res);
@@ -22,10 +35,16 @@ export async function getSummary(userId: string, period: number): Promise<Progre
   return res;
 }
 
-export async function getTrends(userId: string, period: number, groupBy: TrendGroupBy): Promise<TrendsPayload> {
+export async function getTrends(
+  userId: string,
+  period: number,
+  groupBy: TrendGroupBy,
+): Promise<TrendsPayload> {
   const key = `trends:${userId}:${period}:${groupBy}`;
   const cached = cache.get<TrendsPayload>(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
 
   const data = await fetchTrends(userId, period, groupBy);
   const res = { period, group_by: groupBy, data };
@@ -40,10 +59,15 @@ export async function getTrends(userId: string, period: number, groupBy: TrendGr
   return res;
 }
 
-export async function getExerciseBreakdown(userId: string, period: number): Promise<ExercisesPayload> {
+export async function getExerciseBreakdown(
+  userId: string,
+  period: number,
+): Promise<ExercisesPayload> {
   const key = `ex_bd:${userId}:${period}`;
   const cached = cache.get<ExercisesPayload>(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
 
   const data = await fetchExerciseBreakdown(userId, period);
   const res = { period, data };
@@ -58,10 +82,12 @@ export async function getExerciseBreakdown(userId: string, period: number): Prom
   return res;
 }
 
-export async function getPlans(userId: string) {
+export async function getPlans(userId: string): Promise<PlanProgress[]> {
   const key = `plans:${userId}`;
-  const cached = cache.get<any>(key);
-  if (cached) return cached;
+  const cached = cache.get<PlanProgress[]>(key);
+  if (cached) {
+    return cached;
+  }
 
   const data = await fetchPlansProgress(userId);
   cache.set(key, data);

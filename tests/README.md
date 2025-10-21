@@ -4,15 +4,15 @@ The `tests` workspace houses automated validation that sits outside individual a
 
 ## Directory Layout
 
-| Path                | Purpose                                            |
-| ------------------- | -------------------------------------------------- |
-| `backend/api/`      | Black-box API tests (REST contract, error cases)   |
-| `backend/integration/` | Multi-service flows hitting the real database |
-| `frontend/components/` | Component-level tests (e.g., Playwright/Jest) |
-| `frontend/e2e/`     | Browser-based end-to-end scenarios                 |
-| `perf/`             | Performance tests (k6 scripts, Lighthouse configs) |
-| `reports/`          | Generated artefacts (JUnit, coverage, Lighthouse)  |
-| `setup/`            | Shared helpers and Jest setup files                |
+| Path                   | Purpose                                            |
+| ---------------------- | -------------------------------------------------- |
+| `backend/api/`         | Black-box API tests (REST contract, error cases)   |
+| `backend/integration/` | Multi-service flows hitting the real database      |
+| `frontend/components/` | Component-level tests (e.g., Playwright/Jest)      |
+| `frontend/e2e/`        | Browser-based end-to-end scenarios                 |
+| `perf/`                | Performance tests (k6 scripts, Lighthouse configs) |
+| `reports/`             | Generated artefacts (JUnit, coverage, Lighthouse)  |
+| `setup/`               | Shared helpers and Jest setup files                |
 
 ## Running Tests
 

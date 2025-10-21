@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 import {
   register as doRegister,
   login as doLogin,
@@ -10,8 +10,7 @@ import {
   listSessions as doListSessions,
   revokeSessions as doRevokeSessions,
 } from "./auth.service.js";
-import jwt from "jsonwebtoken";
-import { env, JWKS, RSA_KEYS } from "../../config/env.js";
+import { env, JWKS } from "../../config/env.js";
 import {
   RegisterSchema,
   LoginSchema,
@@ -22,6 +21,7 @@ import {
 import type { z } from "zod";
 import type { LoginContext } from "./auth.types.js";
 import { HttpError } from "../../utils/http.js";
+import { verifyAccess } from "../../services/tokens.js";
 
 function setRefreshCookie(res: Response, token: string) {
   res.cookie(env.REFRESH_COOKIE_NAME, token, {
@@ -61,9 +61,13 @@ function extractClientIp(req: Request): string | null {
 }
 
 function bearerToken(header?: string): string | null {
-  if (!header || typeof header !== "string") return null;
+  if (!header || typeof header !== "string") {
+    return null;
+  }
   const [scheme, value] = header.split(" ");
-  if (!value || scheme.toLowerCase() !== "bearer") return null;
+  if (!value || scheme.toLowerCase() !== "bearer") {
+    return null;
+  }
   return value;
 }
 
@@ -71,9 +75,11 @@ function currentSessionId(req: Request): string | null {
   const token =
     (req.cookies?.[env.ACCESS_COOKIE_NAME] as string | undefined) ??
     bearerToken(req.headers.authorization ?? undefined);
-  if (!token) return null;
+  if (!token) {
+    return null;
+  }
   try {
-    const decoded = jwt.verify(token, RSA_KEYS.publicKey, { algorithms: ["RS256"] }) as { sid?: string };
+    const decoded = verifyAccess(token);
     return typeof decoded.sid === "string" ? decoded.sid : null;
   } catch {
     return null;
@@ -84,16 +90,12 @@ function buildAuthContext(req: Request, res: Response): LoginContext {
   return {
     userAgent: req.get("user-agent") ?? null,
     ip: extractClientIp(req),
-    requestId: (req as any).requestId ?? (res.locals.requestId as string | undefined) ?? null,
+    requestId: req.requestId ?? res.locals.requestId ?? null,
   };
 }
 
 function getAuthenticatedUser(req: Request): { sub?: string; sid?: string; role?: string } | null {
-  const payload = (req as any).user;
-  if (payload && typeof payload === "object") {
-    return payload;
-  }
-  return null;
+  return req.user ?? null;
 }
 
 type RegisterInput = z.infer<typeof RegisterSchema>;
@@ -121,7 +123,12 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
 export async function verifyEmail(req: Request, res: Response, next: NextFunction) {
   try {
-    const token = (req.query.token || req.body.token) as string | undefined;
+    const queryToken = typeof req.query.token === "string" ? req.query.token : undefined;
+    const bodyToken =
+      req.body && typeof req.body === "object" && "token" in req.body
+        ? (req.body as Record<string, unknown>).token
+        : undefined;
+    const token = typeof bodyToken === "string" ? bodyToken : queryToken;
     if (!token) {
       throw new HttpError(400, "AUTH_INVALID_TOKEN", "Verification token is required");
     }
@@ -226,7 +233,11 @@ export async function revokeSessions(req: Request, res: Response, next: NextFunc
     const payload = RevokeSessionsSchema.parse(req.body ?? {});
     const sessionId = authUser?.sid ?? currentSessionId(req);
     if (payload.revokeOthers && !sessionId) {
-      throw new HttpError(400, "AUTH_SESSION_UNKNOWN", "Current session is required to revoke others");
+      throw new HttpError(
+        400,
+        "AUTH_SESSION_UNKNOWN",
+        "Current session is required to revoke others",
+      );
     }
     const context = buildAuthContext(req, res);
     const result = await doRevokeSessions(userId, {
@@ -238,8 +249,7 @@ export async function revokeSessions(req: Request, res: Response, next: NextFunc
     });
 
     const revokingCurrent =
-      Boolean(payload.revokeAll) ||
-      (payload.sessionId ? payload.sessionId === sessionId : false);
+      Boolean(payload.revokeAll) || (payload.sessionId ? payload.sessionId === sessionId : false);
 
     if (revokingCurrent || payload.revokeAll) {
       clearAuthCookies(res);
