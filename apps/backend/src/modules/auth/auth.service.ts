@@ -46,6 +46,7 @@ import type { AuthUserRecord } from "./auth.repository.js";
 import { env, RSA_KEYS } from "../../config/env.js";
 import { HttpError } from "../../utils/http.js";
 import { assertPasswordPolicy } from "./passwordPolicy.js";
+import { incrementRefreshReuse } from "../../observability/metrics.js";
 
 const ACCESS_TTL = env.ACCESS_TOKEN_TTL;
 const REFRESH_TTL = env.REFRESH_TOKEN_TTL;
@@ -323,12 +324,14 @@ export async function refresh(
         if (historical?.session_jti) {
           await revokeSessionById(historical.session_jti);
           await revokeRefreshBySession(historical.session_jti);
+          incrementRefreshReuse();
           await recordAuditEvent(historical.user_id ?? null, "auth.refresh_reuse", {
             sessionId: historical.session_jti,
             requestId: context.requestId ?? null,
             ip: context.ip ?? null,
             userAgent: sanitizeUserAgent(context.userAgent),
             outcome: "failure",
+            familyRevoked: true,
           });
         }
       } catch (error: unknown) {

@@ -26,6 +26,7 @@ import type {
   UserStatus,
   UserContact,
   UserAvatar,
+  UserDataExportBundle,
 } from "./users.types.js";
 import {
   revokeRefreshByUserId,
@@ -40,9 +41,12 @@ import { assertPasswordPolicy } from "../auth/passwordPolicy.js";
 import { env } from "../../config/env.js";
 import { HttpError } from "../../utils/http.js";
 import { insertAudit } from "../common/audit.util.js";
-import { logger } from "../../config/logger.js";
-import { deleteStorageObject } from "../../services/mediaStorage.service.js";
-import { toError } from "../../utils/error.utils.js";
+import {
+  scheduleAccountDeletion,
+  executeAccountDeletion,
+  processDueAccountDeletions,
+  type DeleteSchedule,
+} from "./dsr.service.js";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.-]{3,50}$/;
 const STATUS_TRANSITIONS: Record<UserStatus, UserStatus[]> = {
@@ -58,6 +62,52 @@ const CONTACT_VERIFICATION_RESEND_LIMIT = 3;
 const CONTACT_VERIFICATION_RESEND_WINDOW_MS = 60 * 60 * 1000;
 const CONTACT_VERIFICATION_RETENTION_DAYS = 7;
 
+type UserStaticRow = {
+  user_id: string;
+  date_of_birth: string | null;
+  gender_code: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type UserMetricRow = {
+  id: string;
+  user_id: string;
+  weight: number | null;
+  unit: string | null;
+  fitness_level_code: string | null;
+  training_frequency: string | null;
+  photo_url: string | null;
+  recorded_at: string;
+  created_at: string;
+};
+
+type SessionRow = { id: string; owner_id: string };
+type SessionExerciseRow = { id: string; session_id: string };
+type GenericRow = Record<string, unknown>;
+type UserPointRow = { id: string; user_id: string; points: number | string; awarded_at?: string };
+type BadgeRow = { id: string; user_id: string; badge_type: string; awarded_at: string };
+type MediaRow = {
+  id: string;
+  owner_id: string;
+  target_type: string;
+  target_id: string;
+  storage_key: string;
+  file_url: string;
+  mime_type: string | null;
+  media_type: string | null;
+  bytes: number | null;
+  created_at: string;
+};
+type UserStateHistoryRow = {
+  id: string;
+  user_id: string;
+  field: string;
+  old_value: unknown;
+  new_value: unknown;
+  changed_at: string;
+};
+
 function toContact(row: ContactRow): UserContact {
   return {
     id: row.id,
@@ -70,6 +120,8 @@ function toContact(row: ContactRow): UserContact {
     createdAt: row.created_at,
   };
 }
+
+export { executeAccountDeletion, processDueAccountDeletions };
 
 function primaryEmail(contacts: ContactRow[]): string | null {
   return contacts.find((contact) => contact.type === "email" && contact.is_primary)?.value ?? null;
@@ -432,65 +484,26 @@ export async function changeStatus(
   return toUserDetail(refreshed.user, refreshed.contacts, refreshed.avatar);
 }
 
-async function purgeUserAccount(userId: string): Promise<void> {
-  type MediaRow = { id: string; storage_key: string; owner_id: string };
-  const mediaItems = await db<MediaRow>("media").where({
-    owner_id: userId,
-  });
-  await Promise.all(
-    mediaItems.map(async (item) => {
-      try {
-        await deleteStorageObject(item.storage_key);
-      } catch (error) {
-        logger.warn(
-          {
-            err: toError(error),
-            storageKey: item.storage_key,
-          },
-          "[user-purge] storage cleanup failed",
-        );
-      }
-    }),
-  );
-
-  await db.transaction(async (trx) => {
-    if (mediaItems.length) {
-      await trx("media").where({ owner_id: userId }).del();
-    }
-    await trx("users").where({ id: userId }).del();
-  });
-
-  await insertAudit({
-    actorUserId: null,
-    entity: "users",
-    action: "account_purged",
-    entityId: userId,
-    metadata: { mediaRemoved: mediaItems.length },
-  });
-}
-
-export async function requestAccountDeletion(userId: string): Promise<{ scheduledAt: string }> {
+export async function requestAccountDeletion(userId: string): Promise<DeleteSchedule> {
   const user = await findUserById(userId);
   if (!user) {
     throw new HttpError(404, "USER_NOT_FOUND", "User not found");
   }
 
-  const scheduledAt = new Date().toISOString();
-
   if (user.status !== "pending_deletion") {
     await changeStatus(userId, userId, "pending_deletion");
-    await db("users").where({ id: userId }).update({ deleted_at: scheduledAt });
+    await revokeRefreshByUserId(userId);
     await insertAudit({
       actorUserId: userId,
       entity: "users",
       action: "delete_request",
       entityId: userId,
-      metadata: { scheduledAt },
+      metadata: {},
     });
   }
 
-  await purgeUserAccount(userId);
-  return { scheduledAt };
+  const schedule = await scheduleAccountDeletion(userId);
+  return schedule;
 }
 
 export async function listContacts(userId: string): Promise<UserContact[]> {
@@ -692,40 +705,133 @@ export async function removeContact(userId: string, contactId: string): Promise<
   });
 }
 
-export async function collectUserData(userId: string) {
+export async function collectUserData(userId: string): Promise<UserDataExportBundle> {
   const user = await db<UserRow>("users").where({ id: userId }).first<UserRow>();
   if (!user) {
     throw new HttpError(404, "USER_NOT_FOUND", "User not found");
   }
 
-  type SessionRow = { id: string; owner_id: string };
-  type GenericRow = Record<string, unknown>;
-
   const contacts = await db<ContactRow>("user_contacts").where({ user_id: userId });
+  const profileRow = await db<UserStaticRow>("user_static")
+    .where({ user_id: userId })
+    .first<UserStaticRow>();
+  const profile = profileRow
+    ? {
+        user_id: profileRow.user_id,
+        date_of_birth: profileRow.date_of_birth,
+        gender_code: profileRow.gender_code,
+        created_at: profileRow.created_at,
+        updated_at: profileRow.updated_at,
+      }
+    : null;
+
+  const metrics = await db<UserMetricRow>("user_metrics")
+    .where({ user_id: userId })
+    .orderBy("recorded_at", "asc");
+
   const sessions = await db<SessionRow>("sessions").where({ owner_id: userId });
+  const sessionIds = sessions.map((session) => session.id);
+
   const plans = await db<GenericRow>("plans").where({ user_id: userId });
   const exercises = await db<GenericRow>("exercises").where({ owner_id: userId });
-  const exerciseSets = sessions.length
-    ? await db<GenericRow>("exercise_sets").whereIn(
-        "session_id",
-        sessions.map((session) => session.id),
-      )
+  const sessionExercises = sessionIds.length
+    ? await db<SessionExerciseRow>("session_exercises").whereIn("session_id", sessionIds)
     : [];
-  const points = await db<GenericRow>("user_points").where({ user_id: userId });
-  const followers = await db<GenericRow>("followers").where({ following_id: userId });
-  const following = await db<GenericRow>("followers").where({ follower_id: userId });
-  const media = await db<GenericRow>("media").where({ owner_id: userId });
+  const exerciseSets = sessionIds.length
+    ? await db<GenericRow>("exercise_sets").whereIn("session_id", sessionIds)
+    : [];
+
+  const pointsHistory = await db<UserPointRow>("user_points")
+    .where({ user_id: userId })
+    .orderBy("awarded_at", "asc");
+  const totalPoints = pointsHistory.reduce((sum, record) => sum + Number(record.points ?? 0), 0);
+
+  const badges = await db<BadgeRow>("badges")
+    .where({ user_id: userId })
+    .orderBy("awarded_at", "asc");
+
+  const followers = await db<GenericRow>("followers")
+    .where({ following_id: userId })
+    .orderBy("created_at", "asc");
+  const following = await db<GenericRow>("followers")
+    .where({ follower_id: userId })
+    .orderBy("created_at", "asc");
+
+  const mediaRows = await db<MediaRow>("media")
+    .where({ owner_id: userId })
+    .orderBy("created_at", "asc");
+  const media = mediaRows.map((row) => ({
+    id: row.id,
+    targetType: row.target_type,
+    targetId: row.target_id,
+    storageKey: row.storage_key,
+    fileUrl: row.file_url,
+    mimeType: row.mime_type,
+    mediaType: row.media_type,
+    bytes: row.bytes ?? null,
+    createdAt: row.created_at,
+  }));
+
+  const stateHistory = await db<UserStateHistoryRow>("user_state_history")
+    .where({ user_id: userId })
+    .orderBy("changed_at", "asc");
+
+  const userRecord: Record<string, unknown> = { ...user };
+  delete userRecord.password_hash;
+  if (!("primary_email" in userRecord)) {
+    const primaryContact = contacts.find(
+      (contact) => contact.type === "email" && contact.is_primary,
+    );
+    if (primaryContact) {
+      userRecord.primary_email = primaryContact.value;
+    }
+  }
+
+  const recordCounts: Record<string, number> = {
+    contacts: contacts.length,
+    sessions: sessions.length,
+    sessionExercises: sessionExercises.length,
+    sessionSets: exerciseSets.length,
+    plans: plans.length,
+    personalExercises: exercises.length,
+    metrics: metrics.length,
+    pointsHistory: pointsHistory.length,
+    badges: badges.length,
+    media: media.length,
+    followers: followers.length,
+    following: following.length,
+    stateHistory: stateHistory.length,
+  };
 
   return {
-    user,
-    contacts,
-    sessions,
-    plans,
-    exercises,
-    exerciseSets,
-    points,
-    followers,
-    following,
+    meta: {
+      schemaVersion: "1.0.0",
+      exportedAt: new Date().toISOString(),
+      recordCounts,
+    },
+    user: { ...userRecord },
+    profile,
+    contacts: contacts.map((contact) => ({ ...contact })),
+    metrics: metrics.map((metric) => ({ ...metric })),
+    social: {
+      followers,
+      following,
+    },
+    exercises: {
+      personal: exercises,
+      plans,
+    },
+    sessions: {
+      items: sessions,
+      exercises: sessionExercises,
+      sets: exerciseSets,
+    },
+    points: {
+      total: totalPoints,
+      history: pointsHistory,
+    },
+    badges,
     media,
+    stateHistory,
   };
 }

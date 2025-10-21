@@ -40,6 +40,8 @@ const EnvSchema = z.object({
   JWT_PRIVATE_KEY_PATH: z.string().default("./keys/jwt_rs256.key"),
   JWT_PUBLIC_KEY_PATH: z.string().default("./keys/jwt_rs256.pub"),
   MEDIA_STORAGE_ROOT: z.string().default("./storage"),
+  DSR_PURGE_DELAY_MIN: z.coerce.number().default(15),
+  DSR_BACKUP_PURGE_DAYS: z.coerce.number().default(14),
 });
 
 const raw = EnvSchema.parse(process.env);
@@ -138,6 +140,10 @@ export const env = {
   typesCacheTtl: raw.TYPES_CACHE_TTL_SEC,
   appBaseUrl: raw.APP_BASE_URL,
   mediaStorageRoot: raw.MEDIA_STORAGE_ROOT,
+  dsr: {
+    purgeDelayMinutes: raw.DSR_PURGE_DELAY_MIN,
+    backupPurgeDays: raw.DSR_BACKUP_PURGE_DAYS,
+  },
 } as const;
 
 export const RSA_KEYS = {

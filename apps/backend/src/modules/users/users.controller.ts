@@ -132,8 +132,13 @@ export async function deleteAccount(req: Request, res: Response) {
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  const { scheduledAt } = await requestAccountDeletion(userId);
-  return res.status(202).json({ status: "pending_deletion", scheduledAt });
+  const schedule = await requestAccountDeletion(userId);
+  return res.status(202).json({
+    status: "pending_deletion",
+    scheduledAt: schedule.scheduledAt,
+    purgeDueAt: schedule.purgeDueAt,
+    backupPurgeDueAt: schedule.backupPurgeDueAt,
+  });
 }
 
 export async function exportData(req: Request, res: Response) {

@@ -18,8 +18,14 @@ const httpRequestsTotal = new client.Counter({
   labelNames: ["method", "route", "status_code"],
 });
 
+const refreshReuseCounter = new client.Counter({
+  name: "jwt_refresh_reuse_total",
+  help: "Number of refresh token reuse incidents that triggered session family revocation",
+});
+
 register.registerMetric(httpRequestDuration);
 register.registerMetric(httpRequestsTotal);
+register.registerMetric(refreshReuseCounter);
 
 function resolveRouteLabel(req: Request): string {
   const maybeRoute: unknown = req.route;
@@ -58,4 +64,8 @@ export async function metricsRoute(_req: Request, res: Response) {
   res.set("Content-Type", register.contentType);
   const metrics = await register.metrics();
   res.end(metrics);
+}
+
+export function incrementRefreshReuse() {
+  refreshReuseCounter.inc();
 }

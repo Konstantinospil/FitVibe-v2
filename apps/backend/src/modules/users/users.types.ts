@@ -66,3 +66,35 @@ export interface ChangePasswordDTO {
   currentPassword: string;
   newPassword: string;
 }
+
+export interface UserDataExportBundle {
+  meta: {
+    schemaVersion: string;
+    exportedAt: string;
+    recordCounts: Record<string, number>;
+  };
+  user: Record<string, unknown>;
+  profile: Record<string, unknown> | null;
+  contacts: Record<string, unknown>[];
+  metrics: Record<string, unknown>[];
+  social: {
+    followers: Record<string, unknown>[];
+    following: Record<string, unknown>[];
+  };
+  exercises: {
+    personal: Record<string, unknown>[];
+    plans: Record<string, unknown>[];
+  };
+  sessions: {
+    items: Record<string, unknown>[];
+    exercises: Record<string, unknown>[];
+    sets: Record<string, unknown>[];
+  };
+  points: {
+    total: number;
+    history: Record<string, unknown>[];
+  };
+  badges: Record<string, unknown>[];
+  media: Record<string, unknown>[];
+  stateHistory: Record<string, unknown>[];
+}
