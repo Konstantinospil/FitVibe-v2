@@ -1,260 +1,598 @@
 erDiagram
-    %% ==============================
-    %% USERS, SECURITY & IDENTITY
-    %% ==============================
-    USERS {
-        uuid id PK
-        string username UNIQUE           %% store as citext or LOWER(username) unique
-        string display_name
-        string password_hash             %% from conceptual model
-        string status                    %% active/suspended/deleted
-        string locale                    %% i18n preference
-        string preferred_lang            %% alias; optional
-        timestamp created_at
-        timestamp deleted_at             %% soft delete
-        string role_code FK              %% -> ROLES.code
-    }
+  %% ========= Core Identity =========
+  users {
+    uuid id PK
+    string username
+    string display_name
+    string password_hash
+    uuid status_id
+    string locale
+    string preferred_lang
+    timestamptz created_at
+    timestamptz deleted_at
+  }
 
-    ROLES {
-        string code PK
-        string description
-    }
+  roles {
+    uuid id PK
+    string code
+    string name
+    string description
+  }
 
-    USER_CONTACTS {
-        uuid id PK
-        uuid user_id FK
-        string type                      %% email, phone
-        string value UNIQUE
-        boolean is_primary
-        boolean is_recovery
-        boolean is_verified
-        timestamp verified_at
-        timestamp created_at
-    }
+  user_roles {
+    uuid user_id
+    uuid role_id
+    timestamptz assigned_at
+  }
 
-    USER_STATIC {
-        uuid user_id PK FK
-        date date_of_birth
-        string gender_code FK            %% -> GENDERS.code
-    }
+  profiles {
+    uuid user_id PK
+    string alias
+    uuid avatar_asset_id
+    string bio
+    date date_of_birth
+    uuid gender_id
+    numeric weight_kg
+    uuid weight_unit_id
+    uuid measurement_system_id
+    jsonb unit_preferences
+    uuid fitness_level_id
+    uuid training_frequency_id
+    uuid visibility_id
+    string timezone
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at
+  }
 
-    GENDERS {
-        string code PK
-        string description
-    }
+  user_sessions {
+    uuid id PK
+    uuid user_id
+    uuid refresh_jti
+    string device_id
+    string user_agent
+    inet ip
+    timestamptz created_at
+    timestamptz last_used_at
+    timestamptz expires_at
+    timestamptz revoked_at
+  }
 
-    USER_METRICS {
-        uuid id PK
-        uuid user_id FK
-        decimal weight
-        string unit                      %% kg/lb
-        string fitness_level_code FK     %% -> FITNESS_LEVELS.code
-        string training_frequency        %% e.g., 1-2/wk
-        string photo_url
-        timestamp recorded_at
-    }
+  verification_tokens {
+    uuid id PK
+    uuid user_id
+    string token
+    string purpose
+    timestamptz expires_at
+    timestamptz consumed_at
+    timestamptz created_at
+  }
 
-    FITNESS_LEVELS {
-        string code PK
-        string description
-    }
+  reset_tokens {
+    uuid id PK
+    uuid user_id
+    string token
+    timestamptz expires_at
+    timestamptz consumed_at
+    timestamptz created_at
+  }
 
-    AUTH_SESSIONS {
-        uuid jti PK
-        uuid user_id FK
-        string user_agent
-        string ip
-        timestamp created_at
-        timestamp expires_at
-        timestamp revoked_at
-    }
+  %% ========= Catalog & i18n =========
+  exercise_categories {
+    uuid id PK
+    string slug
+    string title
+    timestamptz created_at
+  }
 
-    USER_STATE_HISTORY {
-        uuid id PK
-        uuid user_id FK
-        string field                     %% e.g., locale, display_name
-        string old_value
-        string new_value
-        timestamp changed_at
-    }
+  exercises {
+    uuid id PK
+    uuid owner_id
+    string name
+    uuid category_id
+    uuid type_id
+    uuid muscle_group_id
+    uuid equipment_id
+    boolean is_public
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz archived_at
+  }
 
-    TRANSLATION_CACHE {
-        uuid id PK
-        uuid hash UNIQUE                 %% md5(source||lang)::uuid (computed)
-        string source
-        string lang
-        string translated
-        timestamp created_at
-    }
+  tags {
+    uuid id PK
+    string slug
+    string label
+  }
 
-    %% ==============================
-    %% EXERCISES & SESSIONS
-    %% ==============================
-    EXERCISES {
-        uuid id PK
-        uuid owner FK                    %% who created it (optional)
-        string name
-        string type_code FK              %% -> EXERCISE_TYPES.code
-        string muscle_group
-        string equipment
-        jsonb tags                       %% JSONB + GIN
-        boolean is_public
-        string description_en
-        string description_de
-        timestamp created_at
-        timestamp archived_at
-    }
+  exercise_tags {
+    uuid exercise_id
+    uuid tag_id
+  }
 
-    EXERCISE_TYPES {
-        string code PK
-        string description
-    }
+  translation_fields {
+    string entity_type
+    string field_key
+  }
 
-    SESSIONS {
-        uuid id PK
-        uuid owner_id FK
-        uuid plan_id FK
-        string title
-        timestamp planned_at
-        string recurrence_rule
-        timestamp started_at
-        timestamp completed_at
-        string status                    %% planned, in_progress, completed, canceled
-        string visibility                %% private/followers/public
-        integer calories
-        integer points                   %% redundant with USER_POINTS history; optional
-        string notes
-        timestamp created_at
-        timestamp deleted_at
-    }
+  translations {
+    uuid id PK
+    string entity_type
+    uuid entity_id
+    string lang
+    string field_key
+    string value
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-    SESSION_EXERCISES {
-        uuid id PK
-        uuid session_id FK
-        uuid exercise_id FK
-        int order_index
-        string notes
-        timestamp created_at
-        timestamp updated_at
-    }
+  translation_cache {
+    uuid id PK
+    uuid owner_id
+    uuid hash
+    string source
+    string lang
+    string translated
+    timestamptz created_at
+    timestamptz expires_at
+  }
 
-    EXERCISE_SETS {
-        uuid id PK
-        uuid session_exercise_id FK
-        int order_index
-        int reps
-        numeric weight_kg
-        int distance_m
-        int duration_sec
-        int rpe
-        string notes
-        timestamp created_at
-    }
+  %% ========= Planning & Templates =========
+  plans {
+    uuid id PK
+    uuid user_id
+    string title
+    uuid status_id
+    string recurrence_rule
+    string notes
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz archived_at
+  }
 
-    PLANNED_EXERCISE_ATTRIBUTES {
-        uuid id PK
-        uuid session_exercise_id FK
-        int sets
-        int reps
-        decimal load
-        decimal distance
-        interval duration
-        int rpe
-        interval rest
-        jsonb extras
-    }
+  workout_templates {
+    uuid id PK
+    uuid user_id
+    string name
+    string description
+    smallint estimated_duration_min
+    uuid difficulty_id
+    smallint times_used
+    numeric avg_rating
+    boolean is_public
+    uuid visibility_id
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz archived_at
+  }
 
-    ACTUAL_EXERCISE_ATTRIBUTES {
-        uuid id PK
-        uuid session_exercise_id FK
-        int sets
-        int reps
-        decimal load
-        decimal distance
-        interval duration
-        int rpe
-        interval rest
-        jsonb extras
-    }
+  template_muscle_groups {
+    uuid template_id
+    uuid muscle_group_id
+  }
 
-    %% ==============================
-    %% GAMIFICATION & COMMUNITY
-    %% ==============================
-    USER_POINTS {
-        uuid id PK
-        uuid user_id FK
-        string source_type               %% e.g., workout, streak, challenge
-        string algorithm_version
-        int points
-        timestamp awarded_at
-    }
+  template_exercises {
+    uuid id PK
+    uuid template_id
+    uuid exercise_id
+    int order_index
+    int target_sets
+    string target_reps
+    string target_rest
+    string notes
+    timestamptz updated_at
+  }
 
-    BADGES {
-        uuid id PK
-        uuid user_id FK
-        string badge_type
-        timestamp awarded_at
-    }
+  template_ratings {
+    uuid id PK
+    uuid template_id
+    uuid user_id
+    smallint rating
+    string review
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-    FOLLOWERS {
-        uuid id PK
-        uuid follower_id FK
-        uuid following_id FK
-        timestamp created_at
-    }
+  %% ========= Sessions & Logging =========
+  sessions {
+    uuid id PK
+    uuid owner_id
+    uuid plan_id
+    uuid template_id
+    uuid source_session_id
+    string title
+    timestamptz planned_at
+    string recurrence_rule
+    timestamptz started_at
+    timestamptz completed_at
+    uuid status_id
+    uuid visibility_id
+    int calories
+    string notes
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at
+  }
 
-    MEDIA {
-        uuid id PK
-        uuid owner_id FK                 %% uploader
-        string target_type               %% 'session'|'exercise'|'profile'|...
-        uuid target_id
-        string storage_key               %% physical object key
-        string file_url                  %% optional public URL
-        string mime_type
-        string media_type                %% image|video|file (logical)
-        int bytes
-        timestamp created_at
-    }
+  session_exercises {
+    uuid id PK
+    uuid session_id
+    uuid exercise_id
+    int order_index
+    string notes
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-    %% ==============================
-    %% ANALYTICS (DERIVED)
-    %% ==============================
-    SESSION_SUMMARY {
-        uuid session_id PK               %% FK -> sessions.id
-        uuid owner
-        numeric total_volume
-        int exercise_count
-        string status
-        timestamp planned_for
-        timestamp completed_at
-        timestamp refreshed_at
-    }
+  exercise_sets {
+    uuid id PK
+    uuid session_exercise_id
+    int order_index
+    smallint reps
+    numeric weight_kg
+    int distance_m
+    int duration_sec
+    smallint rpe
+    uuid set_type_id
+    string tempo
+    smallint rest_sec
+    boolean completed
+    string notes
+    timestamptz created_at
+    timestamptz updated_at
+  }
 
-    %% ==============================
-    %% RELATIONSHIPS
-    %% ==============================
-    USERS ||--o{ USER_CONTACTS : has
-    USERS ||--|| USER_STATIC : has
-    USERS ||--o{ USER_METRICS : records
-    USERS ||--o{ USER_STATE_HISTORY : changes
-    USERS ||--o{ AUTH_SESSIONS : maintains
-    USERS ||--o{ EXERCISES : owns
-    USERS ||--o{ PLANS : owns
-    USERS ||--o{ SESSIONS : plans
-    USERS ||--o{ USER_POINTS : earns
-    USERS ||--o{ BADGES : awarded
-    USERS ||--o{ FOLLOWERS : connects
-    USERS ||--o{ MEDIA : uploads
+  %% ========= Progress & Recovery =========
+  personal_records {
+    uuid id PK
+    uuid user_id
+    uuid exercise_id
+    string metric
+    numeric value
+    string unit
+    timestamptz achieved_at
+    uuid session_exercise_id
+    boolean is_current
+    timestamptz created_at
+  }
 
-    USERS }o--|| ROLES : "has role"
-    USER_STATIC }o--|| GENDERS : "has gender"
-    USER_METRICS }o--|| FITNESS_LEVELS : "has fitness level"
-    EXERCISES }o--|| EXERCISE_TYPES : "has type"
+  body_measurements {
+    uuid id PK
+    uuid user_id
+    date measurement_date
+    numeric weight_kg
+    numeric body_fat_pct
+    numeric chest_cm
+    numeric waist_cm
+    numeric hips_cm
+    numeric thigh_cm
+    numeric bicep_cm
+    string notes
+    timestamptz created_at
+  }
 
-    PLANS ||--o{ SESSIONS : schedules
-    SESSIONS ||--o{ SESSION_EXERCISES : includes
-    SESSION_EXERCISES ||--o{ EXERCISE_SETS : actuals
-    SESSION_EXERCISES ||--o{ PLANNED_EXERCISE_ATTRIBUTES : planned
-    SESSION_EXERCISES ||--o{ ACTUAL_EXERCISE_ATTRIBUTES : actual
+  recovery_logs {
+    uuid id PK
+    uuid user_id
+    date log_date
+    smallint sleep_hours
+    smallint sleep_quality
+    smallint soreness_level
+    smallint stress_level
+    smallint energy_level
+    string notes
+    timestamptz created_at
+  }
 
-    SESSIONS ||--o{ SESSION_SUMMARY : summarized_by
+  %% ========= Gamification =========
+  badges {
+    uuid id PK
+    uuid badge_type_id
+    string code
+    string title
+    string description
+    string icon_url
+    int display_order
+  }
+
+  badge_awards {
+    uuid id PK
+    uuid user_id
+    uuid badge_id
+    timestamptz awarded_at
+  }
+
+  points_events {
+    uuid id PK
+    uuid user_id
+    string source
+    uuid source_id
+    int points
+    int calories
+    string algorithm_version
+    timestamptz created_at
+  }
+
+  user_points_balance {
+    uuid user_id PK
+    bigint total_points
+    timestamptz last_updated_at
+  }
+
+  %% ========= Feed, Social, Media =========
+  feed_items {
+    uuid id PK
+    uuid owner_id
+    uuid kind_id
+    uuid target_type_id
+    uuid target_id
+    uuid visibility_id
+    numeric score
+    timestamptz published_at
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at
+  }
+
+  share_links {
+    uuid id PK
+    uuid feed_item_id
+    uuid session_id
+    string token
+    int view_count
+    int max_views
+    timestamptz expires_at
+    timestamptz created_at
+    timestamptz revoked_at
+  }
+
+  followers {
+    uuid follower_id
+    uuid followee_id
+    timestamptz created_at
+  }
+
+  likes {
+    uuid user_id
+    uuid feed_item_id
+    timestamptz created_at
+  }
+
+  bookmarks {
+    uuid user_id
+    uuid session_id
+    timestamptz created_at
+  }
+
+  comments {
+    uuid id PK
+    uuid feed_item_id
+    uuid user_id
+    uuid parent_id
+    string body
+    timestamptz created_at
+    timestamptz edited_at
+    timestamptz deleted_at
+  }
+
+  notifications {
+    uuid id PK
+    uuid user_id
+    uuid type_id
+    uuid actor_id
+    uuid target_type_id
+    uuid target_id
+    boolean is_read
+    uuid priority_id
+    string group_key
+    smallint group_count
+    timestamptz expires_at
+    timestamptz created_at
+    timestamptz read_at
+  }
+
+  leaderboard_cache_global {
+    string type
+    date period_start
+    date period_end
+    int rank
+    uuid user_id
+    numeric value
+    timestamptz computed_at
+  }
+
+  leaderboard_cache_scoped {
+    string type
+    uuid scope_type_id
+    uuid scope_id
+    date period_start
+    date period_end
+    int rank
+    uuid user_id
+    numeric value
+    timestamptz computed_at
+  }
+
+  media_assets {
+    uuid id PK
+    uuid owner_id
+    uuid target_type_id
+    uuid target_id
+    string object_key
+    string mime_type
+    uuid kind_id
+    int size_bytes
+    int width_px
+    int height_px
+    int duration_sec
+    boolean av_scan_passed
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  %% ========= Ops =========
+  audit_log {
+    uuid id PK
+    uuid actor_id
+    string action
+    string entity_type
+    uuid entity_id
+    uuid request_id
+    jsonb meta
+    timestamptz created_at
+  }
+
+  idempotency_keys {
+    uuid key PK
+    uuid user_id
+    string fingerprint
+    string status
+    string response_hash
+    timestamptz expires_at
+    timestamptz created_at
+  }
+
+  %% ========= Code Sets & Attributes =========
+  code_sets {
+    uuid id PK
+    string key
+    string description
+    timestamptz created_at
+  }
+
+  code_values {
+    uuid id PK
+    uuid set_id
+    string code
+    string label
+    int sort_order
+    boolean is_active
+  }
+
+  code_value_i18n {
+    uuid value_id
+    string lang
+    string label
+  }
+
+  attributes {
+    uuid id PK
+    string key
+    string label
+    string data_type
+    string unit_set_key
+    numeric min_value
+    numeric max_value
+    boolean is_time_series
+    timestamptz created_at
+  }
+
+  attribute_scopes {
+    uuid attribute_id
+    string entity_type
+  }
+
+  attribute_values {
+    uuid id PK
+    uuid attribute_id
+    string entity_type
+    uuid entity_id
+    timestamptz measured_at
+    uuid unit_value_id
+    bigint int_value
+    numeric numeric_value
+    string text_value
+    boolean bool_value
+    date date_value
+    timestamptz ts_value
+    jsonb json_value
+    uuid code_value_id
+  }
+
+  %% ========= Relationships =========
+  users ||--o{ user_roles : has
+  roles ||--o{ user_roles : maps
+
+  users ||--|| profiles : owns
+  users ||--o{ user_sessions : has
+  users ||--o{ verification_tokens : has
+  users ||--o{ reset_tokens : has
+
+  users ||--o{ exercises : owns
+  exercise_categories ||--o{ exercises : categorizes
+  exercises ||--o{ exercise_tags : tagged_by
+  tags ||--o{ exercise_tags : applies
+
+  users ||--o{ plans : owns
+  users ||--o{ workout_templates : creates
+  workout_templates ||--o{ template_exercises : includes
+  workout_templates ||--o{ template_muscle_groups : targets
+  workout_templates ||--o{ template_ratings : rated_by
+  exercises ||--o{ template_exercises : used_in
+
+  plans ||--o{ sessions : schedules
+  workout_templates ||--o{ sessions : instantiates
+  users ||--o{ sessions : owns
+  sessions ||--o{ session_exercises : includes
+  session_exercises ||--o{ exercise_sets : has
+  exercises ||--o{ session_exercises : performed_in
+
+  users ||--o{ personal_records : achieves
+  exercises ||--o{ personal_records : recorded_for
+  session_exercises ||--o{ personal_records : achieved_in
+
+  users ||--o{ body_measurements : tracks
+  users ||--o{ recovery_logs : logs
+
+  users ||--o{ points_events : earns
+  users ||--|| user_points_balance : balance
+  badges ||--o{ badge_awards : defines
+  users ||--o{ badge_awards : receives
+
+  users ||--o{ feed_items : publishes
+  feed_items ||--o{ share_links : shared_via
+  sessions ||--o{ share_links : shared_via
+  users ||--o{ followers : follows
+  feed_items ||--o{ likes : liked_by
+  sessions ||--o{ bookmarks : bookmarked_by
+  feed_items ||--o{ comments : has
+  comments ||--o{ comments : replies
+  users ||--o{ notifications : receives
+
+  users ||--o{ media_assets : uploads
+
+  users ||--o{ audit_log : produces
+  idempotency_keys }o--|| users : created_by
+
+  users ||--o{ translation_cache : owns
+  translation_fields ||--o{ translations : validates
+
+  code_sets ||--o{ code_values : contains
+  code_values ||--o{ code_value_i18n : localizes
+
+  attributes ||--o{ attribute_scopes : scoped_to
+  attributes ||--o{ attribute_values : recorded_as
+  code_values ||--o{ attribute_values : used_as_unit
+  code_values ||--o{ attribute_values : used_as_code
+  users ||--o{ attribute_values : owns
+  sessions ||--o{ attribute_values : owns
+  exercises ||--o{ attribute_values : owns
+  workout_templates ||--o{ attribute_values : owns
+  plans ||--o{ attribute_values : owns
+  session_exercises ||--o{ attribute_values : owns
+  exercise_sets ||--o{ attribute_values : owns
+  body_measurements ||--o{ attribute_values : owns
+  recovery_logs ||--o{ attribute_values : owns
+  personal_records ||--o{ attribute_values : owns
+  feed_items ||--o{ attribute_values : owns
+  comments ||--o{ attribute_values : owns
+  badges ||--o{ attribute_values : owns
+  badge_awards ||--o{ attribute_values : owns
+  points_events ||--o{ attribute_values : owns
+  user_points_balance ||--o{ attribute_values : owns
+  media_assets ||--o{ attribute_values : owns
+  audit_log ||--o{ attribute_values : owns
+  idempotency_keys ||--o{ attribute_values : owns
+  verification_tokens ||--o{ attribute_values : owns
+  reset_tokens ||--o{ attribute_values : owns
+  user_sessions ||--o{ attribute_values : owns

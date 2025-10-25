@@ -1,0 +1,583 @@
+erDiagram
+  %% =========================================================
+  %% Identity & Security
+  %% =========================================================
+  users {
+    uuid        id PK
+    citext      username UNIQUE
+    text        display_name
+    text        password_hash
+    text        status            "ENUM active|suspended|deleted"
+    text        locale
+    text        preferred_lang
+    timestamptz created_at
+    timestamptz deleted_at
+  }
+
+  roles {
+    uuid id PK
+    text code UNIQUE
+    text name
+    text description
+  }
+
+  user_roles {
+    uuid user_id  FK "-> users.id"
+    uuid role_id  FK "-> roles.id"
+    timestamptz assigned_at
+    %% PK (user_id, role_id)
+  }
+
+  profiles {
+    uuid   user_id PK FK "-> users.id  (ON DELETE CASCADE)"
+    citext alias UNIQUE
+    uuid   avatar_asset_id FK "-> media_assets.id"
+    text   bio
+    date   date_of_birth        "immutable"
+    text   gender               "ENUM man|woman|diverse|prefer_not_to_say (immutable)"
+    numeric(6,2) weight_kg      "normalized to kg"
+    text   weight_unit          "ENUM kg|lb (preferred unit)"
+    text   measurement_system   "ENUM metric|imperial|mixed"
+    jsonb  unit_preferences     "{\"weight\":\"kg\",\"distance\":\"km\",\"height\":\"cm\",\"temperature\":\"c\"}"
+    text   fitness_level        "ENUM beginner|intermediate|advanced|elite"
+    text   training_frequency   "ENUM rarely|1_2_per_week|3_4_per_week|5_plus_per_week"
+    text   visibility           "ENUM private|link|public"
+    text   timezone             "e.g., Europe/Berlin"
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at
+  }
+
+  user_sessions {
+    uuid        id PK
+    uuid        user_id      FK "-> users.id (ON DELETE CASCADE)"
+    uuid        refresh_jti  UNIQUE "refresh token family id"
+    text        device_id
+    text        user_agent
+    inet        ip
+    timestamptz created_at
+    timestamptz last_used_at
+    timestamptz expires_at
+    timestamptz revoked_at
+    %% INDEX (user_id, last_used_at DESC)
+    %% OPTIONAL UNIQUE (user_id, device_id) WHERE revoked_at IS NULL
+  }
+
+  verification_tokens {
+    uuid        id PK
+    uuid        user_id   FK "-> users.id (ON DELETE SET NULL)"
+    text        token     UNIQUE
+    text        purpose   "ENUM email_verify|phone_verify"
+    timestamptz expires_at
+    timestamptz consumed_at
+    timestamptz created_at
+  }
+
+  reset_tokens {
+    uuid        id PK
+    uuid        user_id   FK "-> users.id (ON DELETE SET NULL)"
+    text        token     UNIQUE
+    timestamptz expires_at
+    timestamptz consumed_at
+    timestamptz created_at
+  }
+
+  %% =========================================================
+  %% Catalog: Exercises, Categories, Tags (i18n separated)
+  %% =========================================================
+  exercise_categories {
+    uuid id PK
+    text slug UNIQUE
+    text title
+    timestamptz created_at
+  }
+
+  exercises {
+    uuid id PK
+    uuid owner_id    FK "-> users.id (NULL = global)"
+    text name
+    uuid category_id FK "-> exercise_categories.id"
+    text type_code     "ENUM strength|cardio|flexibility|balance|sport"
+    text muscle_group  "ENUM chest|back|legs|shoulders|arms|core|full_body"
+    text equipment     "ENUM barbell|dumbbell|machine|bodyweight|cable|other"
+    boolean is_public
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz archived_at       "soft archive for content"
+    %% INDEX idx_exercises_owner_public (owner_id, is_public)
+    %% INDEX idx_exercises_category_live (category_id) WHERE archived_at IS NULL
+  }
+
+  tags {
+    uuid id PK
+    text slug UNIQUE
+    text label
+  }
+
+  exercise_tags {
+    uuid exercise_id FK "-> exercises.id"
+    uuid tag_id      FK "-> tags.id"
+    %% PK (exercise_id, tag_id)
+  }
+
+  translation_fields {
+    text entity_type
+    text field_key
+    %% PK (entity_type, field_key)
+  }
+
+  translations {
+    uuid id PK
+    text entity_type     "ENUM exercise|badge|workout_template|exercise_category|..."
+    uuid entity_id
+    text lang            "ISO 639-1"
+    text field_key       "e.g., name|description|instructions"
+    text value
+    timestamptz created_at
+    timestamptz updated_at
+    %% UNIQUE (entity_type, entity_id, lang, field_key)
+    %% FK (entity_type, field_key) -> translation_fields
+    %% INDEX idx_translations_lookup (lang, entity_type)
+  }
+
+  %% =========================================================
+  %% Planning & Logging
+  %% =========================================================
+  plans {
+    uuid id PK
+    uuid user_id  FK "-> users.id"
+    text title
+    text status          "ENUM active|archived"
+    text recurrence_rule "RFC 5545 RRULE"
+    text notes
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz archived_at
+  }
+
+  workout_templates {
+    uuid id PK
+    uuid user_id  FK "-> users.id"
+    text name
+    text description
+    smallint estimated_duration_min
+    text difficulty "ENUM beginner|intermediate|advanced"
+    smallint times_used
+    numeric(3,2) avg_rating
+    boolean is_public
+    text visibility "ENUM private|link|public"
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz archived_at     "soft archive for content"
+  }
+
+  template_muscle_groups {
+    uuid template_id FK "-> workout_templates.id (ON DELETE CASCADE)"
+    text muscle_group "ENUM chest|back|legs|shoulders|arms|core|full_body"
+    %% PK (template_id, muscle_group)
+  }
+
+  template_exercises {
+    uuid id PK
+    uuid template_id FK "-> workout_templates.id (ON DELETE CASCADE)"
+    uuid exercise_id FK "-> exercises.id"
+    int  order_index
+    int  target_sets
+    text target_reps  "e.g., 8-12 or 10"
+    text target_rest  "e.g., 90s"
+    text notes
+    timestamptz updated_at
+    %% UNIQUE (template_id, order_index)
+    %% INDEX  (template_id, order_index)
+  }
+
+  sessions {
+    uuid id PK
+    uuid owner_id     FK "-> users.id"
+    uuid plan_id      FK "-> plans.id (nullable)"
+    uuid template_id  FK "-> workout_templates.id (nullable)"
+    uuid source_session_id FK "-> sessions.id (nullable)"
+    text title
+    timestamptz planned_at
+    text recurrence_rule "RFC 5545 RRULE"
+    timestamptz started_at
+    timestamptz completed_at
+    text status           "ENUM planned|in_progress|completed|canceled"
+    text visibility       "ENUM private|link|public"
+    integer calories
+    text notes
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at "soft delete (archive)"
+    %% CHECK full lifecycle:
+    %% (status='planned'     AND started_at IS NULL AND completed_at IS NULL) OR
+    %% (status='in_progress' AND started_at IS NOT NULL AND completed_at IS NULL) OR
+    %% (status='completed'   AND started_at IS NOT NULL AND completed_at IS NOT NULL) OR
+    %% (status='canceled')
+    %% CHECK (started_at IS NULL OR started_at >= planned_at)
+    %% CHECK (completed_at IS NULL OR completed_at >= started_at)
+    %% (Optional) CHECK: plan_id IS NULL OR template_id IS NULL
+    %% INDEX idx_sessions_owner_status (owner_id, status, planned_at DESC)
+    %% INDEX idx_sessions_completed (completed_at DESC) WHERE status = 'completed'
+  }
+
+  session_exercises {
+    uuid id PK
+    uuid session_id   FK "-> sessions.id (ON DELETE CASCADE)"
+    uuid exercise_id  FK "-> exercises.id"
+    int  order_index
+    text notes
+    timestamptz created_at
+    timestamptz updated_at
+    %% UNIQUE (session_id, order_index)
+    %% INDEX  (session_id, order_index)
+  }
+
+  exercise_sets {
+    uuid id PK
+    uuid session_exercise_id FK "-> session_exercises.id (ON DELETE CASCADE)"
+    int  order_index
+    smallint reps
+    numeric(10,2) weight_kg
+    int  distance_m
+    int  duration_sec
+    smallint rpe              "1-10"
+    text set_type             "ENUM working|warmup|dropset|amrap|failure"
+    text tempo                "e.g., 3-0-1-0 or NULL"
+    smallint rest_sec         "actual rest taken"
+    boolean completed         "false if skipped"
+    text notes
+    timestamptz created_at
+    timestamptz updated_at
+    %% UNIQUE (session_exercise_id, order_index)
+    %% CHECK (rpe BETWEEN 1 AND 10)
+    %% INDEX idx_exercise_sets_session_ex (session_exercise_id, order_index)
+  }
+
+  %% =========================================================
+  %% Progress Tracking
+  %% =========================================================
+  personal_records {
+    uuid id PK
+    uuid user_id     FK "-> users.id"
+    uuid exercise_id FK "-> exercises.id"
+    text metric        "ENUM 1rm|5rm|10rm|max_distance|best_time|max_reps"
+    numeric(10,2) value
+    text unit          "ENUM kg|lb|m|km|sec|min|reps"
+    timestamptz achieved_at
+    uuid session_exercise_id FK "-> session_exercises.id (nullable)"
+    boolean is_current        "only one true per (user,exercise,metric)"
+    timestamptz created_at
+    %% UNIQUE (user_id, exercise_id, metric) WHERE is_current = true
+    %% INDEX  idx_pr_current  (user_id, exercise_id, metric) WHERE is_current = true
+    %% INDEX  idx_pr_history  (user_id, exercise_id, metric, achieved_at DESC)
+  }
+
+  body_measurements {
+    uuid id PK
+    uuid user_id FK "-> users.id"
+    date measurement_date
+    numeric(6,2) weight_kg
+    numeric(4,2) body_fat_pct
+    numeric(6,2) chest_cm
+    numeric(6,2) waist_cm
+    numeric(6,2) hips_cm
+    numeric(6,2) thigh_cm
+    numeric(6,2) bicep_cm
+    text notes
+    timestamptz created_at
+    %% UNIQUE (user_id, measurement_date)
+    %% INDEX idx_body_measurements_user_date (user_id, measurement_date DESC)
+  }
+
+  recovery_logs {
+    uuid id PK
+    uuid user_id FK "-> users.id"
+    date log_date
+    smallint sleep_hours
+    smallint sleep_quality  "1-10"
+    smallint soreness_level "1-10"
+    smallint stress_level   "1-10"
+    smallint energy_level   "1-10"
+    text notes
+    timestamptz created_at
+    %% UNIQUE (user_id, log_date)
+  }
+
+  %% =========================================================
+  %% Gamification (ledger SoT; caches separate)
+  %% =========================================================
+  badges {
+    uuid id PK
+    text badge_type     "ENUM milestone|streak|achievement|special"
+    text code UNIQUE    "e.g., first_workout|100_workouts|30_day_streak"
+    text title
+    text description
+    text icon_url
+    int  display_order
+  }
+
+  badge_awards {
+    uuid id PK
+    uuid user_id  FK "-> users.id"
+    uuid badge_id FK "-> badges.id"
+    timestamptz awarded_at
+    %% UNIQUE (user_id, badge_id)
+    %% INDEX idx_badge_awards_user (user_id, awarded_at DESC)
+  }
+
+  points_events {
+    uuid id PK
+    uuid user_id    FK "-> users.id"
+    text source       "ENUM session_completed|pr_achieved|streak|social"
+    uuid source_id    "entity id for dedupe"
+    int  points
+    int  calories     "optional"
+    text algorithm_version
+    timestamptz created_at
+    text unique_key UNIQUE "hash(user_id,source,source_id)"
+    %% UNIQUE (user_id, source, source_id)
+    %% INDEX  (user_id, created_at DESC)
+    %% PARTITION BY RANGE (created_at)
+  }
+
+  user_points_balance {
+    uuid user_id PK FK "-> users.id"
+    bigint total_points
+    timestamptz last_updated_at
+    %% MATERIALIZED VIEW or trigger-maintained cache
+  }
+
+  %% =========================================================
+  %% Feed, Social & Media
+  %% =========================================================
+  feed_items {
+    uuid id PK
+    uuid owner_id     FK "-> users.id"
+    text kind           "ENUM session|achievement|pr|milestone|note"
+    text target_type    "ENUM session|exercise|profile|custom"
+    uuid target_id
+    text visibility     "ENUM private|link|public"
+    numeric(10,2) score "for ranking"
+    timestamptz published_at
+    timestamptz created_at
+    timestamptz updated_at
+    timestamptz deleted_at       "soft delete (content)"
+    %% INDEX idx_feed_visibility_published (visibility, published_at DESC)
+    %% INDEX idx_feed_owner (owner_id, published_at DESC)
+  }
+
+  share_links {
+    uuid id PK
+    uuid feed_item_id FK "-> feed_items.id (ON DELETE SET NULL)"
+    uuid session_id   FK "-> sessions.id (ON DELETE SET NULL)"
+    text token UNIQUE     "unguessable"
+    int  view_count       "DEFAULT 0"
+    int  max_views        "optional"
+    timestamptz expires_at "optional"
+    timestamptz created_at
+    timestamptz revoked_at
+    %% CHECK: exactly one of (feed_item_id, session_id) is set
+  }
+
+  followers {
+    uuid follower_id FK "-> users.id"
+    uuid followee_id FK "-> users.id"
+    timestamptz created_at
+    %% PK (follower_id, followee_id)
+    %% CHECK (follower_id != followee_id)
+    %% INDEX idx_followers_followee (followee_id)
+  }
+
+  likes {
+    uuid user_id      FK "-> users.id"
+    uuid feed_item_id FK "-> feed_items.id (ON DELETE CASCADE)"
+    timestamptz created_at
+    %% PK (user_id, feed_item_id)
+    %% INDEX idx_likes_feed_item (feed_item_id, created_at DESC)
+  }
+
+  bookmarks {
+    uuid user_id    FK "-> users.id"
+    uuid session_id FK "-> sessions.id"
+    timestamptz created_at
+    %% PK (user_id, session_id)
+    %% INDEX idx_bookmarks_user (user_id, created_at DESC)
+  }
+
+  comments {
+    uuid id PK
+    uuid feed_item_id FK "-> feed_items.id (ON DELETE CASCADE)"
+    uuid user_id      FK "-> users.id"
+    uuid parent_id    FK "-> comments.id (nullable)"
+    text body
+    timestamptz created_at
+    timestamptz edited_at
+    timestamptz deleted_at  "tombstone"
+    %% INDEX idx_comments_feed_item (feed_item_id, created_at)
+    %% INDEX idx_comments_parent (parent_id) WHERE parent_id IS NOT NULL
+  }
+
+  notifications {
+    uuid id PK
+    uuid user_id   FK "-> users.id"  "recipient"
+    text type      "ENUM like|comment|follow|pr|badge|mention"
+    uuid actor_id  FK "-> users.id"  "who triggered it"
+    text target_type "ENUM feed_item|comment|session|badge|profile"
+    uuid target_id
+    boolean is_read       "DEFAULT false"
+    text priority         "ENUM low|normal|high"
+    text group_key        "for batching"
+    smallint group_count  "number of similar notifications"
+    timestamptz expires_at
+    timestamptz created_at
+    timestamptz read_at
+    %% UNIQUE (user_id, type, target_type, target_id) WHERE is_read = false AND expires_at IS NULL
+    %% INDEX idx_notifications_user_unread (user_id, created_at DESC) WHERE is_read = false
+    %% INDEX idx_notifications_expires (expires_at) WHERE expires_at IS NOT NULL
+  }
+
+  leaderboard_cache_global {
+    text type
+    date period_start
+    date period_end
+    int  rank
+    uuid user_id  FK "-> users.id"
+    numeric(12,2) value
+    timestamptz computed_at
+    %% PK (type, period_start, period_end, user_id)
+  }
+
+  leaderboard_cache_scoped {
+    text type
+    text scope_type   "ENUM club|challenge|group"
+    uuid scope_id
+    date period_start
+    date period_end
+    int  rank
+    uuid user_id  FK "-> users.id"
+    numeric(12,2) value
+    timestamptz computed_at
+    %% PK (type, scope_type, scope_id, period_start, period_end, user_id)
+  }
+
+  media_assets {
+    uuid id PK
+    uuid owner_id     FK "-> users.id"
+    text target_type  "ENUM profile|session|exercise|feed_item"
+    uuid target_id
+    text object_key   "S3/storage key"
+    text mime_type
+    text kind         "ENUM image|video|file"
+    int  size_bytes
+    int  width_px
+    int  height_px
+    int  duration_sec
+    boolean av_scan_passed
+    timestamptz created_at
+    timestamptz updated_at
+    %% INDEX idx_media_assets_target (target_type, target_id)
+  }
+
+  %% =========================================================
+  %% Operations, Idempotency, Audit
+  %% =========================================================
+  audit_log {
+    uuid id PK
+    uuid actor_id   FK "-> users.id (nullable)"
+    text action       "e.g., user.created|session.completed|exercise.deleted"
+    text entity_type  "ENUM users|sessions|exercises|..."
+    uuid entity_id
+    uuid request_id
+    jsonb meta        "PII-free metadata"
+    timestamptz created_at
+    %% PARTITION BY RANGE (created_at)
+    %% INDEX idx_audit_entity (entity_type, entity_id, created_at DESC)
+    %% INDEX idx_audit_actor (actor_id, created_at DESC) WHERE actor_id IS NOT NULL
+  }
+
+  idempotency_keys {
+    uuid key PK
+    uuid user_id     FK "-> users.id (nullable)"
+    text fingerprint "hash of normalized request"
+    text status      "ENUM stored|completed|expired|failed"
+    text response_hash
+    timestamptz expires_at
+    timestamptz created_at
+    %% INDEX idx_idempotency_expires (expires_at) WHERE status != 'expired'
+  }
+
+  translation_cache {
+    uuid id PK
+    uuid owner_id   FK "-> users.id (nullable)"
+    uuid hash UNIQUE "md5(source||lang)::uuid"
+    text source
+    text lang         "ISO 639-1"
+    text translated
+    timestamptz created_at
+    timestamptz expires_at "optional TTL"
+    %% CACHE: do not treat as SoT
+  }
+
+  %% =========================================================
+  %% Relationships (high-level)
+  %% =========================================================
+  users ||--o{ user_roles : has
+  roles ||--o{ user_roles : maps
+
+  users ||--|| profiles : "1:1"
+  users ||--o{ user_sessions : has
+  users ||--o{ verification_tokens : verifies
+  users ||--o{ reset_tokens : resets
+
+  users ||--o{ exercises : owns
+  exercise_categories ||--o{ exercises : categorizes
+  exercises ||--o{ exercise_tags : tagged_by
+  tags ||--o{ exercise_tags : applies
+
+  users ||--o{ plans : owns
+  users ||--o{ workout_templates : creates
+  workout_templates ||--o{ template_exercises : includes
+  workout_templates ||--o{ template_muscle_groups : targets
+  exercises ||--o{ template_exercises : "used in"
+
+  plans ||--o{ sessions : schedules
+  workout_templates ||--o{ sessions : "instantiated as"
+  users ||--o{ sessions : owns
+  sessions ||--o{ session_exercises : includes
+  session_exercises ||--o{ exercise_sets : has
+  exercises ||--o{ session_exercises : "performed in"
+
+  users ||--o{ personal_records : achieves
+  exercises ||--o{ personal_records : "records for"
+  session_exercises ||--o{ personal_records : "achieved in"
+
+  users ||--o{ recovery_logs : logs
+
+  users ||--o{ points_events : earns
+  users ||--|| user_points_balance : "total for"
+  badges ||--o{ badge_awards : defines
+  users ||--o{ badge_awards : receives
+
+  users ||--o{ feed_items : publishes
+  feed_items ||--o{ share_links : "shared via"
+  sessions ||--o{ share_links : "shared via"
+  users ||--o{ followers : follows
+  feed_items ||--o{ likes : "liked by"
+  sessions ||--o{ bookmarks : "bookmarked by"
+  feed_items ||--o{ comments : has
+  users ||--o{ notifications : "receives"
+
+  users ||--o{ leaderboard_cache_global : ranked
+  users ||--o{ leaderboard_cache_scoped : ranked
+  users ||--o{ media_assets : uploads
+  users ||--o{ body_measurements : tracks
+
+  users ||--o{ audit_log : produces
+  idempotency_keys }o--|| users : "created by (optional)"
+  users ||--o{ translation_cache : owns
+  translation_fields ||--o{ translations : "validates"
+  translations }o--|| exercises : "localizes (example)"
+  exercise_categories ||--o{ translations : "localizes"
+  badges ||--o{ translations : "localizes"
+  workout_templates ||--o{ translations : "localizes"
