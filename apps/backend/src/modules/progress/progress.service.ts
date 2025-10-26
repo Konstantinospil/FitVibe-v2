@@ -3,6 +3,7 @@ import { insertAudit } from "../common/audit.util.js";
 import type {
   ExercisesPayload,
   PlanProgress,
+  ProgressReport,
   ProgressSummary,
   TrendGroupBy,
   TrendsPayload,

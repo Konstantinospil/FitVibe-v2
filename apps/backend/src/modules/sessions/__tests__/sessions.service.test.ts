@@ -15,6 +15,7 @@ import {
   refreshSessionSummary,
   sessionsExistAtDates,
 } from "../sessions.repository";
+import * as pointsService from "../../points/points.service";
 
 type TransactionHandler = (trx: jest.Mock) => unknown;
 
@@ -67,6 +68,7 @@ const mockedGetSessionWithDetails = getSessionWithDetails as jest.MockedFunction
 >;
 const mockedRecomputeProgress = recomputeProgress as jest.MockedFunction<typeof recomputeProgress>;
 const mockedInsertAudit = insertAudit as jest.MockedFunction<typeof insertAudit>;
+const awardPointsForSessionMock = jest.spyOn(pointsService, "awardPointsForSession");
 const mockedRefreshSessionSummary = refreshSessionSummary as jest.MockedFunction<
   typeof refreshSessionSummary
 >;
@@ -94,6 +96,12 @@ function setupTransaction(planResult?: unknown) {
 describe("sessions.service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    awardPointsForSessionMock.mockReset().mockResolvedValue({
+      awarded: true,
+      pointsAwarded: 120,
+      eventId: "event-1",
+      badgesAwarded: [],
+    });
     mockedUuid.mockReset();
     mockedDb.mockReset();
     mockedDb.transaction = mockedTransaction;

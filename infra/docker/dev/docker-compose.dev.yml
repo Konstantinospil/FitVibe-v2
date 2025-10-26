@@ -13,25 +13,32 @@ services:
 
   backend:
     build:
-      context: ..
-      dockerfile: ./infra/Dockerfile.backend
+      context: ../../..
+      dockerfile: infra/docker/dev/Dockerfile.backend
     container_name: fitvibe_backend
-    # The file lives NEXT to this compose file, so no "infra/infra" mistake
-    env_file: ./.env.example
+    env_file: ../../.env.example
     depends_on:
       - db
     ports:
       - "4000:4000"
+    volumes:
+      - ../keys:/app/keys:ro
+      - ../../apps/backend/src:/app/apps/backend/src:ro
+      - ../../packages:/app/packages:ro
+    networks:
+      default:
+        aliases:
+          - fitvibe_backend
 
   frontend:
     build:
-      context: ..
-      dockerfile: ./infra/Dockerfile.frontend
+      context: ../../..
+      dockerfile: infra/docker/dev/Dockerfile.frontend
     container_name: fitvibe_frontend
     depends_on:
       - backend
     ports:
-      - "5173:80" # local dev browser → nginx:80
+      - "5173:80"
 
   nginx:
     image: nginx:stable-alpine

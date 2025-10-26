@@ -323,13 +323,11 @@ describe("dsr.service", () => {
     tables.user_points.push({ id: "point-1", user_id: userId });
     tables.badges.push({ id: "badge-1", user_id: userId });
     tables.followers.push({
-      id: "follow-1",
       follower_id: userId,
       following_id: "other",
       created_at: now,
     });
     tables.followers.push({
-      id: "follow-2",
       follower_id: "other",
       following_id: userId,
       created_at: now,

@@ -23,9 +23,16 @@ const refreshReuseCounter = new client.Counter({
   help: "Number of refresh token reuse incidents that triggered session family revocation",
 });
 
+const pointsAwardedCounter = new client.Counter({
+  name: "points_awarded_total",
+  help: "Total points awarded grouped by rule",
+  labelNames: ["rule"],
+});
+
 register.registerMetric(httpRequestDuration);
 register.registerMetric(httpRequestsTotal);
 register.registerMetric(refreshReuseCounter);
+register.registerMetric(pointsAwardedCounter);
 
 function resolveRouteLabel(req: Request): string {
   const maybeRoute: unknown = req.route;
@@ -68,4 +75,8 @@ export async function metricsRoute(_req: Request, res: Response) {
 
 export function incrementRefreshReuse() {
   refreshReuseCounter.inc();
+}
+
+export function incrementPointsAwarded(rule: string, amount: number) {
+  pointsAwardedCounter.inc({ rule }, amount);
 }

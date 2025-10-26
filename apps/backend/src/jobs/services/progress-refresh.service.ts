@@ -5,7 +5,7 @@ import { refreshSessionSummary } from "../../modules/sessions/sessions.repositor
 export class ProgressRefreshService {
   async refreshAll(concurrent = true): Promise<void> {
     await refreshSessionSummary(concurrent);
-    logger.info("[jobs] Progress analytics materialized views refreshed", { concurrent });
+    logger.info({ concurrent }, "[jobs] Progress analytics materialized views refreshed");
   }
 }
 

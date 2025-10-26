@@ -21,6 +21,12 @@ import { requireRole } from "../common/rbac.middleware.js";
 import { rateLimit } from "../common/rateLimiter.js";
 import { usersAvatarRouter } from "./users.avatar.routes.js";
 import { asyncHandler } from "../../utils/async-handler.js";
+import {
+  followUserHandler,
+  listFollowersHandler,
+  listFollowingHandler,
+  unfollowUserHandler,
+} from "../feed/feed.controller.js";
 
 export const usersRouter = Router();
 
@@ -102,5 +108,27 @@ usersRouter.patch(
   requireAuth,
   requireRole("admin"),
   asyncHandler(adminChangeStatus),
+);
+usersRouter.post(
+  "/:alias/follow",
+  rateLimit("user_follow", 50, 86400),
+  requireAuth,
+  asyncHandler(followUserHandler),
+);
+usersRouter.delete(
+  "/:alias/follow",
+  rateLimit("user_unfollow", 50, 86400),
+  requireAuth,
+  asyncHandler(unfollowUserHandler),
+);
+usersRouter.get(
+  "/:alias/followers",
+  rateLimit("user_followers", 120, 60),
+  asyncHandler(listFollowersHandler),
+);
+usersRouter.get(
+  "/:alias/following",
+  rateLimit("user_following", 120, 60),
+  asyncHandler(listFollowingHandler),
 );
 usersRouter.get("/:id", requireAuth, requireRole("admin"), asyncHandler(getById));

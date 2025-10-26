@@ -77,7 +77,6 @@ export interface UpdateSessionDTO {
   started_at?: string | null;
   completed_at?: string | null;
   calories?: number | null;
-  points?: number | null;
   exercises?: SessionExerciseInput[];
 }
 

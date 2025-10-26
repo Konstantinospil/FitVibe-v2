@@ -12,3 +12,5 @@ export class QueueService {
     // TODO: implement queue consumer
   }
 }
+
+export const queueService = new QueueService();

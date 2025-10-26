@@ -1,6 +1,12 @@
-import type { Knex } from "knex";
 import dotenv from "dotenv";
+import type { Knex } from "knex";
+import path from "node:path";
+
 dotenv.config();
+
+const baseDir = path.resolve(__dirname, "..");
+const migrationsDir = path.resolve(baseDir, "db", "migrations");
+const seedsDir = path.resolve(baseDir, "db", "seeds");
 
 const shared: Partial<Knex.Config> = {
   client: "pg",
@@ -8,9 +14,9 @@ const shared: Partial<Knex.Config> = {
   migrations: {
     tableName: "knex_migrations",
     extension: "ts",
-    directory: "./src/db/migrations",
+    directory: migrationsDir,
   },
-  seeds: { extension: "ts", directory: "./src/db/seeds" },
+  seeds: { extension: "ts", directory: seedsDir },
 };
 
 const config: { [key: string]: Knex.Config } = {

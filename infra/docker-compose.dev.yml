@@ -14,7 +14,7 @@ services:
   backend:
     build:
       context: ..
-      dockerfile: ./infra/Dockerfile.backend
+      dockerfile: ./infra/docker/dev/Dockerfile.backend
       target: runtime
     container_name: fitvibe_backend
     # The file lives NEXT to this compose file, so no "infra/infra" mistake
@@ -26,16 +26,21 @@ services:
     depends_on:
       - db
     ports:
-      - "3000:3000"
+      - "4000:4000"
     volumes:
       # live-reload / hot-reload mounting for local dev
+      - ../keys:/app/keys:ro
       - ../apps/backend/src:/app/apps/backend/src:ro
       - ../packages:/app/packages:ro
+
+    networks:
+      default:
+        aliases:
+          - fitvibe_backend
   frontend:
     build:
       context: ..
-      dockerfile: ./infra/Dockerfile.frontend
-      target: builder
+      dockerfile: ./infra/docker/dev/Dockerfile.frontend
     container_name: fitvibe_frontend
     restart: unless-stopped
     depends_on:
@@ -43,7 +48,7 @@ services:
     ports:
       - "5173:80" # local dev browser → nginx:80
     environment:
-      VITE_API_URL: http://localhost:3000
+      VITE_API_URL: http://localhost:4000
   nginx:
     image: nginx:stable-alpine
     container_name: fitvibe_nginx

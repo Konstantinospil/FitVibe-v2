@@ -28,6 +28,7 @@ import type {
   SessionExercise,
 } from "./sessions.types";
 import { recomputeProgress } from "../plans/plans.service";
+import { awardPointsForSession } from "../points/points.service.js";
 import { insertAudit } from "../common/audit.util.js";
 import { HttpError } from "../../utils/http.js";
 
@@ -453,9 +454,6 @@ export async function updateOne(
   if (dto.calories !== undefined) {
     updates.calories = ensureNonNegativeInteger("calories", dto.calories, "session") ?? null;
   }
-  if (dto.points !== undefined) {
-    updates.points = ensureNonNegativeInteger("points", dto.points, "session") ?? null;
-  }
   if (targetDeletedAt !== undefined) {
     updates.deleted_at = targetDeletedAt;
   }
@@ -483,6 +481,18 @@ export async function updateOne(
 
   const statusChanged = current.status !== updated.status;
   const exercisesTouched = normalizedExercises !== null;
+
+  const shouldAwardPoints =
+    updated.status === "completed" &&
+    (statusChanged || current.points === null || current.points === undefined);
+
+  if (shouldAwardPoints) {
+    const awardResult = await awardPointsForSession(updated);
+    if (awardResult.pointsAwarded !== null) {
+      updated.points = awardResult.pointsAwarded;
+    }
+  }
+
   if (statusChanged || exercisesTouched) {
     await refreshSessionSummary();
   }

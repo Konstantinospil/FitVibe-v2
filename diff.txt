@@ -1,0 +1,55 @@
+Database schema comparison (documentation vs current implementation)
+====================================================================
+
+1. Missing tables in implementation (defined in TDD §6 / diagrams)
+   - feed_items (with kind_id, visibility_id, etc.)
+   - likes (junction feed_item_id/user_id with composite PK)
+   - bookmarks (junction session_id/user_id with composite PK)
+   - comments (threaded comments, parent_id, deleted_at)
+
+   Impact: inability to support documented feed/social features (likes, bookmarks,
+   comments, public feed metadata). Aligning requires adding new tables; these are additive
+   migrations (non-breaking if backfilled appropriately).
+
+2. share_links table structure mismatch
+   - Target: optional feed_item_id or session_id, CHECK ensures exactly one is set,
+     token unique, optional max_views/expires_at; no created_by column.
+   - Current: session_id NOT NULL, no feed_item support, created_by column, no CHECK,
+     indexes limited to session_id.
+
+   Impact: aligning would require altering existing table (adding feed_item_id, CHECK,
+   possibly dropping created_by). If production data exists, this is a breaking change
+   (requires data migration and potential downtime).
+
+3. followers table primary key expectations
+   - Target: composite primary key (follower_id, followee_id) with CHECK follower != followee.
+   - Current: surrogate id UUID primary key plus unique constraint on follower/following.
+
+   Impact: structural difference; converting to composite PK would require dropping pk,
+   recreating constraints—breaking if existing foreign keys rely on surrogate id (currently
+   none). Migration would require careful plan but feasible.
+
+4. points ledger naming differences
+   - Target table name points_events with columns (source, source_id, ...).
+   - Current table user_points with columns (source_type, source_id, ...).
+
+   Impact: purely naming mismatch; functionality equivalent. Renaming would break existing
+   code unless all references updated. No immediate action required.
+
+5. Additional supporting tables referenced in documentation/diagrams
+   - feed_items attributes (score, published_at) absent -> documented indices missing.
+   - moderation/report tables (e.g., reports, notifications) appear in diagrams but not
+     implemented.
+
+   Impact: features depending on these tables are currently unsupported. Adding them would be
+   additive but requires new migrations and application logic.
+
+Breaking effect assessment
+--------------------------
+- Adding missing tables (feed_items, likes, bookmarks, comments) is additive (non-breaking)
+  provided new functionality gates access to the new tables.
+- Altering share_links to match target (optional feed_item_id + CHECK constraint) is breaking
+  if existing data/apps assume session-only links. Requires migration & code changes.
+- Converting followers to composite PK is breaking for current schema (drop column `id`,
+  adjust queries).
+- Renaming user_points to points_events or altering column names would be breaking.

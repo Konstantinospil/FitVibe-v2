@@ -26,11 +26,11 @@ export function validate<T>(schema: ZodSchema<T>, target: RequestSegment = "body
     const parsed = result.data;
 
     if (target === "body") {
-      (req as Request & { body: T }).body = parsed;
+      req.body = parsed as typeof req.body;
     } else if (target === "query") {
-      (req as Request & { query: T }).query = parsed;
+      req.query = parsed as unknown as typeof req.query;
     } else {
-      (req as Request & { params: T }).params = parsed;
+      req.params = parsed as unknown as typeof req.params;
     }
 
     (req as Request & { validated?: T }).validated = parsed;

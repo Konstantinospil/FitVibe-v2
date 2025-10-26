@@ -284,49 +284,47 @@ erDiagram
     timestamptz created_at
   }
 
-  %% ========= Gamification =========
-  badges {
-    uuid id PK
-    uuid badge_type_id
-    string code
-    string title
+    %% ========= Gamification =========
+  badge_catalog {
+    string code PK
+    string name
     string description
-    string icon_url
-    int display_order
+    string category
+    string icon
+    int priority
+    jsonb criteria
+    timestamptz created_at
   }
 
-  badge_awards {
+  badges {
     uuid id PK
     uuid user_id
-    uuid badge_id
+    string badge_type
+    jsonb metadata
     timestamptz awarded_at
   }
 
-  points_events {
+  user_points {
     uuid id PK
     uuid user_id
-    string source
+    string source_type
     uuid source_id
     int points
     int calories
     string algorithm_version
+    jsonb metadata
+    timestamptz awarded_at
     timestamptz created_at
   }
-
-  user_points_balance {
-    uuid user_id PK
-    bigint total_points
-    timestamptz last_updated_at
-  }
-
-  %% ========= Feed, Social, Media =========
+%% ========= Feed, Social, Media =========
   feed_items {
     uuid id PK
     uuid owner_id
-    uuid kind_id
-    uuid target_type_id
+    uuid session_id
+    string kind
+    string target_type
     uuid target_id
-    uuid visibility_id
+    string visibility
     numeric score
     timestamptz published_at
     timestamptz created_at
@@ -336,14 +334,15 @@ erDiagram
 
   share_links {
     uuid id PK
-    uuid feed_item_id
     uuid session_id
+    uuid feed_item_id
     string token
     int view_count
     int max_views
     timestamptz expires_at
     timestamptz created_at
     timestamptz revoked_at
+    uuid created_by
   }
 
   followers {
@@ -352,19 +351,19 @@ erDiagram
     timestamptz created_at
   }
 
-  likes {
-    uuid user_id
+  feed_likes {
     uuid feed_item_id
-    timestamptz created_at
-  }
-
-  bookmarks {
     uuid user_id
-    uuid session_id
     timestamptz created_at
   }
 
-  comments {
+  session_bookmarks {
+    uuid session_id
+    uuid user_id
+    timestamptz created_at
+  }
+
+  feed_comments {
     uuid id PK
     uuid feed_item_id
     uuid user_id
@@ -544,19 +543,18 @@ erDiagram
   users ||--o{ body_measurements : tracks
   users ||--o{ recovery_logs : logs
 
-  users ||--o{ points_events : earns
-  users ||--|| user_points_balance : balance
-  badges ||--o{ badge_awards : defines
-  users ||--o{ badge_awards : receives
+  badge_catalog ||--o{ badges : defines
+  users ||--o{ badges : earns
+  users ||--o{ user_points : accrues
 
   users ||--o{ feed_items : publishes
   feed_items ||--o{ share_links : shared_via
   sessions ||--o{ share_links : shared_via
   users ||--o{ followers : follows
-  feed_items ||--o{ likes : liked_by
-  sessions ||--o{ bookmarks : bookmarked_by
-  feed_items ||--o{ comments : has
-  comments ||--o{ comments : replies
+  feed_items ||--o{ feed_likes : liked_by
+  sessions ||--o{ session_bookmarks : bookmarked_by
+  feed_items ||--o{ feed_comments : has
+  feed_comments ||--o{ feed_comments : replies
   users ||--o{ notifications : receives
 
   users ||--o{ media_assets : uploads
@@ -596,3 +594,15 @@ erDiagram
   verification_tokens ||--o{ attribute_values : owns
   reset_tokens ||--o{ attribute_values : owns
   user_sessions ||--o{ attribute_values : owns
+
+
+
+
+
+
+
+
+
+
+
+

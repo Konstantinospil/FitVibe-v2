@@ -1,20 +1,5 @@
-# Node / Editor
-node_modules/
-dist/
-build/
-.vscode/
-.DS_Store
-.env
-.env.*
-!.env.example
-
 # Turbo / pnpm cache
-.turbo/
 .pnpm-store/
-
-# Coverage
-coverage/
-*.log
 
 # Docker
 infra/docker/data/
@@ -25,3 +10,101 @@ infra/docker/tmp/
 tests/perf/lhci-output/
 storage/
 nul
+# ---- FitVibe monorepo .gitignore (Node/PNPM/Turbo/Vite/Express) ----
+
+# --- Node & package managers ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Do NOT ignore lockfiles; pnpm-lock.yaml should be committed.
+
+# --- Build outputs (monorepo-wide) ---
+dist/
+build/
+out/
+.next/
+.cache/
+.esbuild/
+.tsup/
+*.tsbuildinfo
+
+# Per-workspace build artifacts
+/apps/backend/dist/
+/apps/frontend/dist/
+/packages/*/dist/
+
+# --- Turborepo ---
+.turbo/
+turbo/
+
+# --- Vite / tooling caches ---
+vite.config.ts.timestamp-*
+node_modules/.vite/
+.vite/
+
+# --- Test artifacts ---
+coverage/
+.nyc_output/
+reports/
+playwright-report/
+test-results/
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# --- Logs & pids ---
+logs/
+*.log
+*.log.*
+*.pid
+
+# --- Environment files ---
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.schema
+
+# If you keep separate Docker envs, ignore them here:
+docker/*.env
+
+# --- OS / Editor cruft ---
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# --- Temporary & cache dirs ---
+tmp/
+temp/
+.sass-cache/
+
+# --- Database & dumps (adjust if you commit seeds separately) ---
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+dump.sql
+backups/
+
+# --- Uploaded/runtime media (served externally or via object storage) ---
+uploads/
+storage/
+public/uploads/
+apps/backend/uploads/
+
+# --- Local overrides ---
+*.local.json
+*.local.yml
+docker-compose.override.yml
+
+# --- Misc ---
+# Keep Husky hooks committed; do NOT ignore .husky/
+# Keep migration/seed sources committed; compiled JS in dist is ignored above.

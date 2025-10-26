@@ -1,0 +1,120 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "FitVibe: Dev (FE+BE)",
+      "type": "shell",
+      "command": "pnpm dev",
+      "group": "build"
+    },
+    {
+      "label": "FitVibe: Build All",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": "build",
+      "dependsOn": [
+        "FitVibe: Lint + Typecheck"
+      ]
+    },
+    {
+      "label": "FitVibe: Lint + Typecheck",
+      "type": "shell",
+      "command": "pnpm lint && pnpm typecheck",
+      "group": "build",
+      "problemMatcher": [
+        "$eslint-stylish"
+      ]
+    },
+    {
+      "label": "FitVibe: Migrate DB",
+      "type": "shell",
+      "command": "pnpm --filter backend migrate",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Seed Demo Data",
+      "type": "shell",
+      "command": "pnpm --filter backend seed-dev",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Rollback Last Migration",
+      "type": "shell",
+      "command": "pnpm --filter backend migrate:rollback",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Unit + Integration Tests",
+      "type": "shell",
+      "command": "pnpm test",
+      "group": "test",
+      "problemMatcher": [
+        "$tsc"
+      ]
+    },
+    {
+      "label": "FitVibe: E2E Tests (Playwright)",
+      "type": "shell",
+      "command": "pnpm --filter frontend test:e2e",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Performance Tests (k6)",
+      "type": "shell",
+      "command": "pnpm --filter backend test:perf",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Security Scan",
+      "type": "shell",
+      "command": "pnpm audit && snyk test",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Accessibility Audit",
+      "type": "shell",
+      "command": "pnpm --filter frontend test:a11y",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: CI Full Pipeline",
+      "type": "shell",
+      "command": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+      "group": "build",
+      "dependsOn": [
+        "FitVibe: Lint + Typecheck",
+        "FitVibe: Unit + Integration Tests"
+      ]
+    },
+    {
+      "label": "FitVibe: QA Summary Report",
+      "type": "shell",
+      "command": "pnpm --filter backend qa:report",
+      "group": "test"
+    },
+    {
+      "label": "FitVibe: Start Infra Stack",
+      "type": "shell",
+      "command": "docker compose -f infra/docker/docker-compose.dev.yml up -d",
+      "group": "build"
+    },
+    {
+      "label": "FitVibe: Stop Infra Stack",
+      "type": "shell",
+      "command": "docker compose -f infra/docker/docker-compose.dev.yml down",
+      "group": "build"
+    },
+    {
+      "label": "FitVibe: Backup & Restore Test",
+      "type": "shell",
+      "command": "bash infra/scripts/backup_restore.sh",
+      "group": "build"
+    },
+    {
+      "label": "FitVibe: Coverage Upload",
+      "type": "shell",
+      "command": "npx codecov -t $CODECOV_TOKEN",
+      "group": "test"
+    }
+  ]
+}

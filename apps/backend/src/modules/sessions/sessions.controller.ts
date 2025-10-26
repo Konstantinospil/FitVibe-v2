@@ -98,7 +98,6 @@ const updateSchema = z.object({
   started_at: z.string().datetime().optional(),
   completed_at: z.string().datetime().optional(),
   calories: z.number().int().min(0).nullable().optional(),
-  points: z.number().int().min(0).nullable().optional(),
   exercises: z.array(sessionExerciseSchema).max(50).optional(),
 });
 

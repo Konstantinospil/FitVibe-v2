@@ -7,8 +7,13 @@ const USER_POINTS = [
     id: "44444444-5555-6666-7777-888888888888",
     user_id: "22222222-2222-2222-2222-222222222222",
     source_type: "session_completed",
+    source_id: "aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
     algorithm_version: "v1",
     points: 30,
+    calories: 320,
+    metadata: {
+      session_title: "Tempo Run",
+    },
     awarded_at: now,
   },
   {
@@ -17,6 +22,10 @@ const USER_POINTS = [
     source_type: "streak_bonus",
     algorithm_version: "v1",
     points: 15,
+    calories: null,
+    metadata: {
+      streak_days: 3,
+    },
     awarded_at: new Date(now.getTime() + 1000 * 60 * 60 * 6),
   },
 ];

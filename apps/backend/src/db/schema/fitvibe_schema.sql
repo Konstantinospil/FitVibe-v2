@@ -102,8 +102,13 @@ CREATE TABLE exercises (
   description_de text,
   created_at timestamptz NOT NULL,
   updated_at timestamptz NOT NULL,
+  archived_at timestamptz,
   deleted_at timestamptz
 );
+
+CREATE INDEX exercises_owner_active_idx
+  ON exercises(owner_id)
+  WHERE archived_at IS NULL;
 
 CREATE TABLE sessions (
   id uuid PRIMARY KEY,
@@ -121,6 +126,27 @@ CREATE TABLE sessions (
   updated_at timestamptz NOT NULL,
   deleted_at timestamptz
 );
+
+CREATE TABLE plans (
+  id uuid PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  status text NOT NULL DEFAULT 'active',
+  progress_percent numeric(5,2) NOT NULL DEFAULT 0,
+  session_count integer NOT NULL DEFAULT 0,
+  completed_count integer NOT NULL DEFAULT 0,
+  start_date date,
+  end_date date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  archived_at timestamptz
+);
+
+CREATE INDEX idx_plans_owner ON plans(user_id);
+CREATE INDEX idx_plans_status ON plans(status);
+CREATE INDEX idx_plans_owner_active
+  ON plans(user_id)
+  WHERE archived_at IS NULL;
 
 CREATE TABLE session_exercises (
   id uuid PRIMARY KEY,
@@ -163,24 +189,154 @@ CREATE TABLE user_points (
   id uuid PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   source_type text NOT NULL,
+  source_id uuid,
   algorithm_version text,
   points integer NOT NULL,
-  awarded_at timestamptz NOT NULL
+  calories integer,
+  metadata jsonb NOT NULL,
+  awarded_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL
+);
+
+CREATE UNIQUE INDEX user_points_source_unique_idx
+  ON user_points(user_id, source_type, source_id)
+  WHERE source_id IS NOT NULL;
+
+CREATE TABLE badge_catalog (
+  code text PRIMARY KEY,
+  name text NOT NULL,
+  description text NOT NULL,
+  category text NOT NULL,
+  icon text,
+  priority integer NOT NULL,
+  criteria jsonb NOT NULL,
+  created_at timestamptz NOT NULL
 );
 
 CREATE TABLE badges (
   id uuid PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   badge_type text NOT NULL,
-  awarded_at timestamptz NOT NULL
+  awarded_at timestamptz NOT NULL,
+  metadata jsonb NOT NULL,
+  CONSTRAINT badges_badge_type_fk FOREIGN KEY (badge_type) REFERENCES badge_catalog(code) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE UNIQUE INDEX badges_user_badge_unique_idx
+  ON badges(user_id, badge_type);
+
 CREATE TABLE followers (
-  id uuid PRIMARY KEY,
   follower_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   following_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  created_at timestamptz NOT NULL
+  created_at timestamptz NOT NULL,
+  CONSTRAINT followers_no_self CHECK (follower_id <> following_id),
+  PRIMARY KEY (follower_id, following_id)
 );
+
+CREATE TABLE feed_items (
+  id uuid PRIMARY KEY,
+  owner_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_id uuid REFERENCES sessions(id) ON DELETE SET NULL,
+  kind text NOT NULL DEFAULT 'session',
+  target_type text,
+  target_id uuid,
+  visibility text NOT NULL DEFAULT 'private',
+  score numeric(10,2) NOT NULL DEFAULT 0,
+  published_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  deleted_at timestamptz
+);
+
+CREATE INDEX idx_feed_items_visibility_published
+  ON feed_items(visibility, published_at DESC);
+
+CREATE INDEX idx_feed_items_owner
+  ON feed_items(owner_id, published_at DESC);
+
+CREATE TABLE feed_likes (
+  feed_item_id uuid NOT NULL REFERENCES feed_items(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (feed_item_id, user_id)
+);
+
+CREATE INDEX idx_feed_likes_item
+  ON feed_likes(feed_item_id, created_at DESC);
+
+CREATE TABLE session_bookmarks (
+  session_id uuid NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (session_id, user_id)
+);
+
+CREATE TABLE feed_comments (
+  id uuid PRIMARY KEY,
+  feed_item_id uuid NOT NULL REFERENCES feed_items(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  parent_id uuid REFERENCES feed_comments(id) ON DELETE SET NULL,
+  body text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  edited_at timestamptz,
+  deleted_at timestamptz
+);
+
+CREATE INDEX idx_feed_comments_item
+  ON feed_comments(feed_item_id, created_at);
+
+CREATE TABLE share_links (
+  id uuid PRIMARY KEY,
+  session_id uuid REFERENCES sessions(id) ON DELETE CASCADE,
+  feed_item_id uuid REFERENCES feed_items(id) ON DELETE SET NULL,
+  token text NOT NULL UNIQUE,
+  view_count integer NOT NULL DEFAULT 0,
+  max_views integer,
+  expires_at timestamptz,
+  revoked_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT share_links_target_check
+    CHECK (
+      (feed_item_id IS NOT NULL AND session_id IS NULL)
+      OR (session_id IS NOT NULL)
+    )
+);
+
+CREATE INDEX share_links_session_idx ON share_links(session_id);
+
+CREATE TABLE user_blocks (
+  blocker_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  blocked_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT user_blocks_no_self CHECK (blocker_id <> blocked_id),
+  PRIMARY KEY (blocker_id, blocked_id)
+);
+
+CREATE INDEX user_blocks_blocker_idx
+  ON user_blocks(blocker_id);
+
+CREATE INDEX user_blocks_blocked_idx
+  ON user_blocks(blocked_id);
+
+CREATE TABLE feed_reports (
+  id uuid PRIMARY KEY,
+  reporter_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  feed_item_id uuid REFERENCES feed_items(id) ON DELETE SET NULL,
+  comment_id uuid REFERENCES feed_comments(id) ON DELETE SET NULL,
+  reason text NOT NULL,
+  details text,
+  status text NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  resolved_at timestamptz,
+  resolved_by uuid REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX feed_reports_item_idx
+  ON feed_reports(feed_item_id, status);
+
+CREATE INDEX feed_reports_comment_idx
+  ON feed_reports(comment_id, status);
 
 CREATE TABLE media (
   id uuid PRIMARY KEY,

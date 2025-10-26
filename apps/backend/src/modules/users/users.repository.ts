@@ -84,6 +84,12 @@ export async function findUserById(id: string): Promise<UserRow | undefined> {
   return db<UserRow>(USERS_TABLE).where({ id }).first();
 }
 
+export async function findUserByUsername(username: string): Promise<UserRow | undefined> {
+  return db<UserRow>(USERS_TABLE)
+    .whereRaw("LOWER(username) = ?", [username.toLowerCase()])
+    .first();
+}
+
 export async function listUsers(limit = 50, offset = 0) {
   return db(USERS_TABLE)
     .select(
