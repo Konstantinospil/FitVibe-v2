@@ -41,3 +41,14 @@ export interface ExercisesPayload {
   period: number;
   data: ExerciseBreakdown[];
 }
+
+export interface ProgressReport {
+  generated_at: string;
+  period: number;
+  group_by: TrendGroupBy;
+  summary: ProgressSummary;
+  trends: TrendPoint[];
+  exercises: ExerciseBreakdown[];
+  plans: PlanProgress[];
+}
+

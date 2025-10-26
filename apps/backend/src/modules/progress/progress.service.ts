@@ -99,3 +99,83 @@ export async function getPlans(userId: string): Promise<PlanProgress[]> {
   });
   return data;
 }
+
+function escapeCsvValue(value: unknown): string {
+  const str = String(value ?? "");
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+export async function buildProgressReport(
+  userId: string,
+  period: number,
+  groupBy: TrendGroupBy,
+): Promise<ProgressReport> {
+  const [summary, trends, exercises, plans] = await Promise.all([
+    fetchSummary(userId, period),
+    fetchTrends(userId, period, groupBy),
+    fetchExerciseBreakdown(userId, period),
+    fetchPlansProgress(userId),
+  ]);
+
+  const report: ProgressReport = {
+    generated_at: new Date().toISOString(),
+    period,
+    group_by: groupBy,
+    summary,
+    trends,
+    exercises,
+    plans,
+  };
+
+  await insertAudit({
+    actorUserId: userId,
+    entity: "progress",
+    action: "export_report",
+    entityId: userId,
+    metadata: { period, groupBy },
+  });
+
+  return report;
+}
+
+export function renderProgressReportCsv(report: ProgressReport): string {
+  const lines: string[] = [];
+  lines.push("section,metric,value");
+  const summary = report.summary;
+  lines.push(`summary,sessions_completed,${escapeCsvValue(summary.sessions_completed)}`);
+  lines.push(`summary,total_reps,${escapeCsvValue(summary.total_reps)}`);
+  lines.push(`summary,total_volume,${escapeCsvValue(summary.total_volume)}`);
+  lines.push(`summary,total_duration_min,${escapeCsvValue(summary.total_duration_min)}`);
+  lines.push(
+    `summary,avg_volume_per_session,${escapeCsvValue(summary.avg_volume_per_session)}`,
+  );
+  lines.push("");
+
+  lines.push("trends,date,sessions,volume");
+  for (const trend of report.trends) {
+    lines.push(
+      `trends,${escapeCsvValue(trend.date)},${escapeCsvValue(trend.sessions)},${escapeCsvValue(trend.volume)}`,
+    );
+  }
+  lines.push("");
+
+  lines.push("exercises,type_code,sessions,total_reps,total_volume,total_duration_min");
+  for (const exercise of report.exercises) {
+    lines.push(
+      `exercises,${escapeCsvValue(exercise.type_code)},${escapeCsvValue(exercise.sessions)},${escapeCsvValue(exercise.total_reps)},${escapeCsvValue(exercise.total_volume)},${escapeCsvValue(exercise.total_duration_min)}`,
+    );
+  }
+  lines.push("");
+
+  lines.push("plans,id,name,progress_percent,session_count,completed_count");
+  for (const plan of report.plans) {
+    lines.push(
+      `plans,${escapeCsvValue(plan.id)},${escapeCsvValue(plan.name)},${escapeCsvValue(plan.progress_percent)},${escapeCsvValue(plan.session_count)},${escapeCsvValue(plan.completed_count)}`,
+    );
+  }
+
+  return lines.join("\n");
+}

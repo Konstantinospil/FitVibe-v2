@@ -1,0 +1,25 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/${GITHUB_REPOSITORY_OWNER}/fitvibe-backend:latest}
+    env_file: .env.staging
+    restart: always
+    ports:
+      - "4100:4000"
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/${GITHUB_REPOSITORY_OWNER}/fitvibe-frontend:latest}
+    restart: always
+    ports:
+      - "4173:80"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fitvibe
+      POSTGRES_PASSWORD: fitvibe
+      POSTGRES_DB: fitvibe
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

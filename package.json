@@ -14,11 +14,11 @@
     "lint:check": "turbo run lint -- --max-warnings=0",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
+    "openapi:build": "pnpm --filter @fitvibe/backend run openapi:build",
     "clean": "rimraf node_modules .turbo && pnpm install",
     "prepare": "husky install",
     "fmt": "prettier \"**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,yml,yaml}\" --write"
   },
-
   "lint-staged": {
     "*.{ts,tsx,js,jsx,cjs,mjs}": [
       "eslint --fix",
@@ -28,13 +28,12 @@
       "prettier --write"
     ]
   },
-
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@lhci/cli": "^0.15.1",
     "@types/jest": "^30.0.0",
     "@types/react": "^18.3.26",
     "@types/react-dom": "^18.3.7",
-    "@lhci/cli": "^0.14.0",
     "dotenv-cli": "^7.4.4",
     "eslint": "^9.37.0",
     "eslint-plugin-import": "^2.32.0",
@@ -50,5 +49,10 @@
     "turbo": "^2.5.8",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0"
+  },
+  "overrides": {
+    "chrome-launcher": "^1.2.1",
+    "tmp": "^0.2.2",
+    "glob": "^10"
   }
 }

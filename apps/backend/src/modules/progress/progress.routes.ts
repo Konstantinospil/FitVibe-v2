@@ -4,6 +4,7 @@ import { requireAuth } from "../users/users.middleware.js";
 import { rateLimit } from "../common/rateLimiter.js";
 import {
   exercisesHandler,
+  exportHandler,
   plansHandler,
   summaryHandler,
   trendsHandler,
@@ -35,4 +36,10 @@ progressRouter.get(
   rateLimit("progress_plans", 60, 60),
   requireAuth,
   asyncHandler(plansHandler),
+);
+progressRouter.get(
+  "/export",
+  rateLimit("progress_export", 15, 60),
+  requireAuth,
+  asyncHandler(exportHandler),
 );

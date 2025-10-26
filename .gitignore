@@ -23,4 +23,5 @@ infra/docker/tmp/
 
 # Perf artifacts
 tests/perf/lhci-output/
-\nstorage/
+storage/
+nul

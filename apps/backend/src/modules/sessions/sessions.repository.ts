@@ -335,8 +335,8 @@ export async function cancelSession(id: string, userId: string, trx?: Knex.Trans
   });
 }
 
-export async function refreshSessionSummary(): Promise<void> {
-  await db.raw("SELECT public.refresh_session_summary(TRUE);");
+export async function refreshSessionSummary(concurrent = true): Promise<void> {
+  await db.raw("SELECT public.refresh_session_summary(?)", [concurrent]);
 }
 
 export async function sessionsExistAtDates(
