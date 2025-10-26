@@ -1,7 +1,7 @@
 import React from "react";
-import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import PageIntro from "../components/PageIntro";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -13,23 +13,21 @@ const inputStyle: React.CSSProperties = {
   fontSize: "1rem",
 };
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as { from?: Location })?.from?.pathname ?? "/dashboard";
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     signIn();
-    navigate(from, { replace: true });
+    navigate("/dashboard", { replace: true });
   };
 
   return (
     <PageIntro
-      eyebrow="Secure Access"
-      title="Log back in to continue your training streak."
-      description="We rotate login tokens automatically and enforce session hygiene so you can rely on FitVibe for competition prep and daily discipline."
+      eyebrow="Join FitVibe"
+      title="Register to unlock collaborative training."
+      description="Create your athlete profile, set training preferences, and invite your coach. We’ll keep sensitive data private by default."
     >
       <form
         onSubmit={handleSubmit}
@@ -42,6 +40,12 @@ const Login: React.FC = () => {
           border: "1px solid rgba(148, 163, 184, 0.25)",
         }}
       >
+        <label style={{ display: "grid", gap: "0.35rem" }}>
+          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
+            Display name
+          </span>
+          <input type="text" placeholder="Jamie Carter" style={inputStyle} required />
+        </label>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>Email</span>
           <input type="email" placeholder="you@fitvibe.app" style={inputStyle} required />
@@ -64,24 +68,24 @@ const Login: React.FC = () => {
             letterSpacing: "0.02em",
           }}
         >
-          Sign In
+          Create account
         </button>
-        <div
+        <p
           style={{
-            display: "flex",
-            justifyContent: "space-between",
+            margin: 0,
             fontSize: "0.9rem",
             color: "var(--color-text-secondary)",
+            textAlign: "center",
           }}
         >
-          <NavLink to="/register" style={{ color: "var(--color-text-secondary)" }}>
-            Need an account?
-          </NavLink>
-          <span>Forgot password?</span>
-        </div>
+          Already training with us?{" "}
+          <a href="/login" style={{ color: "var(--color-text-secondary)" }}>
+            Sign in
+          </a>
+        </p>
       </form>
     </PageIntro>
   );
 };
 
-export default Login;
+export default Register;

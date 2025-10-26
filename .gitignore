@@ -108,3 +108,15 @@ docker-compose.override.yml
 # --- Misc ---
 # Keep Husky hooks committed; do NOT ignore .husky/
 # Keep migration/seed sources committed; compiled JS in dist is ignored above.
+*.key
+*.pem
+*.crt
+*.p12
+*.bak
+*.old
+*.orig
+*.swp
+*.swo
+*.tmp
+*.temp
+*.pub
