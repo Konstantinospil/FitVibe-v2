@@ -12,6 +12,7 @@ import {
   readStorageObject,
   saveUserAvatarFile,
 } from "../../services/mediaStorage.service.js";
+import { scanBuffer } from "../../services/antivirus.service.js";
 
 const ALLOWED_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/jpg"]);
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB per PRD
@@ -26,6 +27,45 @@ export async function uploadAvatarHandler(req: Request, res: Response) {
   }
   if (req.file.size > MAX_BYTES) {
     return res.status(400).json({ error: "File too large (max 5MB)" });
+  }
+
+  // B-USR-5: Antivirus scanning before processing
+  // Per ADR-004, scan all user uploads for malware
+  const scanResult = await scanBuffer(req.file.buffer, req.file.originalname);
+  if (scanResult.isInfected) {
+    logger.warn(
+      {
+        userId,
+        filename: req.file.originalname,
+        viruses: scanResult.viruses,
+        size: req.file.size,
+      },
+      "[avatar] Malware detected in upload",
+    );
+
+    // Audit the rejected upload
+    await insertAudit({
+      actorUserId: userId,
+      entity: "user_media",
+      action: "avatar_upload_rejected",
+      entityId: userId,
+      metadata: {
+        reason: "malware_detected",
+        viruses: scanResult.viruses,
+        filename: req.file.originalname,
+        size: req.file.size,
+      },
+    });
+
+    return res.status(422).json({
+      error: {
+        code: "E.UPLOAD.MALWARE_DETECTED",
+        message: "File failed security scan",
+        details: {
+          reason: "malware_detected",
+        },
+      },
+    });
   }
 
   const processed = await sharp(req.file.buffer)

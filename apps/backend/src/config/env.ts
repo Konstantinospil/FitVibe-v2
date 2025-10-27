@@ -42,6 +42,14 @@ const EnvSchema = z.object({
   MEDIA_STORAGE_ROOT: z.string().default("./storage"),
   DSR_PURGE_DELAY_MIN: z.coerce.number().default(15),
   DSR_BACKUP_PURGE_DAYS: z.coerce.number().default(14),
+  READ_ONLY_MODE: z.string().optional(),
+  MAINTENANCE_MESSAGE: z
+    .string()
+    .default("System is temporarily in read-only mode for maintenance"),
+  CLAMAV_ENABLED: z.string().optional(),
+  CLAMAV_HOST: z.string().default("localhost"),
+  CLAMAV_PORT: z.coerce.number().default(3310),
+  CLAMAV_TIMEOUT: z.coerce.number().default(60000),
 });
 
 const raw = EnvSchema.parse(process.env);
@@ -143,6 +151,14 @@ export const env = {
   dsr: {
     purgeDelayMinutes: raw.DSR_PURGE_DELAY_MIN,
     backupPurgeDays: raw.DSR_BACKUP_PURGE_DAYS,
+  },
+  readOnlyMode: parseBoolean(raw.READ_ONLY_MODE, false),
+  maintenanceMessage: raw.MAINTENANCE_MESSAGE,
+  clamav: {
+    enabled: parseBoolean(raw.CLAMAV_ENABLED, false),
+    host: raw.CLAMAV_HOST,
+    port: raw.CLAMAV_PORT,
+    timeout: raw.CLAMAV_TIMEOUT,
   },
 } as const;
 

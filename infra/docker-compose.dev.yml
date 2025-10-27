@@ -11,6 +11,44 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  clamav:
+    image: clamav/clamav:latest
+    container_name: fitvibe_clamav
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 300s  # ClamAV needs time to download virus definitions
+    restart: unless-stopped
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: fitvibe_vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "dev-only-token"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/data
+      - vault_logs:/vault/logs
+    command: server -dev -dev-root-token-id="dev-only-token"
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
   backend:
     build:
       context: ..
@@ -68,6 +106,9 @@ services:
 
 volumes:
   db_data:
+  clamav_data:
+  vault_data:
+  vault_logs:
 networks:
   default:
     name: fitvibe_net

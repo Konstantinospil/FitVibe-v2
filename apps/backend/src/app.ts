@@ -11,6 +11,7 @@ import { rateLimit } from "./middlewares/rate-limit.js";
 import { csrfProtection, csrfTokenRoute, validateOrigin } from "./middlewares/csrf.js";
 import { httpLogger } from "./middlewares/request-logger.js";
 import { errorHandler } from "./middlewares/error.handler.js";
+import { readOnlyGuard } from "./middlewares/read-only.guard.js";
 import { metricsMiddleware, metricsRoute } from "./observability/metrics.js";
 import { asyncHandler } from "./utils/async-handler.js";
 
@@ -80,6 +81,9 @@ if (env.csrf.enabled) {
   }
   app.use(csrfProtection);
 }
+
+// Apply read-only mode guard to protect against mutations during maintenance
+app.use(readOnlyGuard);
 
 const apiRouter = Router();
 
