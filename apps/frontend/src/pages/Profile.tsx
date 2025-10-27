@@ -1,71 +1,53 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import PageIntro from "../components/PageIntro";
+import ShareLinkManager from "../components/ShareLinkManager";
+import { Button } from "../components/ui";
 
-const Profile: React.FC = () => (
-  <PageIntro
-    eyebrow="Athlete Profile"
-    title="Dial in preferences, privacy, and performance goals."
-    description="Define visibility defaults, preferred units, and personal best milestones so every shared session reflects your story."
-  >
-    <div
-      style={{
-        display: "grid",
-        gap: "1rem",
-        background: "rgba(15, 23, 42, 0.5)",
-        borderRadius: "18px",
-        padding: "1.6rem",
-        border: "1px solid rgba(148, 163, 184, 0.2)",
-      }}
+const cardStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "1rem",
+  background: "var(--color-surface-glass)",
+  borderRadius: "18px",
+  padding: "1.6rem",
+  border: "1px solid var(--color-border)",
+};
+
+const listStyle: React.CSSProperties = {
+  display: "grid",
+  gap: "0.75rem",
+};
+
+const Profile: React.FC = () => {
+  const { t } = useTranslation();
+
+  const sections = ["visibility", "units", "achievements"] as const;
+
+  return (
+    <PageIntro
+      eyebrow={t("profile.eyebrow")}
+      title={t("profile.title")}
+      description={t("profile.description")}
     >
-      <div
-        style={{
-          display: "grid",
-          gap: "0.4rem",
-        }}
-      >
-        <strong>Visibility</strong>
-        <span style={{ color: "var(--color-text-secondary)" }}>
-          Default session visibility set to <b>Followers</b>. Switch to Public for comp prep recaps.
-        </span>
+      <div style={cardStyle}>
+        <div style={listStyle}>
+          {sections.map((section) => (
+            <div key={section} style={{ display: "grid", gap: "0.3rem" }}>
+              <strong>{t(`profile.sections.${section}.title`)}</strong>
+              <span style={{ color: "var(--color-text-secondary)" }}>
+                {t(`profile.sections.${section}.description`)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <Button type="button" variant="secondary" style={{ justifySelf: "flex-start" }}>
+          {t("profile.edit")}
+        </Button>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gap: "0.4rem",
-        }}
-      >
-        <strong>Preferred units</strong>
-        <span style={{ color: "var(--color-text-secondary)" }}>
-          Weight in kilograms · Distance in kilometers · Pace in min/km.
-        </span>
-      </div>
-      <div
-        style={{
-          display: "grid",
-          gap: "0.4rem",
-        }}
-      >
-        <strong>Signature achievements</strong>
-        <span style={{ color: "var(--color-text-secondary)" }}>
-          180 kg back squat · 115 kg bench · 210 kg deadlift · Boston Marathon qualifier.
-        </span>
-      </div>
-      <button
-        type="button"
-        style={{
-          justifySelf: "flex-start",
-          borderRadius: "14px",
-          padding: "0.85rem 1.3rem",
-          background: "rgba(248, 250, 252, 0.08)",
-          color: "var(--color-text-primary)",
-          fontWeight: 600,
-          border: "1px solid rgba(148, 163, 184, 0.2)",
-        }}
-      >
-        Edit profile
-      </button>
-    </div>
-  </PageIntro>
-);
+
+      <ShareLinkManager />
+    </PageIntro>
+  );
+};
 
 export default Profile;

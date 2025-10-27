@@ -33,8 +33,7 @@ const Progress: React.FC = () => (
         style={{
           height: "160px",
           borderRadius: "14px",
-          background:
-            "linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(52, 211, 153, 0.25))",
+          background: "linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(52, 211, 153, 0.25))",
           border: "1px solid rgba(148, 163, 184, 0.12)",
           display: "grid",
           placeItems: "center",
@@ -54,13 +53,11 @@ const Progress: React.FC = () => (
         }}
       >
         <div>
-          <strong style={{ color: "var(--color-text-primary)" }}>Peak week · 64.2k kg</strong>{" "}
-          — achieved during high-intensity phase with deload scheduled next week.
+          <strong style={{ color: "var(--color-text-primary)" }}>Peak week · 64.2k kg</strong> —
+          achieved during high-intensity phase with deload scheduled next week.
         </div>
         <div>
-          <strong style={{ color: "var(--color-text-primary)" }}>
-            1RM projections up 3.4%
-          </strong>{" "}
+          <strong style={{ color: "var(--color-text-primary)" }}>1RM projections up 3.4%</strong>{" "}
           compared to previous cycle, primarily driven by increased squat velocity.
         </div>
       </div>

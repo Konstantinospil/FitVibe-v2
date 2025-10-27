@@ -1,43 +1,70 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { getHealthStatus } from "../services/api";
+import React, { Suspense, lazy, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { StatusPill } from "../components/StatusPill";
+import { useHealthStatus } from "../hooks/useHealthStatus";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+  VisibilityBadge,
+  type ChartDatum,
+} from "../components/ui";
 
 type HealthState = "checking" | "online" | "offline";
 
+const LazyChart = lazy(() =>
+  import("../components/ui/Chart").then((module) => ({ default: module.Chart })),
+);
+
 const Home: React.FC = () => {
-  const [health, setHealth] = useState<HealthState>("checking");
+  const { data, isLoading, isError, isFetching } = useHealthStatus();
+  const { t } = useTranslation();
 
-  useEffect(() => {
-    let mounted = true;
-
-    const check = async () => {
-      try {
-        await getHealthStatus();
-        if (mounted) setHealth("online");
-      } catch {
-        if (mounted) setHealth("offline");
-      }
-    };
-
-    check();
-    const interval = window.setInterval(check, 20_000);
-
-    return () => {
-      mounted = false;
-      window.clearInterval(interval);
-    };
-  }, []);
+  const health: HealthState = useMemo(() => {
+    if (isLoading) {
+      return "checking";
+    }
+    if (isError) {
+      return "offline";
+    }
+    return isFetching ? "checking" : "online";
+  }, [isLoading, isError, isFetching]);
 
   const subtitle = useMemo(() => {
     switch (health) {
       case "online":
-        return "API connection looks healthy — ready when you are.";
+        return data ? t("home.subtitleOnline", { status: data }) : t("home.subtitleOnlineFallback");
       case "offline":
-        return "We’ll keep everything cached locally until the backend returns.";
+        return t("home.subtitleOffline");
       default:
-        return "Pinging the API and warming caches…";
+        return t("home.subtitleChecking");
     }
-  }, [health]);
+  }, [health, data, t]);
+
+  const consistencyTrend = useMemo<ChartDatum[]>(
+    () => [
+      { label: "Mon", value: 62 },
+      { label: "Tue", value: 68 },
+      { label: "Wed", value: 65 },
+      { label: "Thu", value: 70 },
+      { label: "Fri", value: 72 },
+      { label: "Sat", value: 76 },
+      { label: "Sun", value: 78 },
+    ],
+    [],
+  );
+
+  const handleBetaClick = () => {
+    window.open("https://fitvibe.app", "_blank", "noopener,noreferrer");
+  };
+
+  const handleContactClick = () => {
+    window.location.href = "mailto:engineering@fitvibe.app";
+  };
 
   return (
     <main
@@ -49,33 +76,35 @@ const Home: React.FC = () => {
         padding: "6rem 1.5rem",
       }}
     >
-      <section
+      <Card
+        as="section"
         style={{
           display: "grid",
-          gap: "2.5rem",
-          maxWidth: "880px",
+          gap: "0",
+          maxWidth: "920px",
           width: "100%",
-          backgroundColor: "var(--color-bg-card)",
-          borderRadius: "32px",
-          padding: "3.5rem clamp(1.75rem, 5vw, 4rem)",
-          boxShadow: "var(--shadow-elevated)",
-          border: `1px solid var(--color-border)`,
-          backdropFilter: "blur(12px)",
+          padding: 0,
         }}
       >
-        <header style={{ display: "grid", gap: "1rem" }}>
+        <CardHeader
+          style={{
+            display: "grid",
+            gap: "1rem",
+            padding: "3.5rem clamp(1.75rem, 5vw, 4rem) 2rem",
+          }}
+        >
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "0.75rem",
-              fontSize: "0.95rem",
-              letterSpacing: "0.08em",
+              fontSize: "var(--font-size-sm)",
+              letterSpacing: "var(--letter-spacing-wide)",
               textTransform: "uppercase",
               fontWeight: 600,
-              color: "var(--color-text-secondary)",
+              color: "var(--color-text-muted)",
             }}
-            aria-label="Application status summary"
+            aria-label={t("home.eyebrow")}
           >
             <span
               style={{
@@ -84,122 +113,108 @@ const Home: React.FC = () => {
                 background: "var(--color-accent)",
               }}
             />
-            FitVibe Platform
+            {t("home.eyebrow")}
           </div>
-          <h1
+          <CardTitle
             style={{
               fontSize: "clamp(2.4rem, 5vw, 3.6rem)",
               margin: 0,
-              fontWeight: 700,
-              letterSpacing: "-0.02em",
-              lineHeight: 1.1,
+              lineHeight: "var(--line-height-tight)",
+              letterSpacing: "var(--letter-spacing-tight)",
             }}
           >
-            Train smarter. Share progress. Celebrate consistency.
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              color: "var(--color-text-secondary)",
-              fontSize: "1.1rem",
-              lineHeight: 1.6,
-            }}
-          >
-            FitVibe helps athletes and coaches plan, log, and analyse every session. A modern
-            toolkit for streak tracking, leaderboard heatmaps, and meaningful recovery insights.
-          </p>
-        </header>
+            {t("home.title")}
+          </CardTitle>
+          <CardDescription style={{ fontSize: "var(--font-size-lg)" }}>
+            {t("home.description")}
+          </CardDescription>
+        </CardHeader>
 
-        <div
+        <CardContent
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            gap: "1rem",
+            gap: "2rem",
+            padding: "0 3.5rem 3.5rem",
           }}
         >
-          <StatusPill status={health} />
-          <p
+          <div
             style={{
-              margin: 0,
-              color: "var(--color-text-secondary)",
-              fontSize: "0.95rem",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: "1rem",
             }}
           >
-            {subtitle}
-          </p>
-        </div>
+            <StatusPill status={health} />
+            <p
+              style={{
+                margin: 0,
+                color: "var(--color-text-muted)",
+                fontSize: "var(--font-size-sm)",
+              }}
+            >
+              {subtitle}
+            </p>
+          </div>
 
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "1rem",
-          }}
-        >
-          <a
-            href="https://fitvibe.app"
+          <div
             style={{
-              padding: "0.9rem 1.6rem",
-              borderRadius: "999px",
-              background: "var(--color-accent)",
-              color: "#0f172a",
-              fontWeight: 600,
-              letterSpacing: "0.02em",
-              transition: "transform 200ms ease, box-shadow 200ms ease",
-            }}
-            onMouseEnter={(event) => {
-              event.currentTarget.style.transform = "translateY(-3px)";
-              event.currentTarget.style.boxShadow = "0 18px 40px -20px rgba(52, 211, 153, 0.8)";
-            }}
-            onFocus={(event) => {
-              event.currentTarget.style.transform = "translateY(-3px)";
-              event.currentTarget.style.boxShadow = "0 18px 40px -20px rgba(52, 211, 153, 0.8)";
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.transform = "none";
-              event.currentTarget.style.boxShadow = "none";
-            }}
-            onBlur={(event) => {
-              event.currentTarget.style.transform = "none";
-              event.currentTarget.style.boxShadow = "none";
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "1rem",
             }}
           >
-            Join the private beta
-          </a>
-          <a
-            href="mailto:engineering@fitvibe.app"
+            <Button type="button" onClick={handleBetaClick}>
+              {t("home.ctaPrimary")}
+            </Button>
+            <Button type="button" variant="secondary" onClick={handleContactClick}>
+              {t("home.ctaSecondary")}
+            </Button>
+          </div>
+
+          <Card
             style={{
-              padding: "0.9rem 1.6rem",
-              borderRadius: "999px",
-              background: "var(--color-surface)",
-              color: "var(--color-text-secondary)",
-              fontWeight: 600,
-              letterSpacing: "0.02em",
-              border: `1px solid var(--color-border)`,
-              backdropFilter: "blur(6px)",
-            }}
-            onMouseEnter={(event) => {
-              event.currentTarget.style.transform = "translateY(-3px)";
-              event.currentTarget.style.boxShadow = "0 18px 40px -20px rgba(15, 23, 42, 0.5)";
-            }}
-            onFocus={(event) => {
-              event.currentTarget.style.transform = "translateY(-3px)";
-              event.currentTarget.style.boxShadow = "0 18px 40px -20px rgba(15, 23, 42, 0.5)";
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.transform = "none";
-              event.currentTarget.style.boxShadow = "none";
-            }}
-            onBlur={(event) => {
-              event.currentTarget.style.transform = "none";
-              event.currentTarget.style.boxShadow = "none";
+              gap: "0",
+              padding: 0,
+              background: "var(--color-surface-glass)",
+              border: "1px solid var(--color-border-strong)",
+              boxShadow: "none",
             }}
           >
-            Talk to the team
-          </a>
-        </div>
-      </section>
+            <CardHeader
+              style={{
+                padding: "2rem 2.5rem 1.25rem",
+                gap: "0.75rem",
+                borderBottom: "1px solid rgba(148, 163, 184, 0.12)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "1rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                <CardTitle style={{ fontSize: "var(--font-size-xl)" }}>
+                  {t("home.chartTitle")}
+                </CardTitle>
+                <VisibilityBadge level="private" />
+              </div>
+              <CardDescription>{t("home.chartDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent style={{ padding: "1.5rem 2.5rem 2.25rem" }}>
+              <Suspense fallback={<Skeleton height="220px" radius="24px" />}>
+                <LazyChart
+                  data={consistencyTrend}
+                  valueFormatter={(value) => t("home.chartValue", { value })}
+                  labelFormatter={(label) => t("home.chartLabel", { label })}
+                />
+              </Suspense>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
     </main>
   );
 };

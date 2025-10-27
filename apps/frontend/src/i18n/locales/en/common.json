@@ -1,0 +1,148 @@
+{
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "planner": "Planner",
+    "logger": "Logger",
+    "progress": "Progress",
+    "feed": "Feed",
+    "profile": "Profile",
+    "signOut": "Sign out",
+    "you": "You",
+    "activeSession": "Active session",
+    "skipToContent": "Skip to main content"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "german": "German"
+  },
+  "status": {
+    "checking": "Checking backend...",
+    "online": "Backend online",
+    "offline": "Backend offline"
+  },
+  "visibility": {
+    "labels": {
+      "private": "Private",
+      "link": "Link-only",
+      "public": "Public"
+    },
+    "guards": {
+      "private": "Only you can open this session.",
+      "link": "Anyone with the link can view this session.",
+      "public": "Visible to everyone on FitVibe."
+    }
+  },
+  "home": {
+    "eyebrow": "FitVibe Platform",
+    "title": "Train smarter. Share progress. Celebrate consistency.",
+    "description": "FitVibe helps athletes and coaches plan, log, and analyse every session. A modern toolkit for streak tracking, leaderboard heatmaps, and meaningful recovery insights.",
+    "subtitleOnline": "API connection looks healthy — status: {{status}}.",
+    "subtitleOnlineFallback": "API connection looks healthy — ready when you are.",
+    "subtitleOffline": "We will keep everything cached locally until the backend returns.",
+    "subtitleChecking": "Checking the API health and warming caches...",
+    "ctaPrimary": "Join the private beta",
+    "ctaSecondary": "Talk to the team",
+    "chartTitle": "Consistency trend",
+    "chartDescription": "Seven-day completion rate across planned training sessions.",
+    "chartLabel": "Day: {{label}}",
+    "chartValue": "{{value}}%"
+  },
+  "auth": {
+    "login": {
+      "eyebrow": "Secure Access",
+      "title": "Log back in to continue your training streak.",
+      "description": "We rotate login tokens automatically and enforce session hygiene so you can rely on FitVibe for competition prep and daily discipline.",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "registerPrompt": "Need an account?",
+      "forgot": "Forgot password?",
+      "error": "We could not verify your credentials. Please try again."
+    },
+    "register": {
+      "eyebrow": "Join FitVibe",
+      "title": "Register to unlock collaborative training.",
+      "description": "Create your athlete profile, set training preferences, and invite your coach. We'll keep sensitive data private by default.",
+      "nameLabel": "Display name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "loginPrompt": "Already training with us?",
+      "loginLink": "Sign in",
+      "error": "We could not create your account. Please retry shortly."
+    },
+    "placeholders": {
+      "email": "you@fitvibe.app",
+      "password": "********",
+      "name": "Jamie Carter"
+    }
+  },
+  "profile": {
+    "eyebrow": "Athlete Profile",
+    "title": "Dial in preferences, privacy, and performance goals.",
+    "description": "Define visibility defaults, preferred units, and personal best milestones so every shared session reflects your story.",
+    "edit": "Edit profile",
+    "sections": {
+      "visibility": {
+        "title": "Visibility",
+        "description": "Default session visibility set to Followers. Switch to Public for comp prep recaps."
+      },
+      "units": {
+        "title": "Preferred units",
+        "description": "Weight in kilograms · Distance in kilometers · Pace in min/km."
+      },
+      "achievements": {
+        "title": "Signature achievements",
+        "description": "180 kg back squat · 115 kg bench · 210 kg deadlift · Boston Marathon qualifier."
+      }
+    },
+    "share": {
+      "title": "Share links",
+      "description": "Create personal share links for external coaches or event judges. Revoke any link instantly if access should be removed.",
+      "create": "Create share link",
+      "empty": "No active share links yet.",
+      "copy": "Copy link",
+      "revoke": "Revoke",
+      "revoked": "Revoked",
+      "copied": "Link copied to clipboard",
+      "guards": {
+        "active": "Share this URL with trusted teammates.",
+        "revoked": "This link is no longer accessible."
+      }
+    }
+  },
+  "feed": {
+    "eyebrow": "Community Stream",
+    "title": "Share progress with teammates and followers.",
+    "description": "The feed filters sessions by visibility, so private work stays private while public achievements earn rightful hype.",
+    "timestamp": "moments ago",
+    "button": "Open session",
+    "items": {
+      "leah": {
+        "user": "Leah",
+        "note": "Hit a new 5RM on deadlifts at 170 kg — grip work is paying off!",
+        "stats": "17 likes · 6 comments",
+        "visibility": "public"
+      },
+      "marco": {
+        "user": "Marco",
+        "note": "Shared a deload session plan with ankle rehab protocol.",
+        "stats": "Coach view · Link-only",
+        "visibility": "link"
+      },
+      "team": {
+        "user": "Team Nordic Velocity",
+        "note": "Weekly leaderboard: Emma reclaimed the #1 spot with 98 streak points.",
+        "stats": "Pinned · Team feed",
+        "visibility": "private"
+      }
+    }
+  },
+  "footer": {
+    "note": "Built for athletes who love data-driven progress — FitVibe Labs"
+  }
+}

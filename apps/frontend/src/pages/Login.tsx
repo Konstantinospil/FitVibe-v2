@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import PageIntro from "../components/PageIntro";
+import { Button } from "../components/ui";
 import { useAuth } from "../contexts/AuthContext";
+import { login } from "../services/api";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -17,55 +20,85 @@ const Login: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: Location })?.from?.pathname ?? "/dashboard";
+  const { t } = useTranslation();
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname ?? "/dashboard";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    signIn();
-    navigate(from, { replace: true });
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const tokens = await login({ email, password });
+      signIn(tokens);
+      navigate(from, { replace: true });
+    } catch {
+      setError(t("auth.login.error"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <PageIntro
-      eyebrow="Secure Access"
-      title="Log back in to continue your training streak."
-      description="We rotate login tokens automatically and enforce session hygiene so you can rely on FitVibe for competition prep and daily discipline."
+      eyebrow={t("auth.login.eyebrow")}
+      title={t("auth.login.title")}
+      description={t("auth.login.description")}
     >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "grid",
-          gap: "1rem",
-          background: "rgba(15, 23, 42, 0.55)",
-          borderRadius: "20px",
-          padding: "1.75rem",
-          border: "1px solid rgba(148, 163, 184, 0.25)",
-        }}
-      >
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>Email</span>
-          <input type="email" placeholder="you@fitvibe.app" style={inputStyle} required />
+          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
+            {t("auth.login.emailLabel")}
+          </span>
+          <input
+            name="email"
+            type="email"
+            placeholder={t("auth.placeholders.email")}
+            style={inputStyle}
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+            disabled={isSubmitting}
+          />
         </label>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
-            Password
+            {t("auth.login.passwordLabel")}
           </span>
-          <input type="password" placeholder="••••••••" style={inputStyle} required />
+          <input
+            name="password"
+            type="password"
+            placeholder={t("auth.placeholders.password")}
+            style={inputStyle}
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            disabled={isSubmitting}
+          />
         </label>
-        <button
-          type="submit"
-          style={{
-            marginTop: "0.5rem",
-            borderRadius: "14px",
-            padding: "0.9rem 1rem",
-            background: "var(--color-accent)",
-            color: "#0f172a",
-            fontWeight: 600,
-            letterSpacing: "0.02em",
-          }}
-        >
-          Sign In
-        </button>
+        {error ? (
+          <div
+            role="alert"
+            style={{
+              background: "rgba(248, 113, 113, 0.16)",
+              color: "#fecaca",
+              borderRadius: "12px",
+              padding: "0.75rem 1rem",
+              fontSize: "0.95rem",
+            }}
+          >
+            {error}
+          </div>
+        ) : null}
+        <Button type="submit" fullWidth isLoading={isSubmitting} disabled={isSubmitting}>
+          {isSubmitting ? t("auth.login.submitting") : t("auth.login.submit")}
+        </Button>
         <div
           style={{
             display: "flex",
@@ -75,9 +108,9 @@ const Login: React.FC = () => {
           }}
         >
           <NavLink to="/register" style={{ color: "var(--color-text-secondary)" }}>
-            Need an account?
+            {t("auth.login.registerPrompt")}
           </NavLink>
-          <span>Forgot password?</span>
+          <span>{t("auth.login.forgot")}</span>
         </div>
       </form>
     </PageIntro>

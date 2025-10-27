@@ -1,20 +1,29 @@
 import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { Avatar, Button } from "../components/ui";
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
-const NAV_ITEMS = [
-  { to: "/", label: "Home" },
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/planner", label: "Planner" },
-  { to: "/logger", label: "Logger" },
-  { to: "/progress", label: "Progress" },
-  { to: "/feed", label: "Feed" },
-  { to: "/profile", label: "Profile" },
+type NavItem = {
+  to: string;
+  labelKey: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { to: "/", labelKey: "navigation.home" },
+  { to: "/dashboard", labelKey: "navigation.dashboard" },
+  { to: "/planner", labelKey: "navigation.planner" },
+  { to: "/logger", labelKey: "navigation.logger" },
+  { to: "/progress", labelKey: "navigation.progress" },
+  { to: "/feed", labelKey: "navigation.feed" },
+  { to: "/profile", labelKey: "navigation.profile" },
 ];
 
 const MainLayout: React.FC = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSignOut = () => {
     signOut();
@@ -29,18 +38,21 @@ const MainLayout: React.FC = () => {
         flexDirection: "column",
       }}
     >
+      <a href="#main-content" className="skip-link">
+        {t("navigation.skipToContent")}
+      </a>
       <header
         style={{
-          backdropFilter: "blur(12px)",
-          background: "rgba(15, 23, 42, 0.55)",
-          borderBottom: "1px solid rgba(148, 163, 184, 0.18)",
+          backdropFilter: "blur(14px)",
+          background: "var(--color-surface)",
+          borderBottom: "1px solid var(--color-border)",
           position: "sticky",
           top: 0,
           zIndex: 10,
         }}
       >
         <nav
-          aria-label="Primary navigation"
+          aria-label={t("navigation.home")}
           style={{
             maxWidth: "1100px",
             margin: "0 auto",
@@ -57,8 +69,9 @@ const MainLayout: React.FC = () => {
               alignItems: "center",
               gap: "0.75rem",
               fontWeight: 600,
-              letterSpacing: "0.08em",
+              letterSpacing: "var(--letter-spacing-wide)",
               textTransform: "uppercase",
+              fontSize: "var(--font-size-sm)",
             }}
           >
             <span
@@ -67,13 +80,16 @@ const MainLayout: React.FC = () => {
                 width: "36px",
                 height: "36px",
                 borderRadius: "14px",
-                background: "linear-gradient(135deg, #34d399, #38bdf8)",
+                background: "linear-gradient(135deg, var(--color-accent), var(--color-highlight))",
                 display: "grid",
                 placeItems: "center",
-                boxShadow: "0 12px 30px -15px rgba(0,0,0,0.45)",
+                boxShadow: "0 12px 30px -15px rgba(0, 0, 0, 0.45)",
+                fontFamily: "var(--font-family-heading)",
+                fontWeight: 600,
+                letterSpacing: "var(--letter-spacing-tight)",
               }}
             >
-              ⚡
+              FV
             </span>
             FitVibe
           </div>
@@ -93,7 +109,7 @@ const MainLayout: React.FC = () => {
                 style={({ isActive }) => ({
                   padding: "0.5rem 1rem",
                   borderRadius: "999px",
-                  fontSize: "0.95rem",
+                  fontSize: "var(--font-size-sm)",
                   color: isActive ? "#0f172a" : "var(--color-text-secondary)",
                   background: isActive ? "var(--color-accent)" : "transparent",
                   fontWeight: isActive ? 600 : 500,
@@ -101,40 +117,46 @@ const MainLayout: React.FC = () => {
                 })}
                 end={item.to === "/"}
               >
-                {item.label}
+                {t(item.labelKey)}
               </NavLink>
             ))}
-            <button
-              type="button"
-              onClick={handleSignOut}
+            <LanguageSwitcher />
+            <div
               style={{
-                marginLeft: "0.4rem",
-                padding: "0.55rem 1.1rem",
-                borderRadius: "999px",
-                border: "1px solid rgba(148, 163, 184, 0.28)",
-                background: "rgba(15, 23, 42, 0.2)",
-                color: "var(--color-text-primary)",
-                fontWeight: 600,
-                letterSpacing: "0.02em",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                marginLeft: "0.8rem",
               }}
             >
-              Sign out
-            </button>
+              <Avatar name={t("navigation.you") || "You"} size={40} status="online" />
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: "var(--font-size-sm)", fontWeight: 600 }}>
+                  {t("navigation.you")}
+                </div>
+                <div style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
+                  {t("navigation.activeSession")}
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                {t("navigation.signOut")}
+              </Button>
+            </div>
           </div>
         </nav>
       </header>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <main id="main-content" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <Outlet />
-      </div>
+      </main>
       <footer
         style={{
           padding: "2rem 0",
           textAlign: "center",
-          fontSize: "0.85rem",
-          color: "rgba(226, 232, 240, 0.7)",
+          fontSize: "var(--font-size-xs)",
+          color: "var(--color-text-muted)",
         }}
       >
-        Built for athletes who love data-driven progress ✦ FitVibe Labs
+        {t("footer.note")}
       </footer>
     </div>
   );

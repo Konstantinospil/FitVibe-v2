@@ -1,46 +1,56 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import type { AuthTokens } from "../store/auth.store";
+import { useAuthStore } from "../store/auth.store";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
-  signIn: () => void;
+  accessToken: string | null;
+  refreshToken: string | null;
+  signIn: (tokens: Required<AuthTokens>) => void;
   signOut: () => void;
 }
-
-const STORAGE_KEY = "fitvibe:auth";
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(STORAGE_KEY) === "true";
-  });
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const refreshToken = useAuthStore((state) => state.refreshToken);
+  const signIn = useAuthStore((state) => state.signIn);
+  const signOut = useAuthStore((state) => state.signOut);
+  const [hydrated, setHydrated] = useState<boolean>(
+    () => useAuthStore.persist?.hasHydrated?.() ?? false,
+  );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (isAuthenticated) {
-      window.localStorage.setItem(STORAGE_KEY, "true");
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY);
+    useAuthStore.persist?.rehydrate?.();
+    const unsub = useAuthStore.persist?.onFinishHydration?.(() => {
+      setHydrated(true);
+    });
+
+    if (useAuthStore.persist?.hasHydrated?.()) {
+      setHydrated(true);
     }
-  }, [isAuthenticated]);
 
-  const signIn = useCallback(() => {
-    setIsAuthenticated(true);
-  }, []);
-
-  const signOut = useCallback(() => {
-    setIsAuthenticated(false);
+    return () => {
+      unsub?.();
+    };
   }, []);
 
   const value = useMemo(
     () => ({
       isAuthenticated,
+      accessToken,
+      refreshToken,
       signIn,
       signOut,
     }),
-    [isAuthenticated, signIn, signOut],
+    [isAuthenticated, accessToken, refreshToken, signIn, signOut],
   );
+
+  if (!hydrated) {
+    return null;
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

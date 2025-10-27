@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import PageIntro from "../components/PageIntro";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
+import { register as registerAccount } from "../services/api";
+import { Button } from "../components/ui";
+import { useTranslation } from "react-i18next";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -16,60 +19,101 @@ const inputStyle: React.CSSProperties = {
 const Register: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    signIn();
-    navigate("/dashboard", { replace: true });
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const tokens = await registerAccount({ name, email, password });
+      signIn(tokens);
+      navigate("/dashboard", { replace: true });
+    } catch {
+      setError(t("auth.register.error"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <PageIntro
-      eyebrow="Join FitVibe"
-      title="Register to unlock collaborative training."
-      description="Create your athlete profile, set training preferences, and invite your coach. We’ll keep sensitive data private by default."
+      eyebrow={t("auth.register.eyebrow")}
+      title={t("auth.register.title")}
+      description={t("auth.register.description")}
     >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "grid",
-          gap: "1rem",
-          background: "rgba(15, 23, 42, 0.55)",
-          borderRadius: "20px",
-          padding: "1.75rem",
-          border: "1px solid rgba(148, 163, 184, 0.25)",
-        }}
-      >
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
-            Display name
+            {t("auth.register.nameLabel")}
           </span>
-          <input type="text" placeholder="Jamie Carter" style={inputStyle} required />
-        </label>
-        <label style={{ display: "grid", gap: "0.35rem" }}>
-          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>Email</span>
-          <input type="email" placeholder="you@fitvibe.app" style={inputStyle} required />
+          <input
+            name="name"
+            type="text"
+            placeholder={t("auth.placeholders.name")}
+            style={inputStyle}
+            required
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            autoComplete="name"
+            disabled={isSubmitting}
+          />
         </label>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
-            Password
+            {t("auth.register.emailLabel")}
           </span>
-          <input type="password" placeholder="••••••••" style={inputStyle} required />
+          <input
+            name="email"
+            type="email"
+            placeholder={t("auth.placeholders.email")}
+            style={inputStyle}
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+            disabled={isSubmitting}
+          />
         </label>
-        <button
-          type="submit"
-          style={{
-            marginTop: "0.5rem",
-            borderRadius: "14px",
-            padding: "0.9rem 1rem",
-            background: "var(--color-accent)",
-            color: "#0f172a",
-            fontWeight: 600,
-            letterSpacing: "0.02em",
-          }}
-        >
-          Create account
-        </button>
+        <label style={{ display: "grid", gap: "0.35rem" }}>
+          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
+            {t("auth.register.passwordLabel")}
+          </span>
+          <input
+            name="password"
+            type="password"
+            placeholder={t("auth.placeholders.password")}
+            style={inputStyle}
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+            disabled={isSubmitting}
+          />
+        </label>
+        {error ? (
+          <div
+            role="alert"
+            style={{
+              background: "rgba(248, 113, 113, 0.16)",
+              color: "#fecaca",
+              borderRadius: "12px",
+              padding: "0.75rem 1rem",
+              fontSize: "0.95rem",
+            }}
+          >
+            {error}
+          </div>
+        ) : null}
+        <Button type="submit" fullWidth isLoading={isSubmitting} disabled={isSubmitting}>
+          {isSubmitting ? t("auth.register.submitting") : t("auth.register.submit")}
+        </Button>
         <p
           style={{
             margin: 0,
@@ -78,10 +122,10 @@ const Register: React.FC = () => {
             textAlign: "center",
           }}
         >
-          Already training with us?{" "}
-          <a href="/login" style={{ color: "var(--color-text-secondary)" }}>
-            Sign in
-          </a>
+          {t("auth.register.loginPrompt")}{" "}
+          <NavLink to="/login" style={{ color: "var(--color-text-secondary)" }}>
+            {t("auth.register.loginLink")}
+          </NavLink>
         </p>
       </form>
     </PageIntro>

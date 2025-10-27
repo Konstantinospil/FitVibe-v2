@@ -1,0 +1,148 @@
+{
+  "navigation": {
+    "home": "Start",
+    "dashboard": "Dashboard",
+    "planner": "Planer",
+    "logger": "Protokoll",
+    "progress": "Fortschritt",
+    "feed": "Feed",
+    "profile": "Profil",
+    "signOut": "Abmelden",
+    "you": "Du",
+    "activeSession": "Aktive Einheit",
+    "skipToContent": "Zum Hauptinhalt springen"
+  },
+  "language": {
+    "label": "Sprache",
+    "english": "Englisch",
+    "german": "Deutsch"
+  },
+  "status": {
+    "checking": "Backend wird geprüft...",
+    "online": "Backend verfügbar",
+    "offline": "Backend nicht erreichbar"
+  },
+  "visibility": {
+    "labels": {
+      "private": "Privat",
+      "link": "Nur mit Link",
+      "public": "Öffentlich"
+    },
+    "guards": {
+      "private": "Nur du kannst diese Einheit öffnen.",
+      "link": "Jede Person mit dem Link kann diese Einheit sehen.",
+      "public": "Für alle auf FitVibe sichtbar."
+    }
+  },
+  "home": {
+    "eyebrow": "FitVibe Plattform",
+    "title": "Trainiere smarter. Teile Fortschritt. Feiere Konstanz.",
+    "description": "FitVibe unterstützt Athletinnen und Coaches beim Planen, Protokollieren und Analysieren jeder Einheit. Moderne Werkzeuge für Streak-Tracking, Leaderboard-Heatmaps und aussagekräftige Recovery-Insights.",
+    "subtitleOnline": "API-Verbindung ist stabil — Status: {{status}}.",
+    "subtitleOnlineFallback": "API-Verbindung ist stabil — wir sind startklar.",
+    "subtitleOffline": "Wir halten alles lokal im Cache, bis das Backend wieder verfügbar ist.",
+    "subtitleChecking": "Prüfe den API-Status und wärme Caches vor...",
+    "ctaPrimary": "Private Beta beitreten",
+    "ctaSecondary": "Mit dem Team sprechen",
+    "chartTitle": "Konstanz-Trend",
+    "chartDescription": "Abschlussrate der geplanten Trainings über sieben Tage.",
+    "chartLabel": "Tag: {{label}}",
+    "chartValue": "{{value}} %"
+  },
+  "auth": {
+    "login": {
+      "eyebrow": "Sicherer Zugang",
+      "title": "Melde dich an, um deine Trainingsserie fortzusetzen.",
+      "description": "Wir rotieren Login-Tokens automatisch und halten Sessions sauber, damit du dich beim Wettkampf-Vorbereiten auf FitVibe verlassen kannst.",
+      "emailLabel": "E-Mail",
+      "passwordLabel": "Passwort",
+      "submit": "Anmelden",
+      "submitting": "Wird angemeldet...",
+      "registerPrompt": "Noch kein Konto?",
+      "forgot": "Passwort vergessen?",
+      "error": "Wir konnten deine Zugangsdaten nicht bestätigen. Bitte versuche es erneut."
+    },
+    "register": {
+      "eyebrow": "FitVibe beitreten",
+      "title": "Registriere dich und starte kollaboratives Training.",
+      "description": "Erstelle dein Athletenprofil, definiere Trainingspräferenzen und lade deine Coaches ein. Wir schützen sensible Daten standardmäßig.",
+      "nameLabel": "Anzeigename",
+      "emailLabel": "E-Mail",
+      "passwordLabel": "Passwort",
+      "submit": "Konto erstellen",
+      "submitting": "Konto wird erstellt...",
+      "loginPrompt": "Trainierst du bereits mit uns?",
+      "loginLink": "Anmelden",
+      "error": "Wir konnten dein Konto nicht erstellen. Bitte versuche es in Kürze erneut."
+    },
+    "placeholders": {
+      "email": "du@fitvibe.app",
+      "password": "********",
+      "name": "Jamie Carter"
+    }
+  },
+  "profile": {
+    "eyebrow": "Athletenprofil",
+    "title": "Stimme Einstellungen, Privatsphäre und Ziele ab.",
+    "description": "Definiere Sichtbarkeiten, bevorzugte Einheiten und persönliche Bestleistungen, damit jede geteilte Session deine Geschichte erzählt.",
+    "edit": "Profil bearbeiten",
+    "sections": {
+      "visibility": {
+        "title": "Sichtbarkeit",
+        "description": "Standard-Sichtbarkeit für Sessions ist auf Follower gesetzt. Für Wettkampf-Recaps kannst du auf Öffentlich wechseln."
+      },
+      "units": {
+        "title": "Bevorzugte Einheiten",
+        "description": "Gewicht in Kilogramm · Distanz in Kilometern · Pace in min/km."
+      },
+      "achievements": {
+        "title": "Highlights",
+        "description": "180 kg Kniebeuge · 115 kg Bankdrücken · 210 kg Kreuzheben · Boston-Marathon-Qualifikation."
+      }
+    },
+    "share": {
+      "title": "Freigabelinks",
+      "description": "Erstelle persönliche Links für externe Coaches oder Kampfrichter. Du kannst jeden Link sofort deaktivieren, wenn Zugriff entzogen werden soll.",
+      "create": "Freigabelink erstellen",
+      "empty": "Noch keine aktiven Freigabelinks.",
+      "copy": "Link kopieren",
+      "revoke": "Widerrufen",
+      "revoked": "Widerrufen",
+      "copied": "Link in die Zwischenablage kopiert",
+      "guards": {
+        "active": "Teile diese URL nur mit vertrauenswürdigen Personen.",
+        "revoked": "Dieser Link ist nicht mehr erreichbar."
+      }
+    }
+  },
+  "feed": {
+    "eyebrow": "Community-Stream",
+    "title": "Teile Fortschritt mit Teamkollegen und Followern.",
+    "description": "Der Feed filtert Einheiten nach Sichtbarkeit – Privates bleibt privat, öffentliche Erfolge bekommen das verdiente Rampenlicht.",
+    "timestamp": "gerade eben",
+    "button": "Session öffnen",
+    "items": {
+      "leah": {
+        "user": "Leah",
+        "note": "Neuen 5RM im Kreuzheben mit 170 kg erreicht – das Grifftraining zahlt sich aus!",
+        "stats": "17 Likes · 6 Kommentare",
+        "visibility": "public"
+      },
+      "marco": {
+        "user": "Marco",
+        "note": "Deload-Plan mit Reha-Protokoll fürs Sprunggelenk geteilt.",
+        "stats": "Coach-Ansicht · Nur mit Link",
+        "visibility": "link"
+      },
+      "team": {
+        "user": "Team Nordic Velocity",
+        "note": "Wochenranking: Emma hat sich mit 98 Streak-Punkten Platz 1 zurückgeholt.",
+        "stats": "Gepinnt · Team-Feed",
+        "visibility": "private"
+      }
+    }
+  },
+  "footer": {
+    "note": "Für Athletinnen und Athleten, die datengetriebenen Fortschritt lieben — FitVibe Labs"
+  }
+}
