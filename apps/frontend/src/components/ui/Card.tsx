@@ -15,7 +15,7 @@ const cardBaseStyle: React.CSSProperties = {
 };
 
 export const Card: React.FC<CardProps> = ({ children, as = "div", style, ...rest }) => {
-  const Component = as;
+  const Component = as as React.ElementType;
 
   return (
     <Component

@@ -130,7 +130,7 @@ async function ensurePlanExists(
     .where({ id: planId, user_id: ownerId })
     .first();
   if (!plan) {
-    throw new HttpError(400, "E.SESSION.INVALID_PLAN", "Invalid plan");
+    throw new HttpError(400, "E.SESSION.INVALID_PLAN", "SESSION_INVALID_PLAN");
   }
 }
 
@@ -311,7 +311,7 @@ export async function getAll(
 export async function getOne(userId: string, id: string): Promise<SessionWithExercises> {
   const session = await getSessionWithDetails(id, userId);
   if (!session) {
-    throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+    throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
   }
   return session;
 }
@@ -371,7 +371,7 @@ export async function createOne(
 
   const created = await getSessionWithDetails(sessionId, userId);
   if (!created) {
-    throw new HttpError(500, "E.SESSION.CREATE_FAILED", "Unable to load created session");
+    throw new HttpError(500, "E.SESSION.CREATE_FAILED", "SESSION_CREATE_FAILED");
   }
 
   if (normalizedExercises.length > 0 || created.status === "completed") {
@@ -388,7 +388,7 @@ export async function updateOne(
 ): Promise<SessionWithExercises> {
   const current = await getSessionById(id, userId);
   if (!current) {
-    throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+    throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
   }
 
   const normalizedExercises = dto.exercises ? normalizeSessionExercises(dto.exercises) : null;
@@ -465,7 +465,7 @@ export async function updateOne(
 
     const affected = await updateSession(id, userId, updates, trx);
     if (affected === 0) {
-      throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+      throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
     }
 
     if (normalizedExercises !== null) {
@@ -476,7 +476,7 @@ export async function updateOne(
   const includeDeleted = targetStatus === "canceled";
   const updated = await getSessionWithDetails(id, userId, { includeDeleted });
   if (!updated) {
-    throw new HttpError(500, "E.SESSION.UPDATE_FAILED", "Unable to load updated session");
+    throw new HttpError(500, "E.SESSION.UPDATE_FAILED", "SESSION_UPDATE_FAILED");
   }
 
   const statusChanged = current.status !== updated.status;
@@ -529,7 +529,7 @@ export async function cloneOne(
 ): Promise<SessionWithExercises> {
   const source = await getSessionWithDetails(sourceId, userId);
   if (!source) {
-    throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+    throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
   }
 
   const includeActual = dto.include_actual ?? false;
@@ -584,7 +584,7 @@ export async function cloneOne(
 
   const cloned = await getSessionWithDetails(sessionId, userId);
   if (!cloned) {
-    throw new HttpError(500, "E.SESSION.CLONE_FAILED", "Unable to load cloned session");
+    throw new HttpError(500, "E.SESSION.CLONE_FAILED", "SESSION_CLONE_FAILED");
   }
 
   await insertAudit({
@@ -638,18 +638,18 @@ export async function applyRecurrence(
   }
 
   if (dto.offset_days * dto.occurrences > 365) {
-    throw new HttpError(400, "E.SESSION.RECURRENCE_INVALID", "Recurrence horizon exceeds one year");
+    throw new HttpError(400, "E.SESSION.RECURRENCE_INVALID", "SESSION_RECURRENCE_INVALID");
   }
 
   const source = await getSessionWithDetails(sourceId, userId);
   if (!source) {
-    throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+    throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
   }
   if (source.status === "canceled") {
     throw new HttpError(
       400,
       "E.SESSION.RECURRENCE_SOURCE_INVALID",
-      "Cannot create recurrence from a canceled session",
+      "SESSION_INVALID_SOURCE",
     );
   }
 
@@ -662,7 +662,7 @@ export async function applyRecurrence(
 
   const baseDate = new Date(source.planned_at);
   if (Number.isNaN(baseDate.getTime())) {
-    throw new HttpError(500, "E.SESSION.INVALID_SOURCE", "Source session has invalid planned date");
+    throw new HttpError(500, "E.SESSION.INVALID_SOURCE", "SESSION_INVALID_SOURCE");
   }
 
   let startDate: Date | null = null;
@@ -785,7 +785,7 @@ export async function applyRecurrence(
 export async function cancelOne(userId: string, id: string): Promise<void> {
   const current = await getSessionById(id, userId);
   if (!current) {
-    throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+    throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
   }
   if (current.status === "completed") {
     throw new HttpError(
@@ -797,7 +797,7 @@ export async function cancelOne(userId: string, id: string): Promise<void> {
 
   const affected = await cancelSession(id, userId);
   if (affected === 0) {
-    throw new HttpError(404, "E.SESSION.NOT_FOUND", "Session not found");
+    throw new HttpError(404, "E.SESSION.NOT_FOUND", "SESSION_NOT_FOUND");
   }
 
   await insertAudit({

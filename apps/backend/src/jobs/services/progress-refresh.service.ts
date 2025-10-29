@@ -1,4 +1,3 @@
-
 import { logger } from "../../config/logger.js";
 import { refreshSessionSummary } from "../../modules/sessions/sessions.repository.js";
 

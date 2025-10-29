@@ -51,4 +51,3 @@ export interface ProgressReport {
   exercises: ExerciseBreakdown[];
   plans: PlanProgress[];
 }
-

@@ -12,18 +12,14 @@
       "type": "shell",
       "command": "pnpm build",
       "group": "build",
-      "dependsOn": [
-        "FitVibe: Lint + Typecheck"
-      ]
+      "dependsOn": ["FitVibe: Lint + Typecheck"]
     },
     {
       "label": "FitVibe: Lint + Typecheck",
       "type": "shell",
       "command": "pnpm lint && pnpm typecheck",
       "group": "build",
-      "problemMatcher": [
-        "$eslint-stylish"
-      ]
+      "problemMatcher": ["$eslint-stylish"]
     },
     {
       "label": "FitVibe: Migrate DB",
@@ -48,9 +44,7 @@
       "type": "shell",
       "command": "pnpm test",
       "group": "test",
-      "problemMatcher": [
-        "$tsc"
-      ]
+      "problemMatcher": ["$tsc"]
     },
     {
       "label": "FitVibe: E2E Tests (Playwright)",
@@ -81,10 +75,7 @@
       "type": "shell",
       "command": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
       "group": "build",
-      "dependsOn": [
-        "FitVibe: Lint + Typecheck",
-        "FitVibe: Unit + Integration Tests"
-      ]
+      "dependsOn": ["FitVibe: Lint + Typecheck", "FitVibe: Unit + Integration Tests"]
     },
     {
       "label": "FitVibe: QA Summary Report",

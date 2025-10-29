@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "openapi:build": "node scripts/generate-openapi.mjs",
-    "db:retention": "tsx src/db/scripts/run-retention.ts"
+    "db:retention": "tsx src/db/scripts/run-retention.ts",
+    "db:rotate-secrets": "tsx src/db/scripts/rotate-secrets.ts"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.918.0",
@@ -32,6 +33,7 @@
     "multer": "^1.4.5-lts.2",
     "node-cache": "^5.1.2",
     "node-vault": "^0.10.9",
+    "nodemailer": "^7.0.10",
     "pg": "^8.11.5",
     "pino": "^9.2.0",
     "pino-pretty": "^11.2.2",
@@ -53,6 +55,7 @@
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.12",
     "@types/node": "^20.11.30",
+    "@types/nodemailer": "^7.0.3",
     "@types/uuid": "^10.0.0",
     "jest": "^29.7.0",
     "pg-mem": "^3.0.0",

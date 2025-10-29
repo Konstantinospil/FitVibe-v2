@@ -39,7 +39,7 @@ function decodeCursor(cursor: string): HistoryCursor {
   const [timestamp, id] = cursor.split("|");
   const date = new Date(timestamp);
   if (!id || Number.isNaN(date.getTime())) {
-    throw new HttpError(400, "E.POINTS.INVALID_CURSOR", "Cursor is malformed.");
+    throw new HttpError(400, "E.POINTS.INVALID_CURSOR", "POINTS_INVALID_CURSOR");
   }
   return { awardedAt: date, id };
 }
@@ -140,7 +140,8 @@ function estimateCalories(distanceMeters: number, averageRpe: number | null): nu
 }
 
 function calculatePoints(context: PointsCalculationContext): PointsCalculationResult {
-  const caloriesRaw = context.sessionCalories ?? estimateCalories(context.distanceMeters, context.averageRpe);
+  const caloriesRaw =
+    context.sessionCalories ?? estimateCalories(context.distanceMeters, context.averageRpe);
   const calories = caloriesRaw === null ? null : clamp(caloriesRaw, 0, 1800);
   const averageRpe = context.averageRpe ?? 5;
   const boundedRpe = clamp(averageRpe, 3, 10);
@@ -155,7 +156,8 @@ function calculatePoints(context: PointsCalculationContext): PointsCalculationRe
   const ageBonus = getAgeBonus(ageYears);
   const frequencyMultiplier = getFrequencyMultiplier(context.profile.trainingFrequency ?? null);
 
-  let total = base + caloriesComponent + rpeComponent + distanceComponent + fitnessAdjustment + ageBonus;
+  let total =
+    base + caloriesComponent + rpeComponent + distanceComponent + fitnessAdjustment + ageBonus;
   total *= frequencyMultiplier;
 
   const rounded = Math.round(total);
@@ -191,8 +193,9 @@ function computeSessionMetrics(
     const tags = metadata?.tags ?? [];
     const isRun = tags.some((tag) => tag.toLowerCase().includes("run"));
     const isRide =
-      tags.some((tag) => tag.toLowerCase().includes("ride") || tag.toLowerCase().includes("cycle")) ||
-      (metadata?.type_code ?? "").toLowerCase() === "cycling";
+      tags.some(
+        (tag) => tag.toLowerCase().includes("ride") || tag.toLowerCase().includes("cycle"),
+      ) || (metadata?.type_code ?? "").toLowerCase() === "cycling";
 
     if (exercise.actual?.distance !== undefined && exercise.actual.distance !== null) {
       const meters = Number(exercise.actual.distance) * 1000;
@@ -253,7 +256,7 @@ export async function getPointsHistory(
 ): Promise<PointsHistoryResult> {
   const limitInput = query.limit ?? 25;
   if (!Number.isInteger(limitInput) || limitInput < 1) {
-    throw new HttpError(400, "E.POINTS.INVALID_LIMIT", "limit must be a positive integer");
+    throw new HttpError(400, "E.POINTS.INVALID_LIMIT", "POINTS_INVALID_LIMIT");
   }
   const limit = Math.min(limitInput, MAX_HISTORY_LIMIT);
 
@@ -268,14 +271,14 @@ export async function getPointsHistory(
   if (query.from) {
     const fromDate = new Date(query.from);
     if (Number.isNaN(fromDate.getTime())) {
-      throw new HttpError(400, "E.POINTS.INVALID_FROM", "from must be a valid ISO timestamp");
+      throw new HttpError(400, "E.POINTS.INVALID_FROM", "POINTS_INVALID_FROM");
     }
     options.from = fromDate;
   }
   if (query.to) {
     const toDate = new Date(query.to);
     if (Number.isNaN(toDate.getTime())) {
-      throw new HttpError(400, "E.POINTS.INVALID_TO", "to must be a valid ISO timestamp");
+      throw new HttpError(400, "E.POINTS.INVALID_TO", "POINTS_INVALID_TO");
     }
     options.to = toDate;
   }
@@ -292,18 +295,29 @@ export async function getPointsHistory(
 
 function ensureCompleted(session: SessionWithExercises) {
   if (session.status !== "completed") {
-    throw new HttpError(400, "E.POINTS.SESSION_NOT_COMPLETED", "Session is not completed.");
+    throw new HttpError(400, "E.POINTS.SESSION_NOT_COMPLETED", "POINTS_SESSION_NOT_COMPLETED");
   }
   if (!session.completed_at) {
-    throw new HttpError(400, "E.POINTS.MISSING_COMPLETED_AT", "Completed session is missing completed_at timestamp.");
+    throw new HttpError(
+      400,
+      "E.POINTS.MISSING_COMPLETED_AT",
+      "Completed session is missing completed_at timestamp.",
+    );
   }
 }
 
-export async function awardPointsForSession(session: SessionWithExercises): Promise<AwardPointsResult> {
+export async function awardPointsForSession(
+  session: SessionWithExercises,
+): Promise<AwardPointsResult> {
   ensureCompleted(session);
 
   const awarded = await db.transaction(async (trx: Knex.Transaction) => {
-    const existing = await findPointsEventBySource(session.owner_id, "session_completed", session.id, trx);
+    const existing = await findPointsEventBySource(
+      session.owner_id,
+      "session_completed",
+      session.id,
+      trx,
+    );
     if (existing) {
       if (!session.points || session.points !== existing.points) {
         await updateSession(session.id, session.owner_id, { points: existing.points }, trx);
@@ -345,7 +359,7 @@ export async function awardPointsForSession(session: SessionWithExercises): Prom
         source_id: session.id,
         algorithm_version: ALGORITHM_VERSION,
         points: calculation.points,
-        calories: session.calories ?? (calculation.inputs.calories ?? null),
+        calories: session.calories ?? calculation.inputs.calories ?? null,
         metadata: {
           session_id: session.id,
           session_title: session.title ?? null,

@@ -106,14 +106,17 @@ export async function getSecret(key: string, field?: string): Promise<string | n
   // Try Vault first
   if (config.vault?.enabled && vaultClient) {
     try {
-      const result = await vaultClient.read(key);
+      const result = (await vaultClient.read(key)) as {
+        data?: { data?: Record<string, unknown> } & Record<string, unknown>;
+      } | null;
 
       if (result?.data) {
         // Handle both KV v1 and v2
-        const secretData = result.data.data || result.data;
+        const secretData = (result.data.data || result.data) as Record<string, unknown>;
 
         if (field) {
-          return secretData[field] || null;
+          const value = secretData[field];
+          return typeof value === "string" ? value : null;
         }
 
         // If no field specified and data is a string, return it
@@ -138,10 +141,11 @@ export async function getSecret(key: string, field?: string): Promise<string | n
       const result = await awsClient.send(command);
 
       if (result.SecretString) {
-        const secretData = JSON.parse(result.SecretString);
+        const secretData = JSON.parse(result.SecretString) as Record<string, unknown>;
 
         if (field) {
-          return secretData[field] || null;
+          const value = secretData[field];
+          return typeof value === "string" ? value : null;
         }
 
         return result.SecretString;

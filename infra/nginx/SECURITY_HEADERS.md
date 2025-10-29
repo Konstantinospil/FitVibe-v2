@@ -17,17 +17,17 @@ with the security headers required by the PRD/QA plan.
 
 ## Security headers
 
-| Header                        | Value / Rationale                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------------- |
-| `Strict-Transport-Security`   | 2-year preload to enforce HTTPS                                                               |
-| `Content-Security-Policy`     | Locked to self for scripts/assets; inline styles restricted; API calls to `https://api.*`     |
-| `X-Content-Type-Options`      | `nosniff` prevents MIME guessing                                                               |
-| `X-Frame-Options`             | `DENY` avoids clickjacking                                                                      |
-| `Referrer-Policy`             | `strict-origin-when-cross-origin` balances analytics & privacy                                |
-| `Permissions-Policy`          | Disables camera/mic/geolocation unless explicitly granted                                      |
-| `Cross-Origin-Opener-Policy`  | `same-origin` for improved cross-origin isolation                                             |
-| `Cross-Origin-Embedder-Policy`| `require-corp` ensures shared array buffer eligibility without cross-origin leaks             |
-| `Cross-Origin-Resource-Policy`| `same-origin` to reduce data exfiltration vectors                                             |
+| Header                         | Value / Rationale                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `Strict-Transport-Security`    | 2-year preload to enforce HTTPS                                                           |
+| `Content-Security-Policy`      | Locked to self for scripts/assets; inline styles restricted; API calls to `https://api.*` |
+| `X-Content-Type-Options`       | `nosniff` prevents MIME guessing                                                          |
+| `X-Frame-Options`              | `DENY` avoids clickjacking                                                                |
+| `Referrer-Policy`              | `strict-origin-when-cross-origin` balances analytics & privacy                            |
+| `Permissions-Policy`           | Disables camera/mic/geolocation unless explicitly granted                                 |
+| `Cross-Origin-Opener-Policy`   | `same-origin` for improved cross-origin isolation                                         |
+| `Cross-Origin-Embedder-Policy` | `require-corp` ensures shared array buffer eligibility without cross-origin leaks         |
+| `Cross-Origin-Resource-Policy` | `same-origin` to reduce data exfiltration vectors                                         |
 
 Headers are set with `always` to cover both success and error responses.
 

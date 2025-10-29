@@ -36,8 +36,11 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
   });
 
+  // Note: Cannot enforce UNIQUE constraint on partitioned table without including awarded_at
+  // Per ADR-005, uniqueness must be enforced at application level
+  // Creating regular index for performance
   await knex.raw(`
-    CREATE UNIQUE INDEX IF NOT EXISTS ${USER_POINTS_SOURCE_INDEX}
+    CREATE INDEX IF NOT EXISTS ${USER_POINTS_SOURCE_INDEX}
     ON ${USER_POINTS_TABLE}(user_id, source_type, source_id)
     WHERE source_id IS NOT NULL
   `);

@@ -10,7 +10,6 @@ export async function up(knex: Knex): Promise<void> {
       date_trunc('week', ss.completed_at) AS week_start,
       COUNT(*)::int AS sessions,
       COALESCE(SUM(ss.total_volume), 0)::numeric AS total_volume,
-      COALESCE(SUM(ss.total_duration_sec), 0)::numeric AS total_duration_sec,
       NOW() AS refreshed_at
     FROM session_summary ss
     WHERE ss.completed_at IS NOT NULL

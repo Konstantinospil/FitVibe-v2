@@ -18,8 +18,8 @@ const visibilityEnum = z.enum(["private", "public", "link"]);
 const titleSchema = z
   .string()
   .trim()
-  .min(2, "Title must be at least 2 characters")
-  .max(100, "Title must be at most 100 characters");
+  .min(2, "SESSION_INVALID_PLAN")
+  .max(100, "SESSION_INVALID_PLAN");
 
 const intervalPattern =
   /^(?:P(?!$)(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?|(?:\d{2}):(?:\d{2})(?::(?:\d{2}))?)$/;
@@ -32,7 +32,7 @@ const intervalSchema = z
 
 const extrasSchema = z
   .record(z.unknown())
-  .refine((value) => !Array.isArray(value), { message: "Extras must be an object" })
+  .refine((value) => !Array.isArray(value), { message: "SESSION_INVALID_PLAN" })
   .optional();
 
 const plannedAttributesSchema = z
@@ -146,7 +146,7 @@ function getIdempotencyKey(req: Request): string | null {
   }
   const key = header.trim();
   if (!key) {
-    throw new HttpError(400, "E.IDEMPOTENCY.INVALID", "Idempotency-Key header must not be empty");
+    throw new HttpError(400, "E.IDEMPOTENCY.INVALID", "IDEMPOTENCY_INVALID");
   }
   if (key.length > 200) {
     throw new HttpError(

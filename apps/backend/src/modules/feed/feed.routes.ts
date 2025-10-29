@@ -30,11 +30,7 @@ import {
 
 export const feedRouter = Router();
 
-feedRouter.get(
-  "/",
-  rateLimit("feed_public", 120, 60),
-  asyncHandler(getFeedHandler),
-);
+feedRouter.get("/", rateLimit("feed_public", 120, 60), asyncHandler(getFeedHandler));
 
 feedRouter.get(
   "/leaderboard",

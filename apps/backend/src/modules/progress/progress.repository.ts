@@ -60,7 +60,6 @@ function cutoffWeekISO(periodDays: number): string {
   return weekStart.toISOString();
 }
 
-
 export async function fetchSummary(userId: string, period: number): Promise<ProgressSummary> {
   const cutoff = cutoffISO(period);
 
@@ -79,7 +78,8 @@ export async function fetchSummary(userId: string, period: number): Promise<Prog
   const sessionsCompleted = Number(aggregates?.sessions_completed ?? 0);
   const totalReps = Number(aggregates?.total_reps ?? 0);
   const totalVolume = Number(aggregates?.total_volume ?? 0);
-  const totalDurationMin = Math.round((Number(aggregates?.total_duration_sec ?? 0) / 60) * 100) / 100;
+  const totalDurationMin =
+    Math.round((Number(aggregates?.total_duration_sec ?? 0) / 60) * 100) / 100;
 
   const avgVolumePerSession =
     sessionsCompleted > 0 ? Math.round((totalVolume / sessionsCompleted) * 100) / 100 : 0;
@@ -182,4 +182,3 @@ export async function fetchPlansProgress(userId: string): Promise<PlanProgress[]
     completed_count: Number(row.completed_count ?? 0),
   }));
 }
-

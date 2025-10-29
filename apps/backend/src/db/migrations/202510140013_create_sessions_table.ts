@@ -9,7 +9,7 @@ const IDX_ACTIVE = "idx_sessions_owner_active";
 export async function up(knex: Knex): Promise<void> {
   await knex.raw(`
     CREATE TABLE IF NOT EXISTS ${SESSIONS_TABLE} (
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      id uuid DEFAULT gen_random_uuid(),
       owner_id uuid NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
       title text,
       plan_id uuid,
@@ -24,7 +24,8 @@ export async function up(knex: Knex): Promise<void> {
       points integer,
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now(),
-      deleted_at timestamptz
+      deleted_at timestamptz,
+      PRIMARY KEY (id, planned_at)
     ) PARTITION BY RANGE (planned_at);
   `);
 

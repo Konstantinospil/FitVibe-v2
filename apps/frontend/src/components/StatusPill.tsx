@@ -4,9 +4,24 @@ import { useTranslation } from "react-i18next";
 type Status = "checking" | "online" | "offline";
 
 const STATUS_STYLE: Record<Status, { fg: string; bg: string; border: string; pulse: string }> = {
-  checking: { fg: "var(--color-warning)", bg: "var(--color-warning-soft)", border: "rgba(251,191,36,0.35)", pulse: "rgba(251,191,36,0.35)" },
-  online:   { fg: "var(--color-accent)",  bg: "var(--color-accent-soft)",  border: "rgba(52,211,153,0.28)",  pulse: "rgba(52,211,153,0.35)" },
-  offline:  { fg: "var(--color-danger)",  bg: "rgba(248,113,113,0.16)",    border: "rgba(248,113,113,0.28)", pulse: "rgba(248,113,113,0.3)" },
+  checking: {
+    fg: "var(--color-warning)",
+    bg: "var(--color-warning-soft)",
+    border: "rgba(251,191,36,0.35)",
+    pulse: "rgba(251,191,36,0.35)",
+  },
+  online: {
+    fg: "var(--color-accent)",
+    bg: "var(--color-accent-soft)",
+    border: "rgba(52,211,153,0.28)",
+    pulse: "rgba(52,211,153,0.35)",
+  },
+  offline: {
+    fg: "var(--color-danger)",
+    bg: "rgba(248,113,113,0.16)",
+    border: "rgba(248,113,113,0.28)",
+    pulse: "rgba(248,113,113,0.3)",
+  },
 };
 
 interface StatusPillProps {
@@ -18,9 +33,10 @@ interface StatusPillProps {
 const StatusPill: React.FC<StatusPillProps> = ({ status, children }) => {
   const { fg, bg, border, pulse } = STATUS_STYLE[status];
   const { t } = useTranslation();
-  const label = typeof children === "string" && children.trim().length > 0
-    ? children
-    : t(`status.${status}`, { defaultValue: status });
+  const label =
+    typeof children === "string" && children.trim().length > 0
+      ? children
+      : t(`status.${status}`, { defaultValue: status });
   const showPulse = status === "checking";
 
   return (
@@ -58,3 +74,4 @@ const StatusPill: React.FC<StatusPillProps> = ({ status, children }) => {
 };
 
 export default StatusPill;
+export { StatusPill };

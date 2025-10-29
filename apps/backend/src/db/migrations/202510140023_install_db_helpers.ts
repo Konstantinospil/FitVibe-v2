@@ -10,9 +10,8 @@ export async function up(knex: Knex): Promise<void> {
   await knex.raw(readSql("../types/exercise_difficulty_enum.sql"));
   await knex.raw(readSql("../functions/ensure_partitions.sql"));
   await knex.raw(readSql("../functions/refresh_session_summary.sql"));
-  await knex.raw("DROP VIEW IF EXISTS v_session_summary;");
-  await knex.raw(readSql("../views/v_session_summary.sql"));
-  await knex.raw(readSql("../triggers/t_session_summary_refresh.sql"));
+  // Note: v_session_summary view and trigger are created in 202510140028_create_session_summary_view.ts
+  // after the session_summary materialized view is created
 }
 
 export async function down(knex: Knex): Promise<void> {

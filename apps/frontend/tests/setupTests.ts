@@ -12,7 +12,6 @@ class ResizeObserverMock {
 }
 
 if (!("ResizeObserver" in globalThis)) {
-  // @ts-expect-error - assigning to global scope for tests
   globalThis.ResizeObserver = ResizeObserverMock;
 }
 

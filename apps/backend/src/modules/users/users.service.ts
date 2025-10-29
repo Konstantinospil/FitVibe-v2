@@ -177,7 +177,7 @@ async function ensureUsernameAvailable(userId: string, username: string) {
     .whereNot({ id: userId })
     .first<UserRow>();
   if (conflict) {
-    throw new HttpError(409, "USER_USERNAME_TAKEN", "Username already in use");
+    throw new HttpError(409, "USER_USERNAME_TAKEN", "USER_USERNAME_TAKEN");
   }
 }
 
@@ -186,7 +186,7 @@ function ensureUsernameFormat(username: string) {
     throw new HttpError(
       422,
       "USER_USERNAME_INVALID",
-      "Username must be 3-50 characters and may include letters, numbers, dot, underscore, and dash",
+      "USER_USERNAME_INVALID",
     );
   }
 }
@@ -264,13 +264,13 @@ export async function createUser(
 
   ensureUsernameFormat(username);
   if (!displayName) {
-    throw new HttpError(422, "USER_DISPLAY_NAME_REQUIRED", "Display name is required");
+    throw new HttpError(422, "USER_DISPLAY_NAME_REQUIRED", "USER_DISPLAY_NAME_REQUIRED");
   }
   if (!email) {
-    throw new HttpError(422, "USER_EMAIL_INVALID", "Email is required");
+    throw new HttpError(422, "USER_EMAIL_INVALID", "USER_EMAIL_INVALID");
   }
   if (!roleCode) {
-    throw new HttpError(422, "USER_ROLE_INVALID", "Role is required");
+    throw new HttpError(422, "USER_ROLE_INVALID", "USER_ROLE_INVALID");
   }
   if (!INITIAL_ALLOWED_STATUSES.includes(initialStatus)) {
     throw new HttpError(400, "USER_STATUS_INVALID", "Invalid initial status");
@@ -305,7 +305,7 @@ export async function createUser(
         );
       } catch (contactError) {
         if (isUniqueViolation(contactError)) {
-          throw new HttpError(409, "USER_EMAIL_TAKEN", "Email already in use");
+          throw new HttpError(409, "USER_EMAIL_TAKEN", "USER_EMAIL_TAKEN");
         }
         throw contactError;
       }
@@ -316,7 +316,7 @@ export async function createUser(
       throw error;
     }
     if (isUniqueViolation(error)) {
-      throw new HttpError(409, "USER_USERNAME_TAKEN", "Username already in use");
+      throw new HttpError(409, "USER_USERNAME_TAKEN", "USER_USERNAME_TAKEN");
     }
     throw error;
   }
@@ -334,7 +334,7 @@ export async function createUser(
 
   const created = await fetchUserWithContacts(userId);
   if (!created) {
-    throw new HttpError(500, "USER_REFRESH_FAILED", "Unable to load created user");
+    throw new HttpError(500, "USER_REFRESH_FAILED", "USER_REFRESH_FAILED");
   }
   return toUserDetail(created.user, created.contacts, created.avatar);
 }
@@ -355,7 +355,7 @@ export async function listAll(limit = 50, offset = 0): Promise<UserSafe[]> {
 export async function updateProfile(userId: string, dto: UpdateProfileDTO): Promise<UserDetail> {
   const user = await findUserById(userId);
   if (!user) {
-    throw new HttpError(404, "USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "USER_NOT_FOUND", "USER_NOT_FOUND");
   }
 
   const patch: UpdateProfileDTO = {};
@@ -410,7 +410,7 @@ export async function updateProfile(userId: string, dto: UpdateProfileDTO): Prom
 
   const updated = await fetchUserWithContacts(userId);
   if (!updated) {
-    throw new HttpError(500, "USER_REFRESH_FAILED", "Unable to load updated profile");
+    throw new HttpError(500, "USER_REFRESH_FAILED", "USER_REFRESH_FAILED");
   }
   return toUserDetail(updated.user, updated.contacts, updated.avatar);
 }
@@ -418,12 +418,12 @@ export async function updateProfile(userId: string, dto: UpdateProfileDTO): Prom
 export async function updatePassword(userId: string, dto: ChangePasswordDTO): Promise<void> {
   const user = await findUserById(userId);
   if (!user) {
-    throw new HttpError(404, "USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "USER_NOT_FOUND", "USER_NOT_FOUND");
   }
 
   const ok = await bcrypt.compare(dto.currentPassword, user.password_hash);
   if (!ok) {
-    throw new HttpError(401, "USER_INVALID_PASSWORD", "Invalid current password");
+    throw new HttpError(401, "USER_INVALID_PASSWORD", "USER_INVALID_PASSWORD");
   }
 
   const contacts = await getUserContacts(userId);
@@ -449,12 +449,12 @@ export async function changeStatus(
 ): Promise<UserDetail> {
   const user = await findUserById(userId);
   if (!user) {
-    throw new HttpError(404, "USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "USER_NOT_FOUND", "USER_NOT_FOUND");
   }
   if (user.status === nextStatus) {
     const full = await fetchUserWithContacts(userId);
     if (!full) {
-      throw new HttpError(500, "USER_REFRESH_FAILED", "Unable to load user state");
+      throw new HttpError(500, "USER_REFRESH_FAILED", "USER_REFRESH_FAILED");
     }
     return toUserDetail(full.user, full.contacts, full.avatar);
   }
@@ -479,7 +479,7 @@ export async function changeStatus(
 
   const refreshed = await fetchUserWithContacts(userId);
   if (!refreshed) {
-    throw new HttpError(500, "USER_REFRESH_FAILED", "Unable to load user state");
+    throw new HttpError(500, "USER_REFRESH_FAILED", "USER_REFRESH_FAILED");
   }
   return toUserDetail(refreshed.user, refreshed.contacts, refreshed.avatar);
 }
@@ -487,7 +487,7 @@ export async function changeStatus(
 export async function requestAccountDeletion(userId: string): Promise<DeleteSchedule> {
   const user = await findUserById(userId);
   if (!user) {
-    throw new HttpError(404, "USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "USER_NOT_FOUND", "USER_NOT_FOUND");
   }
 
   if (user.status !== "pending_deletion") {
@@ -517,10 +517,10 @@ export async function requestContactVerification(
 ): Promise<{ token: string; expiresAt: string }> {
   const contact = await getContactById(contactId);
   if (!contact || contact.user_id !== userId) {
-    throw new HttpError(404, "USER_CONTACT_NOT_FOUND", "Contact not found");
+    throw new HttpError(404, "USER_CONTACT_NOT_FOUND", "USER_CONTACT_NOT_FOUND");
   }
   if (contact.is_verified) {
-    throw new HttpError(409, "USER_CONTACT_ALREADY_VERIFIED", "Contact already verified");
+    throw new HttpError(409, "USER_CONTACT_ALREADY_VERIFIED", "USER_CONTACT_ALREADY_VERIFIED");
   }
 
   const now = Date.now();
@@ -566,7 +566,7 @@ export async function requestContactVerification(
 export async function updatePrimaryEmail(userId: string, email: string): Promise<UserDetail> {
   const trimmed = email.trim().toLowerCase();
   if (!trimmed) {
-    throw new HttpError(422, "USER_EMAIL_INVALID", "Email is required");
+    throw new HttpError(422, "USER_EMAIL_INVALID", "USER_EMAIL_INVALID");
   }
 
   try {
@@ -578,7 +578,7 @@ export async function updatePrimaryEmail(userId: string, email: string): Promise
     });
   } catch (error) {
     if (isUniqueViolation(error)) {
-      throw new HttpError(409, "USER_EMAIL_TAKEN", "Email already in use");
+      throw new HttpError(409, "USER_EMAIL_TAKEN", "USER_EMAIL_TAKEN");
     }
     throw error;
   }
@@ -593,7 +593,7 @@ export async function updatePrimaryEmail(userId: string, email: string): Promise
 
   const refreshed = await fetchUserWithContacts(userId);
   if (!refreshed) {
-    throw new HttpError(500, "USER_REFRESH_FAILED", "Unable to load user state");
+    throw new HttpError(500, "USER_REFRESH_FAILED", "USER_REFRESH_FAILED");
   }
   return toUserDetail(refreshed.user, refreshed.contacts, refreshed.avatar);
 }
@@ -605,7 +605,7 @@ export async function updatePhoneNumber(
 ): Promise<UserDetail> {
   const trimmed = phone.trim();
   if (!trimmed) {
-    throw new HttpError(422, "USER_PHONE_INVALID", "Phone number is required");
+    throw new HttpError(422, "USER_PHONE_INVALID", "USER_PHONE_INVALID");
   }
 
   try {
@@ -617,7 +617,7 @@ export async function updatePhoneNumber(
     });
   } catch (error) {
     if (isUniqueViolation(error)) {
-      throw new HttpError(409, "USER_PHONE_TAKEN", "Phone number already in use");
+      throw new HttpError(409, "USER_PHONE_TAKEN", "USER_PHONE_TAKEN");
     }
     throw error;
   }
@@ -632,7 +632,7 @@ export async function updatePhoneNumber(
 
   const refreshed = await fetchUserWithContacts(userId);
   if (!refreshed) {
-    throw new HttpError(500, "USER_REFRESH_FAILED", "Unable to load user state");
+    throw new HttpError(500, "USER_REFRESH_FAILED", "USER_REFRESH_FAILED");
   }
   return toUserDetail(refreshed.user, refreshed.contacts, refreshed.avatar);
 }
@@ -644,7 +644,7 @@ export async function verifyContact(
 ): Promise<UserContact> {
   const contact = await getContactById(contactId);
   if (!contact || contact.user_id !== userId) {
-    throw new HttpError(404, "USER_CONTACT_NOT_FOUND", "Contact not found");
+    throw new HttpError(404, "USER_CONTACT_NOT_FOUND", "USER_CONTACT_NOT_FOUND");
   }
 
   if (contact.is_verified) {
@@ -653,19 +653,19 @@ export async function verifyContact(
 
   const trimmedToken = token?.trim();
   if (!trimmedToken) {
-    throw new HttpError(400, "USER_CONTACT_TOKEN_REQUIRED", "Verification token is required");
+    throw new HttpError(400, "USER_CONTACT_TOKEN_REQUIRED", "USER_CONTACT_TOKEN_REQUIRED");
   }
 
   const tokenType = contactTokenType(contactId);
   const tokenHash = crypto.createHash("sha256").update(trimmedToken).digest("hex");
   const record = await findAuthToken(tokenType, tokenHash);
   if (!record || record.user_id !== userId) {
-    throw new HttpError(400, "USER_CONTACT_TOKEN_INVALID", "Invalid verification token");
+    throw new HttpError(400, "USER_CONTACT_TOKEN_INVALID", "USER_CONTACT_TOKEN_INVALID");
   }
 
   if (new Date(record.expires_at).getTime() <= Date.now()) {
     await consumeAuthToken(record.id);
-    throw new HttpError(400, "USER_CONTACT_TOKEN_EXPIRED", "Verification token expired");
+    throw new HttpError(400, "USER_CONTACT_TOKEN_EXPIRED", "USER_CONTACT_TOKEN_EXPIRED");
   }
 
   await markContactVerified(contactId);
@@ -682,7 +682,7 @@ export async function verifyContact(
 
   const refreshed = await getContactById(contactId);
   if (!refreshed) {
-    throw new HttpError(500, "USER_CONTACT_REFRESH_FAILED", "Unable to load contact");
+    throw new HttpError(500, "USER_CONTACT_REFRESH_FAILED", "USER_CONTACT_REFRESH_FAILED");
   }
   return toContact(refreshed);
 }
@@ -690,10 +690,10 @@ export async function verifyContact(
 export async function removeContact(userId: string, contactId: string): Promise<void> {
   const contact = await getContactById(contactId);
   if (!contact || contact.user_id !== userId) {
-    throw new HttpError(404, "USER_CONTACT_NOT_FOUND", "Contact not found");
+    throw new HttpError(404, "USER_CONTACT_NOT_FOUND", "USER_CONTACT_NOT_FOUND");
   }
   if (contact.type === "email" && contact.is_primary) {
-    throw new HttpError(400, "USER_CONTACT_REMOVE_PRIMARY", "Cannot remove primary email");
+    throw new HttpError(400, "USER_CONTACT_REMOVE_PRIMARY", "USER_CONTACT_REMOVE_PRIMARY");
   }
   await deleteContact(userId, contactId);
   await insertAudit({
@@ -708,7 +708,7 @@ export async function removeContact(userId: string, contactId: string): Promise<
 export async function collectUserData(userId: string): Promise<UserDataExportBundle> {
   const user = await db<UserRow>("users").where({ id: userId }).first<UserRow>();
   if (!user) {
-    throw new HttpError(404, "USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "USER_NOT_FOUND", "USER_NOT_FOUND");
   }
 
   const contacts = await db<ContactRow>("user_contacts").where({ user_id: userId });

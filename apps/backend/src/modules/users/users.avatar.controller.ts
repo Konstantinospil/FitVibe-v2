@@ -20,13 +20,13 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB per PRD
 export async function uploadAvatarHandler(req: Request, res: Response) {
   const userId = req.user?.sub as string;
   if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
+    return res.status(400).json({ error: "UPLOAD_NO_FILE" });
   }
   if (!ALLOWED_MIME.has(req.file.mimetype)) {
-    return res.status(400).json({ error: "Unsupported file type" });
+    return res.status(400).json({ error: "UPLOAD_UNSUPPORTED_TYPE" });
   }
   if (req.file.size > MAX_BYTES) {
-    return res.status(400).json({ error: "File too large (max 5MB)" });
+    return res.status(400).json({ error: "UPLOAD_TOO_LARGE" });
   }
 
   // B-USR-5: Antivirus scanning before processing
@@ -60,7 +60,7 @@ export async function uploadAvatarHandler(req: Request, res: Response) {
     return res.status(422).json({
       error: {
         code: "E.UPLOAD.MALWARE_DETECTED",
-        message: "File failed security scan",
+        message: "UPLOAD_MALWARE_DETECTED",
         details: {
           reason: "malware_detected",
         },
@@ -109,7 +109,7 @@ export async function getAvatarHandler(req: Request, res: Response) {
   const { id } = req.params;
   const metadata = await getUserAvatarMetadata(id);
   if (!metadata) {
-    return res.status(404).send("Avatar not found");
+    return res.status(404).send("UPLOAD_NOT_FOUND");
   }
   try {
     const buffer = await readStorageObject(metadata.storage_key);
@@ -118,7 +118,7 @@ export async function getAvatarHandler(req: Request, res: Response) {
     return res.send(buffer);
   } catch (error) {
     logger.error({ err: error }, "[avatar] read failed");
-    return res.status(404).send("Avatar not found");
+    return res.status(404).send("UPLOAD_NOT_FOUND");
   }
 }
 

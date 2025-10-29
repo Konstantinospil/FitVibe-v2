@@ -154,7 +154,7 @@ const ShareLinkManager: React.FC = () => {
                       type="button"
                       size="sm"
                       variant="secondary"
-                      onClick={() => copyLink(link)}
+                      onClick={() => void copyLink(link)}
                       disabled={isRevoked || isCopying}
                     >
                       {copiedId === link.id ? t("profile.share.copied") : t("profile.share.copy")}

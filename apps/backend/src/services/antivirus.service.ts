@@ -87,10 +87,7 @@ export interface ScanResult {
  *   throw new Error(`Malware detected: ${result.viruses.join(', ')}`);
  * }
  */
-export async function scanBuffer(
-  buffer: Buffer,
-  filename: string = "upload",
-): Promise<ScanResult> {
+export async function scanBuffer(buffer: Buffer, filename: string = "upload"): Promise<ScanResult> {
   const startTime = Date.now();
 
   // If AV scanning is disabled (dev mode), return clean result

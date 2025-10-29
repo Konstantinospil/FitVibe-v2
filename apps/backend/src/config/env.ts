@@ -35,6 +35,7 @@ const EnvSchema = z.object({
   EMAIL_VERIFICATION_TTL_MIN: z.coerce.number().default(15),
   PASSWORD_RESET_TTL_MIN: z.coerce.number().default(15),
   APP_BASE_URL: z.string().default("http://localhost:4000"),
+  FRONTEND_URL: z.string().default("http://localhost:5173"),
   JWT_PRIVATE_KEY: z.string().optional(),
   JWT_PUBLIC_KEY: z.string().optional(),
   JWT_PRIVATE_KEY_PATH: z.string().default("./keys/jwt_rs256.key"),
@@ -50,6 +51,19 @@ const EnvSchema = z.object({
   CLAMAV_HOST: z.string().default("localhost"),
   CLAMAV_PORT: z.coerce.number().default(3310),
   CLAMAV_TIMEOUT: z.coerce.number().default(60000),
+  VAULT_ENABLED: z.string().optional(),
+  VAULT_ADDR: z.string().default("http://localhost:8200"),
+  VAULT_TOKEN: z.string().optional(),
+  VAULT_NAMESPACE: z.string().optional(),
+  JWT_KEY_ROTATION_DAYS: z.coerce.number().default(90),
+  EMAIL_ENABLED: z.string().optional(),
+  SMTP_HOST: z.string().default("smtp.gmail.com"),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_SECURE: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM_NAME: z.string().default("FitVibe"),
+  SMTP_FROM_EMAIL: z.string().optional(),
 });
 
 const raw = EnvSchema.parse(process.env);
@@ -147,6 +161,7 @@ export const env = {
   },
   typesCacheTtl: raw.TYPES_CACHE_TTL_SEC,
   appBaseUrl: raw.APP_BASE_URL,
+  frontendUrl: raw.FRONTEND_URL,
   mediaStorageRoot: raw.MEDIA_STORAGE_ROOT,
   dsr: {
     purgeDelayMinutes: raw.DSR_PURGE_DELAY_MIN,
@@ -159,6 +174,27 @@ export const env = {
     host: raw.CLAMAV_HOST,
     port: raw.CLAMAV_PORT,
     timeout: raw.CLAMAV_TIMEOUT,
+  },
+  vault: {
+    enabled: parseBoolean(raw.VAULT_ENABLED, false),
+    addr: raw.VAULT_ADDR,
+    token: raw.VAULT_TOKEN,
+    namespace: raw.VAULT_NAMESPACE,
+  },
+  jwtKeyRotationDays: raw.JWT_KEY_ROTATION_DAYS,
+  email: {
+    enabled: parseBoolean(raw.EMAIL_ENABLED, false),
+    smtp: {
+      host: raw.SMTP_HOST,
+      port: raw.SMTP_PORT,
+      secure: parseBoolean(raw.SMTP_SECURE, false),
+      user: raw.SMTP_USER,
+      pass: raw.SMTP_PASS,
+    },
+    from: {
+      name: raw.SMTP_FROM_NAME,
+      email: raw.SMTP_FROM_EMAIL || raw.SMTP_USER,
+    },
   },
 } as const;
 

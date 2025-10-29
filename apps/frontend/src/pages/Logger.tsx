@@ -1,5 +1,6 @@
 import React from "react";
 import PageIntro from "../components/PageIntro";
+import { useTranslation } from "react-i18next";
 
 const rowStyle: React.CSSProperties = {
   display: "grid",
@@ -7,16 +8,19 @@ const rowStyle: React.CSSProperties = {
   gap: "0.75rem",
   alignItems: "center",
   padding: "0.85rem 1rem",
-  background: "rgba(15, 23, 42, 0.4)",
+  background: "rgba(15, 23, 42, 0.4)}",
   borderRadius: "14px",
-  border: "1px solid rgba(148, 163, 184, 0.18)",
+  border: "1px solid rgba(148, 163, 184, 0.18)}",
 };
 
-const Logger: React.FC = () => (
-  <PageIntro
-    eyebrow="Logbook"
-    title="Capture every rep without losing flow."
-    description="Whether you’re in the gym or syncing from wearables, the logger tracks sets, RPE, and tempo so your data stays coach-ready."
+const Logger: React.FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <PageIntro
+      eyebrow={t("logger.eyebrow")}
+      title={t("logger.title")}
+      description={t("logger.description")}
   >
     <div
       style={{
@@ -27,7 +31,7 @@ const Logger: React.FC = () => (
       <div
         style={{
           ...rowStyle,
-          background: "rgba(52, 211, 153, 0.18)",
+          background: "rgba(52, 211, 153, 0.18)}",
           color: "#0f172a",
           fontWeight: 600,
         }}
@@ -51,6 +55,7 @@ const Logger: React.FC = () => (
       ))}
     </div>
   </PageIntro>
-);
+  );
+};
 
 export default Logger;

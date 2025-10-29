@@ -310,7 +310,7 @@ describe("readOnlyGuard middleware", () => {
       const { logger } = require("../../config/logger");
 
       mockReq.method = "POST";
-      mockReq.user = { sub: "user-123", roles: ["user"] };
+      mockReq.user = { sub: "user-123", role: "user", sid: "session-123" };
 
       readOnlyGuard(mockReq as Request, mockRes as Response, mockNext);
 

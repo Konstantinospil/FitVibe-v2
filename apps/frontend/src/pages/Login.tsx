@@ -49,6 +49,7 @@ const Login: React.FC = () => {
       title={t("auth.login.title")}
       description={t("auth.login.description")}
     >
+      {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
@@ -110,7 +111,9 @@ const Login: React.FC = () => {
           <NavLink to="/register" style={{ color: "var(--color-text-secondary)" }}>
             {t("auth.login.registerPrompt")}
           </NavLink>
-          <span>{t("auth.login.forgot")}</span>
+          <NavLink to="/forgot-password" style={{ color: "var(--color-text-secondary)" }}>
+            {t("auth.login.forgot")}
+          </NavLink>
         </div>
       </form>
     </PageIntro>

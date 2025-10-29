@@ -29,6 +29,7 @@ import {
   updateSession,
   revokeSessionById,
   revokeSessionsByUserId,
+  markEmailVerified,
 } from "./auth.repository";
 import type {
   JwtPayload,
@@ -47,6 +48,7 @@ import { env, RSA_KEYS } from "../../config/env.js";
 import { HttpError } from "../../utils/http.js";
 import { assertPasswordPolicy } from "./passwordPolicy.js";
 import { incrementRefreshReuse } from "../../observability/metrics.js";
+import { mailerService } from "../../services/mailer.service.js";
 
 const ACCESS_TTL = env.ACCESS_TOKEN_TTL;
 const REFRESH_TTL = env.REFRESH_TOKEN_TTL;
@@ -131,11 +133,7 @@ async function issueAuthToken(userId: string, type: string, ttlSeconds: number) 
     const windowStart = new Date(now - RESEND_WINDOW_MS);
     const recentAttempts = await countAuthTokensSince(userId, type, windowStart);
     if (recentAttempts >= EMAIL_VERIFICATION_RESEND_LIMIT) {
-      throw new HttpError(
-        429,
-        "AUTH_TOO_MANY_REQUESTS",
-        "Verification limit reached. Please try again later.",
-      );
+      throw new HttpError(429, "AUTH_TOO_MANY_REQUESTS", "AUTH_TOO_MANY_REQUESTS");
     }
   }
 
@@ -181,9 +179,36 @@ export async function register(
         TOKEN_TYPES.EMAIL_VERIFICATION,
         EMAIL_VERIFICATION_TTL,
       );
+
+      // Resend verification email
+      if (env.email.enabled) {
+        const verificationUrl = `${env.frontendUrl}/verify?token=${token}`;
+        await mailerService.send({
+          to: email,
+          subject: "Verify your FitVibe account",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Welcome back to FitVibe!</h2>
+              <p>We noticed you tried to register again. Please verify your email address by clicking the link below:</p>
+              <p>
+                <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px;">
+                  Verify Email Address
+                </a>
+              </p>
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
+              <p style="color: #999; font-size: 12px; margin-top: 32px;">
+                This link will expire in ${Math.floor(EMAIL_VERIFICATION_TTL / 60)} minutes.
+              </p>
+            </div>
+          `,
+          text: `Welcome back to FitVibe! Please verify your email address by visiting: ${verificationUrl}\n\nThis link will expire in ${Math.floor(EMAIL_VERIFICATION_TTL / 60)} minutes.`,
+        });
+      }
+
       return { verificationToken: token, user: toSafeUser(existingByEmail) };
     }
-    throw new HttpError(409, "AUTH_CONFLICT", "Unable to complete registration");
+    throw new HttpError(409, "AUTH_CONFLICT", "AUTH_CONFLICT");
   }
 
   const id = uuidv4();
@@ -200,22 +225,38 @@ export async function register(
     primaryEmail: email,
   });
 
-  await db("user_profiles").insert({
-    user_id: id,
-    display_name: dto.profile?.display_name ?? username,
-    sex: dto.profile?.sex ?? "na",
-    weight_kg: dto.profile?.weight_kg ?? null,
-    fitness_level: dto.profile?.fitness_level ?? null,
-    age: dto.profile?.age ?? null,
-    created_at: now,
-    updated_at: now,
-  });
-
   const verificationToken = await issueAuthToken(
     id,
     TOKEN_TYPES.EMAIL_VERIFICATION,
     EMAIL_VERIFICATION_TTL,
   );
+
+  // Send verification email
+  if (env.email.enabled) {
+    const verificationUrl = `${env.frontendUrl}/verify?token=${verificationToken}`;
+    await mailerService.send({
+      to: email,
+      subject: "Verify your FitVibe account",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to FitVibe!</h2>
+          <p>Thank you for registering. Please verify your email address by clicking the link below:</p>
+          <p>
+            <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px;">
+              Verify Email Address
+            </a>
+          </p>
+          <p>Or copy and paste this link into your browser:</p>
+          <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
+          <p style="color: #999; font-size: 12px; margin-top: 32px;">
+            This link will expire in ${Math.floor(EMAIL_VERIFICATION_TTL / 60)} minutes.
+          </p>
+        </div>
+      `,
+      text: `Welcome to FitVibe! Please verify your email address by visiting: ${verificationUrl}\n\nThis link will expire in ${Math.floor(EMAIL_VERIFICATION_TTL / 60)} minutes.`,
+    });
+  }
+
   const user = await findUserById(id);
   return { verificationToken, user: user ? toSafeUser(user) : undefined };
 }
@@ -224,11 +265,11 @@ export async function verifyEmail(token: string): Promise<UserSafe> {
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const record = await findAuthToken(TOKEN_TYPES.EMAIL_VERIFICATION, tokenHash);
   if (!record) {
-    throw new HttpError(400, "AUTH_INVALID_TOKEN", "Invalid or expired verification token");
+    throw new HttpError(400, "AUTH_INVALID_TOKEN", "AUTH_INVALID_TOKEN");
   }
   if (new Date(record.expires_at).getTime() <= Date.now()) {
     await consumeAuthToken(record.id);
-    throw new HttpError(400, "AUTH_INVALID_TOKEN", "Invalid or expired verification token");
+    throw new HttpError(410, "AUTH_TOKEN_EXPIRED", "AUTH_TOKEN_EXPIRED");
   }
 
   await consumeAuthToken(record.id);
@@ -237,8 +278,14 @@ export async function verifyEmail(token: string): Promise<UserSafe> {
 
   const user = await findUserById(record.user_id);
   if (!user) {
-    throw new HttpError(404, "AUTH_USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "AUTH_USER_NOT_FOUND", "AUTH_USER_NOT_FOUND");
   }
+
+  // Mark email as verified
+  if (user.primary_email) {
+    await markEmailVerified(record.user_id, user.primary_email);
+  }
+
   return toSafeUser(user);
 }
 
@@ -252,11 +299,11 @@ export async function login(
 }> {
   const user = await findUserByEmail(dto.email.toLowerCase());
   if (!user || user.status !== "active") {
-    throw new HttpError(401, "AUTH_INVALID_CREDENTIALS", "Invalid credentials");
+    throw new HttpError(401, "AUTH_INVALID_CREDENTIALS", "AUTH_INVALID_CREDENTIALS");
   }
   const ok = await bcrypt.compare(dto.password, user.password_hash);
   if (!ok) {
-    throw new HttpError(401, "AUTH_INVALID_CREDENTIALS", "Invalid credentials");
+    throw new HttpError(401, "AUTH_INVALID_CREDENTIALS", "AUTH_INVALID_CREDENTIALS");
   }
 
   const sessionId = uuidv4();
@@ -313,7 +360,7 @@ export async function refresh(
       algorithms: ["RS256"],
     }) as RefreshTokenPayload;
     if (!decoded?.sid) {
-      throw new HttpError(401, "AUTH_INVALID_REFRESH", "Invalid refresh token");
+      throw new HttpError(401, "AUTH_INVALID_REFRESH", "AUTH_INVALID_REFRESH");
     }
 
     const token_hash = crypto.createHash("sha256").update(refreshToken).digest("hex");
@@ -339,7 +386,7 @@ export async function refresh(
           throw error;
         }
       }
-      throw new HttpError(401, "AUTH_INVALID_REFRESH", "Invalid refresh token");
+      throw new HttpError(401, "AUTH_INVALID_REFRESH", "AUTH_INVALID_REFRESH");
     }
 
     if (rec.session_jti !== decoded.sid) {
@@ -351,30 +398,30 @@ export async function refresh(
         requestId: context.requestId ?? null,
         outcome: "failure",
       });
-      throw new HttpError(401, "AUTH_INVALID_REFRESH", "Invalid refresh token");
+      throw new HttpError(401, "AUTH_INVALID_REFRESH", "AUTH_INVALID_REFRESH");
     }
 
     const session = await findSessionById(decoded.sid);
     if (!session || session.user_id !== rec.user_id) {
       await revokeRefreshByHash(token_hash);
-      throw new HttpError(401, "AUTH_INVALID_REFRESH", "Invalid refresh token");
+      throw new HttpError(401, "AUTH_INVALID_REFRESH", "AUTH_INVALID_REFRESH");
     }
 
     if (session.revoked_at) {
       await revokeRefreshByHash(token_hash);
-      throw new HttpError(401, "AUTH_SESSION_REVOKED", "Session revoked");
+      throw new HttpError(401, "AUTH_SESSION_REVOKED", "AUTH_SESSION_REVOKED");
     }
 
     if (new Date(rec.expires_at).getTime() <= Date.now()) {
       await revokeRefreshByHash(token_hash);
       await revokeSessionById(session.jti);
-      throw new HttpError(401, "AUTH_REFRESH_EXPIRED", "Refresh token expired");
+      throw new HttpError(401, "AUTH_REFRESH_EXPIRED", "AUTH_REFRESH_EXPIRED");
     }
 
     if (new Date(session.expires_at).getTime() <= Date.now()) {
       await revokeRefreshBySession(session.jti);
       await revokeSessionById(session.jti);
-      throw new HttpError(401, "AUTH_REFRESH_EXPIRED", "Refresh token expired");
+      throw new HttpError(401, "AUTH_REFRESH_EXPIRED", "AUTH_REFRESH_EXPIRED");
     }
 
     const user = await findUserById(decoded.sub);
@@ -432,7 +479,7 @@ export async function refresh(
     if (error instanceof HttpError) {
       throw error;
     }
-    throw new HttpError(401, "AUTH_INVALID_REFRESH", "Invalid refresh token");
+    throw new HttpError(401, "AUTH_INVALID_REFRESH", "AUTH_INVALID_REFRESH");
   }
 }
 
@@ -484,16 +531,16 @@ export async function resetPassword(token: string, newPassword: string): Promise
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const record = await findAuthToken(TOKEN_TYPES.PASSWORD_RESET, tokenHash);
   if (!record) {
-    throw new HttpError(400, "AUTH_INVALID_TOKEN", "Invalid or expired reset token");
+    throw new HttpError(400, "AUTH_INVALID_TOKEN", "AUTH_INVALID_TOKEN");
   }
   if (new Date(record.expires_at).getTime() <= Date.now()) {
     await consumeAuthToken(record.id);
-    throw new HttpError(400, "AUTH_INVALID_TOKEN", "Invalid or expired reset token");
+    throw new HttpError(400, "AUTH_INVALID_TOKEN", "AUTH_INVALID_TOKEN");
   }
 
   const user = await findUserById(record.user_id);
   if (!user) {
-    throw new HttpError(404, "AUTH_USER_NOT_FOUND", "User not found");
+    throw new HttpError(404, "AUTH_USER_NOT_FOUND", "AUTH_USER_NOT_FOUND");
   }
   assertPasswordPolicy(newPassword, {
     email: user.primary_email ?? undefined,
@@ -532,13 +579,13 @@ export async function revokeSessions(
   let revokedCount = 0;
 
   if (!sessionId && !revokeAll && !revokeOthers) {
-    throw new HttpError(400, "AUTH_INVALID_SCOPE", "Specify a sessionId or revoke scope");
+    throw new HttpError(400, "AUTH_INVALID_SCOPE", "AUTH_INVALID_SCOPE");
   }
 
   if (sessionId) {
     const session = await findSessionById(sessionId);
     if (!session || session.user_id !== userId) {
-      throw new HttpError(404, "AUTH_SESSION_NOT_FOUND", "Session not found");
+      throw new HttpError(404, "AUTH_SESSION_NOT_FOUND", "AUTH_SESSION_NOT_FOUND");
     }
     if (!session.revoked_at) {
       await revokeSessionById(sessionId);
@@ -578,7 +625,7 @@ export async function revokeSessions(
       throw new HttpError(
         400,
         "AUTH_INVALID_SCOPE",
-        "Current session id required to revoke other sessions",
+        "AUTH_INVALID_SCOPE",
       );
     }
     const targets = sessions.filter(

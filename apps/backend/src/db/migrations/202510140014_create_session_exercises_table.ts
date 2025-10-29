@@ -11,10 +11,7 @@ export async function up(knex: Knex): Promise<void> {
     table
       .uuid("session_id")
       .notNullable()
-      .references("id")
-      .inTable("sessions")
-      .onUpdate("CASCADE")
-      .onDelete("CASCADE");
+      .comment("FK to sessions(id) - enforced at application level per ADR-005");
     table
       .uuid("exercise_id")
       .nullable()

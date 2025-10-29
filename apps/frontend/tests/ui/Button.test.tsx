@@ -34,8 +34,8 @@ describe("Button", () => {
 
     const button = screen.getByTestId("loading-button");
     expect(button).toBeDisabled();
-     expect(button).toHaveAttribute("aria-busy", "true");
-     expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toHaveAttribute("aria-disabled", "true");
     expect(button.querySelector("[aria-hidden='true']")).toBeTruthy();
   });
 });

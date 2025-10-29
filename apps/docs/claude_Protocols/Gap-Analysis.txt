@@ -1,0 +1,633 @@
+FitVibe V2 - Comprehensive Implementation Gap Analysis
+
+  Date: 2025-10-28Analysis Scope: Backend, Frontend, Database, Security, Testing, Observability, Documentation
+
+  ---
+  Executive Summary
+
+  Overall Completion: ~65-70% for MVP
+
+  FitVibe V2 has a solid foundation with all core backend domain modules, database schema, and infrastructure in place.
+  However, there are significant gaps in:
+
+  1. Testing & QA Automation (0% - all Q-* tasks unchecked)
+  2. Observability & Operations (0% - all O-* tasks unchecked)
+  3. Frontend Feature Completeness (~60% - key pages stubbed)
+  4. Security Testing & Hardening (partial - missing automated scans)
+  5. Documentation (~80% - some items incomplete)
+
+  Readiness Assessment by Category
+
+  | Category                | Completion  | Blocker Status | Notes                                          |
+  |-------------------------|-------------|----------------|-----------------------------------------------|
+  | Backend Core            | ✅ 95%      | ✓ Ready        | All modules + 70+ endpoints implemented      |
+  | Database                | ✅ 100%     | ✓ Ready        | 41 migrations, all tables, views, partitions |
+  | Frontend Infrastructure | ✅ 90%      | ✓ Ready        | Routing, state, auth, i18n complete          |
+  | Frontend Features       | ⚠️ 60%      | ⚠️ Partial     | Planner/Logger/Progress stubbed              |
+  | Security Controls       | ⚠️ 75%      | ⚠️ Partial     | Middleware complete, testing missing         |
+  | Testing & QA            | ❌ 5%       | ❌ Blocks MVP  | Only 19 test files total                     |
+  | Observability           | ❌ 10%      | ⚠️ Partial     | Metrics endpoint exists, no dashboards       |
+  | Documentation           | ✅ 80%      | ✓ Ready        | Core docs complete, some items pending       |
+
+  ---
+  1. Backend Implementation Analysis
+
+  ✅ Completed (95%)
+
+  All 7 Domain Modules Implemented:
+
+  1. AUTH - 10 endpoints (register, login, refresh, logout, password reset, JWKS, session management)
+  2. USERS - 19 endpoints (profile CRUD, contacts, avatar, DSR export/delete, follow/unfollow)
+  3. EXERCISES - 5 endpoints (CRUD, search, tagging, types)
+  4. SESSIONS - 7 endpoints (CRUD, clone, recurrence templates)
+  5. PROGRESS - 5 endpoints (summary, trends, exercise breakdown, export)
+  6. POINTS & BADGES - 2 endpoints + badge evaluation service (4 badges seeded)
+  7. FEED - 22 endpoints (feed, share links, bookmarks, likes, comments, reporting, blocking, leaderboards)
+
+  Cross-Cutting Features:
+  - ✅ Error handling (RFC 7807 envelope)
+  - ✅ Logging (Pino + Morgan with PII redaction)
+  - ✅ Security middleware (Helmet, CORS, CSRF, rate limiting)
+  - ✅ Health endpoint (/health)
+  - ✅ Metrics endpoint (/metrics) with Prometheus
+  - ✅ Read-only mode kill-switch
+  - ✅ Audit logging hooks
+  - ✅ Idempotency support (24h TTL storage)
+
+  Backend Test Coverage:
+  - ✅ 6 test files found:
+    - common/__tests__/idempotency.service.test.ts
+    - feed/__tests__/feed.service.test.ts
+    - points/__tests__/points.service.test.ts
+    - progress/__tests__/progress.controller.test.ts
+    - sessions/__tests__/sessions.service.test.ts
+    - users/__tests__/dsr.service.test.ts
+
+  ❌ Missing Features
+
+  1. 2FA (TOTP) - Mentioned in CLAUDE.md but no endpoints found in auth.routes.ts
+  2. Comprehensive Test Coverage - Only 6 test files; Tasks Q-2, Q-3, Q-6 require unit/integration/perf tests
+  3. Automated Security Scans - No ZAP, Snyk integration in codebase (Task Q-7)
+  4. Performance Tests - No k6 scripts found (Task Q-6)
+
+  ---
+  2. Frontend Implementation Analysis
+
+  ✅ Completed (60-70%)
+
+  Pages Implemented (9 total):
+  - ✅ Home - Landing page with health status
+  - ✅ Login - Authentication form (working)
+  - ✅ Register - Account creation (working)
+  - ⚠️ Dashboard - UI complete, falls back to mock data
+  - ❌ Planner - Stubbed (placeholder buttons, no CRUD)
+  - ❌ Logger - Stubbed (static table, no form submission)
+  - ❌ Progress - Stubbed (empty chart area)
+  - ⚠️ Feed - UI complete, displays mock items
+  - ✅ Profile - With ShareLinkManager component (functional)
+
+  Infrastructure Complete:
+  - ✅ React Router v6 with protected routes
+  - ✅ Zustand auth store (persistent)
+  - ✅ React Query for server state
+  - ✅ Axios client with 401 refresh queue
+  - ✅ i18n (EN/DE) with static catalogs
+  - ✅ Feature flags + kill-switch polling
+  - ✅ UI component library (Button, Card, Avatar, Skeleton, Chart, VisibilityBadge)
+  - ✅ Accessibility (ARIA labels, semantic HTML, skip-link)
+  - ✅ ShareLinkManager component (create/revoke/copy)
+  - ✅ MaintenanceBanner for read-only mode
+  - ✅ Idempotency utilities (library complete, not wired to forms)
+
+  Frontend Test Coverage:
+  - ✅ 13 test files found in apps/frontend/tests/
+
+  ❌ Missing Features
+
+  1. Planner Page - No actual workout planning, drag-drop, or session CRUD
+  2. Logger Page - No set entry form or submission with idempotency keys
+  3. Progress Page - No data visualization connected
+  4. Live Data Integration - Dashboard and Feed fall back to mock data; no actual API calls verified
+  5. Form Validation - No React Hook Form, Formik, or Zod client-side validation
+  6. Error Boundaries - No React error boundary component found
+  7. Lighthouse CI Gate - Target stated (≥90) but not verified in CI (Task F-9)
+  8. i18n Coverage Gate - No missing-key detector in CI (Task F-13)
+
+  ---
+  3. Database Implementation Analysis
+
+  ✅ Completed (100%)
+
+  Migrations: 41 total (from 202510140001 to 202510270104)
+
+  Schema Coverage:
+  - ✅ Identity & Security (users, profiles, roles, sessions, tokens, 2FA tables)
+  - ✅ Catalog & i18n (exercises, categories, tags, translations)
+  - ✅ Planning & Logging (plans, templates, sessions, exercises, sets)
+  - ✅ Progress & Recovery (PRs, measurements, recovery logs, metrics)
+  - ✅ Social & Gamification (feed, comments, likes, bookmarks, followers, share_links, badges, points)
+  - ✅ Media & Operations (media_assets, idempotency_keys, audit_log, blocks, reports)
+
+  Advanced Features:
+  - ✅ Materialized views (session_summary, weekly_aggregates, leaderboard_view)
+  - ✅ Partitioning (sessions monthly, audit_log monthly, user_points by awarded_at)
+  - ✅ Soft deletes (deleted_at, archived_at)
+  - ✅ Immutability triggers (date_of_birth, gender_id)
+  - ✅ Foreign keys and indices (migration 202510270101)
+
+  No gaps identified in database implementation.
+
+  ---
+  4. Security & Compliance Analysis
+
+  ✅ Implemented Security Controls
+
+  Middleware Stack (apps/backend/src/app.ts):
+  - ✅ Helmet (CSP, HSTS, X-Frame-Options)
+  - ✅ CORS with allowlist
+  - ✅ CSRF protection (feature-flagged)
+  - ✅ Rate limiting (global 120 req/min, per-endpoint)
+  - ✅ Request ID tracking (correlation IDs)
+  - ✅ JWT RS256 with rotation support
+  - ✅ Auth guards (protect routes)
+  - ✅ Read-only mode guard
+  - ✅ PII redaction in logs (mentioned in logger.ts)
+
+  Security Config (apps/backend/src/config/env.ts):
+  - ✅ Zod schema validation for env vars
+  - ✅ JWT private/public key paths
+  - ✅ Key rotation schedule (JWT_KEY_ROTATION_DAYS)
+  - ✅ ClamAV antivirus config (CLAMAV_ENABLED)
+  - ✅ Vault secrets manager config (VAULT_ENABLED)
+  - ✅ Cookie security settings
+  - ✅ DSR purge delay and backup window
+
+  GDPR Compliance:
+  - ✅ DSR export endpoints (/users/me/export)
+  - ✅ DSR delete endpoints (/users/me)
+  - ✅ Retention job infrastructure (DSR_PURGE_DELAY_MIN, DSR_BACKUP_PURGE_DAYS)
+  - ✅ Privacy-by-default (visibility: private)
+  - ✅ Audit logging (PII-free)
+
+  ❌ Security Gaps
+
+  1. 2FA Implementation - No TOTP endpoints found despite mention in CLAUDE.md (ADR-002)
+  2. Automated Security Scans - Tasks Q-7, Q-14, Q-15 unchecked:
+    - No OWASP ZAP baseline
+    - No Snyk scan automation
+    - No EICAR upload test
+    - No security-headers test
+  3. No User Enumeration Tests - Task Q-11 unchecked (verify timing attacks)
+  4. CSP Enforcement - Task NFR-001-AC01 unchecked (no report-only validation)
+  5. Abuse Reporting Workflow - Tables exist (B-FEED-10 checked) but no admin moderation UI verified
+
+  ---
+  5. Testing & QA Status
+
+  ❌ Critical Gap: All Q- Tasks Unchecked (0%)*
+
+  From Tasks.md (Tasks Q-1 through Q-18):
+
+  | Task    | Feature                                             | Status     | Impact                              |
+  |---------|-----------------------------------------------------|------------|-------------------------------------|
+  | Q-1     | QA Plan v2.0 baseline                               | ❌          | Missing quality framework           |
+  | Q-2     | Unit/integration scaffolding (Jest + Supertest)     | ⚠️ Partial | 6 backend + 13 frontend tests exist |
+  | Q-3     | Contract tests (Zod → OpenAPI)                      | ❌          | OpenAPI manually maintained         |
+  | Q-4     | E2E Playwright (register → login → plan → complete) | ❌          | No E2E flows                        |
+  | Q-5     | Accessibility tests (axe + Lighthouse CI)           | ❌          | No automated a11y gate              |
+  | Q-6     | Performance tests (k6; p95 < 300 ms)                | ❌          | No load testing                     |
+  | Q-7     | Security scans (ZAP, Snyk, secret scans)            | ❌          | No automated security testing       |
+  | Q-8     | Coverage gate >= 80% (Codecov)                      | ❌          | No coverage enforcement             |
+  | Q-9     | QA summary HTML + Grafana trend                     | ❌          | No QA metrics                       |
+  | Q-10-18 | Various auth/DSR/idempotency/i18n/a11y tests        | ❌          | All unchecked                       |
+
+  Actual Test Files Found:
+  - Backend: 6 test files (modules: common, feed, points, progress, sessions, users)
+  - Frontend: 13 test files (components, pages, i18n, setupTests)
+  - Total: 19 test files (insufficient for 80% coverage target)
+
+  No evidence found of:
+  - E2E test scripts (Playwright)
+  - k6 performance tests
+  - Security scan configs (ZAP, Snyk)
+  - Codecov integration
+  - Contract testing
+
+  ---
+  6. Observability & Operations Status
+
+  ❌ Critical Gap: All O- Tasks Unchecked (0%)*
+
+  From Tasks.md (Tasks O-1 through O-10):
+
+  | Task | Feature                                            | Status     | Exists
+   |
+  |------|----------------------------------------------------|------------|----------------------------------------------
+  -|
+  | O-1  | Structured logs (correlation IDs; PII redaction)   | ⚠️ Partial | Request IDs present, PII redaction referenced
+   |
+  | O-2  | Prometheus metrics + Grafana dashboards            | ⚠️ Partial | /metrics endpoint exists, no dashboards
+   |
+  | O-3  | Loki log pipeline                                  | ❌          | No config found
+    |
+  | O-4  | Alert rules (p95 > 400ms, error rate > 0.5%, etc.) | ❌          | No alert definitions
+    |
+  | O-5  | Backup & restore scripts + quarterly DR test       | ❌          | No scripts found
+    |
+  | O-6  | JWT key rotation runbook + monitoring              | ❌          | Rotation config exists, no runbook
+    |
+  | O-7  | SLO dashboard (>= 99.5%)                           | ❌          | No SLO tracking
+    |
+  | O-8  | OTel dashboards (trace rate, slowest spans)        | ❌          | No OTel config
+    |
+  | O-9  | Auth anomaly alerts (brute-force, refresh reuse)   | ❌          | No alerting
+    |
+  | O-10 | AV scan failure alert & dashboard panel            | ❌          | No alerting
+    |
+
+  What Exists:
+  - ✅ /metrics endpoint (Prometheus format)
+  - ✅ Request ID middleware (correlation IDs)
+  - ✅ HTTP request logging (Morgan + Pino)
+  - ✅ Health endpoint (/health)
+
+  What's Missing:
+  - ❌ Grafana dashboards
+  - ❌ Loki aggregation
+  - ❌ Alert rules (Prometheus Alertmanager)
+  - ❌ SLO tracking and dashboard
+  - ❌ OpenTelemetry tracing
+  - ❌ Backup/restore scripts
+  - ❌ DR test documentation
+
+  ---
+  7. Documentation Status
+
+  ✅ Completed (80%)
+
+  From Tasks.md (D-OC-*):
+  - ✅ D-OC-1: PRD v1.0 complete
+  - ✅ D-OC-2: TDD v1.2 (backend MVP) complete
+  - ✅ D-OC-3: QA Plan v2.0 complete
+  - ✅ D-OC-4: ADRs created (21 ADRs in apps/docs/6. adr/)
+  - ✅ D-OC-6: ERD export (Mermaid)
+  - ✅ D-OC-7: PRD patch for dynamic translation (ADR P-7 outcome documented)
+
+  ❌ Missing (20%)
+
+  - ❌ D-OC-5: API reference auto-generation (OpenAPI spec exists but manually maintained; Zod → OpenAPI automation
+  incomplete)
+  - ❌ D-OC-8: Privacy Policy + Data Map inline linking in app
+  - ❌ D-OC-9: Security headers & NGINX doc (edge config, OCSP stapling)
+  - ❌ D-OC-10: ADRs for idempotency policy, partitions, AV scanning (ensure existence & linking)
+  - ❌ D-OC-11: Sync TDD data schema with latest migrations (share links, badges, moderation tables)
+
+  ---
+  8. Acceptance Criteria (AC_Master.md) Gaps
+
+  High-Priority GOLD Gate ACs (Unchecked)
+
+  From AC_Master.md:
+
+  | AC ID           | Requirement                                         | Status     | Gap
+                            |
+  |-----------------|-----------------------------------------------------|------------|----------------------------------
+  --------------------------|
+  | FR-001-AC01-03  | User Registration                                   | ⚠️ Partial | Backend complete, no E2E test
+                            |
+  | FR-002-AC01-03  | Login & Session                                     | ⚠️ Partial | JWT rotation implemented, no
+  integration test              |
+  | FR-003-AC01-03  | Auth Wall                                           | ⚠️ Partial | Frontend ProtectedRoute exists,
+  no E2E test                |
+  | NFR-001-AC01-03 | Security Hardening (CSP, rate limit, JWT)           | ⚠️ Partial | Middleware exists, no ZAP scan or
+   formal validation        |
+  | NFR-002-AC01-03 | GDPR (PII redaction, DSR, retention)                | ⚠️ Partial | DSR endpoints exist, no E2E
+  dry-run test                   |
+  | NFR-003-AC01-03 | Performance (LCP ≤ 2.5s, p95 TTFB ≤ 500ms)          | ❌          | No Lighthouse CI, no synthetic
+  tests, no regression checks |
+  | NFR-004-AC01-03 | Accessibility (contrast ≥ 4.5:1, axe, keyboard, SR) | ⚠️ Partial | ARIA labels exist, no automated
+  axe CI, no keyboard sweeps |
+
+  Silver Gate ACs:
+  - Most FR-004 (Planner), FR-005 (Logger), FR-006 (Badges) ACs are unverified due to missing E2E tests
+
+  ---
+  9. Critical Blockers for MVP Release
+
+  🚨 RED (Must Fix Before Launch)
+
+  1. Testing Coverage (Q-1 to Q-18)
+    - Add E2E tests for core user flows (register → login → plan → log → view dashboard)
+    - Add integration tests for all API endpoints
+    - Add security tests (ZAP baseline, Snyk scans)
+    - Target: ≥80% code coverage (Q-8)
+  2. Frontend Feature Completion (F-12, Planner, Logger, Progress)
+    - Implement Planner page (session CRUD, drag-drop)
+    - Implement Logger page (set entry form with idempotency)
+    - Implement Progress page (chart visualization)
+    - Connect Dashboard to live API (remove mock data fallbacks)
+  3. Observability Minimum (O-2, O-4, O-6)
+    - Create basic Grafana dashboards (requests/sec, p95 latency, errors)
+    - Configure alert rules (p95 > 400ms, error rate > 0.5%)
+    - Document JWT key rotation procedure
+
+  ⚠️ YELLOW (Should Fix Before Launch)
+
+  4. Security Hardening (NFR-001-AC01-03, Q-7)
+    - Run OWASP ZAP baseline scan
+    - Integrate Snyk for dependency scanning
+    - Validate CSP headers (no unsafe-inline violations)
+    - Add automated security-headers test
+  5. Performance Validation (NFR-003-AC01-03, Q-6)
+    - Add Lighthouse CI gate (≥90 score)
+    - Run k6 load tests (verify p95 < 300ms)
+    - Implement performance regression checks (>10% threshold)
+  6. Accessibility Validation (NFR-004-AC01-03, Q-5)
+    - Add axe CI gate (0 critical issues)
+    - Conduct keyboard-only navigation test
+    - Add screen-reader spot checks
+  7. Documentation Completion (D-OC-5, D-OC-8, D-OC-9)
+    - Generate OpenAPI spec from Zod schemas (automate)
+    - Create Privacy Policy + Data Map inline linking
+    - Document security headers & NGINX configuration
+
+  💡 GREEN (Nice to Have / Post-MVP)
+
+  8. 2FA Implementation - Add TOTP endpoints (mentioned but not implemented)
+  9. Advanced Observability - Loki pipeline, OTel tracing, SLO dashboard
+  10. Backup/Restore Automation - Implement scripts and quarterly DR tests
+  11. Admin Moderation UI - Complete abuse reporting workflow interface
+  12. i18n Coverage Gate - Add missing-key detector in CI
+
+  ---
+  10. Recommended Action Plan
+
+  Phase 1: Testing Foundation (1-2 weeks)
+
+  1. Set up E2E testing framework (Playwright)
+  2. Write core user flow tests (auth, planning, logging)
+  3. Add integration tests for all API endpoints
+  4. Configure Codecov and set 80% coverage gate
+
+  Phase 2: Frontend Completion (1-2 weeks)
+
+  1. Implement Planner page (session CRUD)
+  2. Implement Logger page (set entry with idempotency)
+  3. Implement Progress page (chart visualization)
+  4. Connect Dashboard to live analytics API
+
+  Phase 3: Observability & Security (1 week)
+
+  1. Create Grafana dashboards (basic metrics)
+  2. Configure alert rules (latency, errors)
+  3. Run ZAP baseline scan and fix issues
+  4. Add Lighthouse CI gate
+  5. Add axe accessibility CI gate
+
+  Phase 4: Documentation & Polish (3-5 days)
+
+  1. Automate OpenAPI generation from Zod
+  2. Create Privacy Policy + Data Map
+  3. Document JWT rotation procedure
+  4. Document NGINX security headers
+
+  Phase 5: Performance & Load Testing (1 week)
+
+  1. Write k6 performance tests
+  2. Run load tests and optimize bottlenecks
+  3. Add performance regression checks to CI
+
+  ---
+  11. Summary Table
+
+  | Area                    | Completion | Blocker? | Priority | Effort    |
+  |-------------------------|------------|----------|----------|-----------|
+  | Backend Modules         | 95%        | No       | -        | -         |
+  | Database Schema         | 100%       | No       | -        | -         |
+  | Frontend Infrastructure | 90%        | No       | -        | -         |
+  | Frontend Features       | 60%        | Yes      | HIGH     | 1-2 weeks |
+  | Security Middleware     | 95%        | No       | -        | -         |
+  | Security Testing        | 10%        | Yes      | HIGH     | 1 week    |
+  | Testing & QA            | 5%         | Yes      | CRITICAL | 1-2 weeks |
+  | Observability           | 10%        | Partial  | HIGH     | 1 week    |
+  | Documentation           | 80%        | No       | MEDIUM   | 3-5 days  |
+  | Performance Validation  | 0%         | Yes      | HIGH     | 1 week    |
+
+  Total Estimated Effort to MVP: 4-6 weeks
+
+  ---
+  12. Conclusion
+
+  FitVibe V2 has excellent architectural foundations with a complete backend API, comprehensive database schema, and solid
+   security middleware. However, the project is not production-ready due to:
+
+  1. Insufficient testing (only 19 test files, no E2E, no automated QA gates)
+  2. Incomplete frontend features (Planner, Logger, Progress pages stubbed)
+  3. Missing observability (no dashboards, alerts, or tracing)
+  4. Unvalidated performance (no load tests, no Lighthouse CI gate)
+
+  Recommended Path Forward:
+  1. Priority 1: Complete E2E testing and frontend features (Planner, Logger, Progress)
+  2. Priority 2: Add observability (Grafana dashboards, alerts) and security testing (ZAP, Lighthouse, axe)
+  3. Priority 3: Performance validation and documentation cleanup
+
+  With focused effort, the project could be production-ready in 4-6 weeks.
+
+  V2.
+   Incomplete Frontend Items Report
+
+  Based on my analysis of the codebase, here are the incomplete items in the frontend:
+
+  🔴 Critical - Missing Core Functionality
+
+  1. Planner Page (apps/frontend/src/pages/Planner.tsx)
+
+  Status: Stubbed with mock data onlyCurrent State: Shows 3 hardcoded training blocks (Week 1-3) with no actual
+  functionalityMissing Features:
+  - ❌ Connect to backend /api/v1/sessions API
+  - ❌ Create/edit/delete sessions (workout plans)
+  - ❌ Calendar view for session scheduling
+  - ❌ Session recurrence/cloning functionality
+  - ❌ Integration with exercises library
+  - ❌ Drag-and-drop for session ordering
+  - ❌ Session status management (planned/started/completed)
+  - ❌ Real-time session data fetching
+
+  Backend APIs Available:
+  GET    /api/v1/sessions         // List sessions
+  GET    /api/v1/sessions/:id     // Get session details
+  POST   /api/v1/sessions         // Create session
+  PATCH  /api/v1/sessions/:id     // Update session
+  DELETE /api/v1/sessions/:id     // Delete session
+  POST   /api/v1/sessions/:id/clone         // Clone session
+  POST   /api/v1/sessions/:id/recurrence    // Create recurring sessions
+
+  ---
+  2. Logger Page (apps/frontend/src/pages/Logger.tsx)
+
+  Status: Stubbed with mock data onlyCurrent State: Shows 3 hardcoded exercise entries with no actual functionalityMissing
+   Features:
+  - ❌ Connect to backend sessions API
+  - ❌ Log exercise sets (weight, reps, RPE, tempo)
+  - ❌ Real-time workout logging interface
+  - ❌ Exercise selection from library
+  - ❌ Session completion workflow
+  - ❌ Auto-save/draft functionality
+  - ❌ Timer functionality for rest periods
+  - ❌ PR (Personal Record) notifications
+  - ❌ Form validation for exercise data
+
+  Required API Integration:
+  // Need to create frontend API functions:
+  - getSession(sessionId)          // Fetch session to log
+  - updateSessionExercise(data)     // Log exercise sets
+  - completeSession(sessionId)      // Mark session complete
+  - getExercises()                  // Exercise library picker
+
+  ---
+  3. Profile Page (apps/frontend/src/pages/Profile.tsx)
+
+  Status: Partial implementationCurrent State: Shows sections (visibility, units, achievements) but Edit button does
+  nothingMissing Features:
+  - ❌ Profile data fetching from /api/v1/users/me
+  - ❌ Edit profile functionality (name, email, etc.)
+  - ❌ Avatar upload integration
+  - ❌ Privacy settings (default visibility)
+  - ❌ Units preferences (metric/imperial)
+  - ❌ Achievement/badge display
+  - ❌ Account deletion (GDPR)
+  - ❌ Data export (GDPR)
+
+  Backend APIs Available:
+  GET    /api/v1/users/me         // Get current user
+  PATCH  /api/v1/users/me         // Update profile
+  POST   /api/v1/users/me/avatar  // Upload avatar
+  GET    /api/v1/users/export     // GDPR data export
+  DELETE /api/v1/users/delete     // GDPR deletion
+
+  ---
+  🟡 Medium Priority - Missing API Integrations
+
+  4. Exercises Library
+
+  Status: Not implemented at allMissing:
+  - ❌ No exercises API functions in api.ts
+  - ❌ No exercise picker/selector component
+  - ❌ No exercise search functionality
+  - ❌ No exercise creation for custom exercises
+
+  Backend APIs Available:
+  GET    /api/v1/exercises        // List exercises
+  GET    /api/v1/exercises/:id    // Get exercise details
+  POST   /api/v1/exercises        // Create custom exercise
+  PATCH  /api/v1/exercises/:id    // Update exercise
+  DELETE /api/v1/exercises/:id    // Delete exercise
+
+  ---
+  5. Points & Badges System
+
+  Status: Not implemented in frontendMissing:
+  - ❌ No points display component
+  - ❌ No badge showcase
+  - ❌ No points history
+  - ❌ No gamification notifications
+
+  Backend APIs Available:
+  GET /api/v1/points              // Get current points
+  GET /api/v1/points/history      // Points history
+  GET /api/v1/badges              // Get badges
+
+  ---
+  6. Session Detail View
+
+  Status: Not implementedMissing:
+  - ❌ Detailed session view page
+  - ❌ Exercise sets breakdown
+  - ❌ Session notes/comments
+  - ❌ Visibility controls for sharing
+
+  ---
+  🟢 Low Priority - Polish & Enhancement
+
+  7. Missing Components
+
+  - ❌ Exercise picker/search component
+  - ❌ Set logger input component (for reps/weight/RPE)
+  - ❌ Calendar component for planner
+  - ❌ Timer component for rest periods
+  - ❌ Achievement badge display component
+  - ❌ Points progress bar component
+
+  ---
+  8. Missing API Client Functions (apps/frontend/src/services/api.ts)
+
+  Exercises:
+  ❌ getExercises()
+  ❌ getExercise(id)
+  ❌ createExercise(data)
+  ❌ updateExercise(id, data)
+  ❌ deleteExercise(id)
+  ❌ searchExercises(query)
+
+  Sessions:
+  ❌ getSessions(params)
+  ❌ getSession(id)
+  ❌ createSession(data)
+  ❌ updateSession(id, data)
+  ❌ deleteSession(id)
+  ❌ cloneSession(id)
+  ❌ createRecurrence(id, data)
+  ❌ completeSession(id)
+
+  Session Exercises (for Logger):
+  ❌ getSessionExercises(sessionId)
+  ❌ createSessionExercise(sessionId, data)
+  ❌ updateSessionExercise(id, data)
+  ❌ deleteSessionExercise(id)
+
+  User Profile:
+  ❌ getCurrentUser()
+  ❌ updateCurrentUser(data)
+  ❌ uploadAvatar(file)
+  ❌ deleteAccount()
+
+  Points & Badges:
+  ❌ getPoints()
+  ❌ getPointsHistory()
+  ❌ getBadges()
+
+  ---
+  📊 Summary Stats
+
+  | Category        | Total Items   | Completed | Incomplete | % Done |
+  |-----------------|---------------|-----------|------------|--------|
+  | Pages           | 10            | 6         | 4          | 60%    |
+  | Core Features   | 8             | 4         | 4          | 50%    |
+  | API Integration | ~30 functions | 12        | 18         | 40%    |
+  | Components      | ~25 needed    | 15        | 10         | 60%    |
+
+  ---
+  🎯 Recommended Implementation Order
+
+  Phase 1: Session Management (Highest Impact)
+
+  1. Exercises API - Create all exercise API functions
+  2. Sessions API - Create all session API functions
+  3. Exercise Picker Component - For selecting exercises
+  4. Planner Page - Full CRUD for sessions
+  5. Logger Page - Log workouts in real-time
+
+  Phase 2: Profile & User Management
+
+  6. Profile API - User profile functions
+  7. Profile Page - Edit profile, settings, GDPR
+
+  Phase 3: Gamification
+
+  8. Points/Badges API - Points and badges functions
+  9. Points Display - Show points and badges in UI
+
+  Phase 4: Polish
+
+  10. Session Detail View - Detailed workout view
+  11. Additional Components - Timer, calendar, etc.

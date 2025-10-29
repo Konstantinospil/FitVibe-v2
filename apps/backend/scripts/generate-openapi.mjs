@@ -40,9 +40,9 @@ const paths = {
       tags: ["Auth"],
       requestBody: jsonContent("#/components/schemas/RegisterRequest"),
       responses: {
-        "201": jsonContent("#/components/schemas/AuthSuccessResponse"),
-        "400": jsonContent("#/components/schemas/ErrorResponse"),
-        "409": jsonContent("#/components/schemas/ErrorResponse"),
+        201: jsonContent("#/components/schemas/AuthSuccessResponse"),
+        400: jsonContent("#/components/schemas/ErrorResponse"),
+        409: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -52,8 +52,8 @@ const paths = {
       tags: ["Auth"],
       requestBody: jsonContent("#/components/schemas/LoginRequest"),
       responses: {
-        "200": jsonContent("#/components/schemas/AuthSuccessResponse"),
-        "401": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/AuthSuccessResponse"),
+        401: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -64,8 +64,8 @@ const paths = {
       security: [bearerAuth],
       requestBody: jsonContent("#/components/schemas/RefreshRequest"),
       responses: {
-        "200": jsonContent("#/components/schemas/AuthSuccessResponse"),
-        "401": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/AuthSuccessResponse"),
+        401: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -75,8 +75,8 @@ const paths = {
       tags: ["Auth"],
       security: [bearerAuth],
       responses: {
-        "204": { description: "Logged out" },
-        "401": jsonContent("#/components/schemas/ErrorResponse"),
+        204: { description: "Logged out" },
+        401: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -86,8 +86,8 @@ const paths = {
       tags: ["Users"],
       security: [bearerAuth],
       responses: {
-        "200": jsonContent("#/components/schemas/UserProfile"),
-        "401": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/UserProfile"),
+        401: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
     put: {
@@ -96,9 +96,9 @@ const paths = {
       security: [bearerAuth],
       requestBody: jsonContent("#/components/schemas/UpdateProfileRequest"),
       responses: {
-        "200": jsonContent("#/components/schemas/UserProfile"),
-        "400": jsonContent("#/components/schemas/ErrorResponse"),
-        "401": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/UserProfile"),
+        400: jsonContent("#/components/schemas/ErrorResponse"),
+        401: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -109,9 +109,9 @@ const paths = {
       security: [bearerAuth],
       requestBody: jsonContent("#/components/schemas/UpdatePreferencesRequest"),
       responses: {
-        "200": jsonContent("#/components/schemas/UserPreferences"),
-        "400": jsonContent("#/components/schemas/ErrorResponse"),
-        "401": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/UserPreferences"),
+        400: jsonContent("#/components/schemas/ErrorResponse"),
+        401: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -128,8 +128,8 @@ const paths = {
         },
       ],
       responses: {
-        "200": jsonContent("#/components/schemas/PublicProfile"),
-        "404": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/PublicProfile"),
+        404: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -151,7 +151,7 @@ const paths = {
         },
       ],
       responses: {
-        "200": jsonContent("#/components/schemas/ExerciseListResponse"),
+        200: jsonContent("#/components/schemas/ExerciseListResponse"),
       },
     },
     post: {
@@ -160,8 +160,8 @@ const paths = {
       security: [bearerAuth],
       requestBody: jsonContent("#/components/schemas/ExerciseUpsertRequest"),
       responses: {
-        "201": jsonContent("#/components/schemas/Exercise"),
-        "400": jsonContent("#/components/schemas/ErrorResponse"),
+        201: jsonContent("#/components/schemas/Exercise"),
+        400: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -180,8 +180,8 @@ const paths = {
       ],
       requestBody: jsonContent("#/components/schemas/ExerciseUpsertRequest"),
       responses: {
-        "200": jsonContent("#/components/schemas/Exercise"),
-        "404": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/Exercise"),
+        404: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
     delete: {
@@ -197,8 +197,8 @@ const paths = {
         },
       ],
       responses: {
-        "204": { description: "Archived" },
-        "404": jsonContent("#/components/schemas/ErrorResponse"),
+        204: { description: "Archived" },
+        404: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -215,7 +215,7 @@ const paths = {
         },
       ],
       responses: {
-        "200": jsonContent("#/components/schemas/SessionListResponse"),
+        200: jsonContent("#/components/schemas/SessionListResponse"),
       },
     },
     post: {
@@ -224,8 +224,8 @@ const paths = {
       security: [bearerAuth],
       requestBody: jsonContent("#/components/schemas/SessionCreateRequest"),
       responses: {
-        "201": jsonContent("#/components/schemas/Session"),
-        "400": jsonContent("#/components/schemas/ErrorResponse"),
+        201: jsonContent("#/components/schemas/Session"),
+        400: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -244,8 +244,8 @@ const paths = {
       ],
       requestBody: jsonContent("#/components/schemas/SessionCompleteRequest"),
       responses: {
-        "200": jsonContent("#/components/schemas/Session"),
-        "404": jsonContent("#/components/schemas/ErrorResponse"),
+        200: jsonContent("#/components/schemas/Session"),
+        404: jsonContent("#/components/schemas/ErrorResponse"),
       },
     },
   },
@@ -254,7 +254,7 @@ const paths = {
       summary: "Liveness probe",
       tags: ["System"],
       responses: {
-        "200": {
+        200: {
           description: "Service healthy",
           content: {
             "application/json": {
@@ -275,7 +275,7 @@ const paths = {
       summary: "Prometheus metrics",
       tags: ["System"],
       responses: {
-        "200": {
+        200: {
           description: "Prometheus exposition format",
           content: {
             "text/plain": {

@@ -82,7 +82,7 @@ export async function getFeedHandler(req: Request, res: Response): Promise<void>
 export async function likeFeedItemHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await likeFeedItem(userId, req.params.feedItemId);
   res.json(result);
@@ -91,7 +91,7 @@ export async function likeFeedItemHandler(req: Request, res: Response): Promise<
 export async function unlikeFeedItemHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await unlikeFeedItem(userId, req.params.feedItemId);
   res.json(result);
@@ -100,7 +100,7 @@ export async function unlikeFeedItemHandler(req: Request, res: Response): Promis
 export async function bookmarkSessionHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await bookmarkSession(userId, req.params.sessionId);
   res.status(200).json(result);
@@ -109,7 +109,7 @@ export async function bookmarkSessionHandler(req: Request, res: Response): Promi
 export async function removeBookmarkHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await removeBookmark(userId, req.params.sessionId);
   res.status(200).json(result);
@@ -118,7 +118,7 @@ export async function removeBookmarkHandler(req: Request, res: Response): Promis
 export async function listBookmarksHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const limit = parseLimit(req.query.limit, 50, 100);
   const offset = parseOffset(req.query.offset, 0);
@@ -141,7 +141,7 @@ export async function listCommentsHandler(req: Request, res: Response): Promise<
 export async function createCommentHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const body = typeof req.body?.body === "string" ? req.body.body : String(req.body?.body ?? "");
   const comment = await createComment(userId, req.params.feedItemId, body);
@@ -151,7 +151,7 @@ export async function createCommentHandler(req: Request, res: Response): Promise
 export async function deleteCommentHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await deleteComment(userId, req.params.commentId);
   res.json(result);
@@ -160,7 +160,7 @@ export async function deleteCommentHandler(req: Request, res: Response): Promise
 export async function blockUserHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await blockUserByAlias(userId, req.params.alias);
   res.json(result);
@@ -169,7 +169,7 @@ export async function blockUserHandler(req: Request, res: Response): Promise<voi
 export async function unblockUserHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await unblockUserByAlias(userId, req.params.alias);
   res.json(result);
@@ -178,7 +178,7 @@ export async function unblockUserHandler(req: Request, res: Response): Promise<v
 export async function reportFeedItemHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const reason = typeof req.body?.reason === "string" ? req.body.reason : "";
   const details = typeof req.body?.details === "string" ? req.body.details : undefined;
@@ -189,7 +189,7 @@ export async function reportFeedItemHandler(req: Request, res: Response): Promis
 export async function reportCommentHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const reason = typeof req.body?.reason === "string" ? req.body.reason : "";
   const details = typeof req.body?.details === "string" ? req.body.details : undefined;
@@ -208,7 +208,7 @@ export async function getLeaderboardHandler(req: Request, res: Response): Promis
 export async function createShareLinkHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const { maxViews, expiresAt } = req.body ?? {};
 
@@ -216,7 +216,7 @@ export async function createShareLinkHandler(req: Request, res: Response): Promi
   if (expiresAt) {
     const candidate = new Date(expiresAt);
     if (Number.isNaN(candidate.getTime())) {
-      throw new HttpError(400, "E.FEED.INVALID_EXPIRES_AT", "expiresAt must be a valid ISO date");
+      throw new HttpError(400, "E.FEED.INVALID_EXPIRES_AT", "FEED_INVALID_EXPIRES_AT");
     }
     parsedExpiresAt = candidate;
   }
@@ -254,7 +254,7 @@ export async function getSharedSessionHandler(req: Request, res: Response): Prom
 export async function revokeShareLinkHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
 
   const revoked = await revokeShareLink(userId, req.params.sessionId);
@@ -264,7 +264,7 @@ export async function revokeShareLinkHandler(req: Request, res: Response): Promi
 export async function cloneSessionFromFeedHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
 
   const cloned = await cloneSessionFromFeed(userId, req.params.sessionId, req.body ?? {});
@@ -274,7 +274,7 @@ export async function cloneSessionFromFeedHandler(req: Request, res: Response): 
 export async function followUserHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await followUserByAlias(userId, req.params.alias);
   res.status(200).json({ followingId: result.followingId });
@@ -283,7 +283,7 @@ export async function followUserHandler(req: Request, res: Response): Promise<vo
 export async function unfollowUserHandler(req: Request, res: Response): Promise<void> {
   const userId = req.user?.sub;
   if (!userId) {
-    throw new HttpError(401, "E.UNAUTHENTICATED", "Missing user context");
+    throw new HttpError(401, "E.UNAUTHENTICATED", "UNAUTHENTICATED");
   }
   const result = await unfollowUserByAlias(userId, req.params.alias);
   res.status(200).json({ unfollowedId: result.unfollowedId });

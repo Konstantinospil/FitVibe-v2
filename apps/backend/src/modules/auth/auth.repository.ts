@@ -281,3 +281,14 @@ export async function revokeSessionsByUserId(user_id: string, excludeJti?: strin
 export async function purgeExpiredSessions(olderThan: Date) {
   return db("auth_sessions").where("expires_at", "<", olderThan.toISOString()).del();
 }
+
+export async function markEmailVerified(userId: string, email: string) {
+  const now = new Date().toISOString();
+  return db(CONTACTS_TABLE)
+    .where({ user_id: userId, type: "email" })
+    .whereRaw("LOWER(value) = ?", [email.toLowerCase()])
+    .update({
+      is_verified: true,
+      verified_at: now,
+    });
+}

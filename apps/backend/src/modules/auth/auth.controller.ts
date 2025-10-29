@@ -113,7 +113,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     };
     if (!env.isProduction && verificationToken) {
       response.debugVerificationToken = verificationToken;
-      response.verificationUrl = `${env.appBaseUrl}/auth/verify?token=${verificationToken}`;
+      response.verificationUrl = `${env.frontendUrl}/verify?token=${verificationToken}`;
     }
     return res.status(202).json(response);
   } catch (error) {
@@ -130,7 +130,7 @@ export async function verifyEmail(req: Request, res: Response, next: NextFunctio
         : undefined;
     const token = typeof bodyToken === "string" ? bodyToken : queryToken;
     if (!token) {
-      throw new HttpError(400, "AUTH_INVALID_TOKEN", "Verification token is required");
+      throw new HttpError(400, "AUTH_INVALID_TOKEN", "AUTH_INVALID_TOKEN");
     }
     const user = await doVerifyEmail(token);
     return res.json({ user });
@@ -156,7 +156,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
     const token = req.cookies?.[env.REFRESH_COOKIE_NAME] as string | undefined;
     if (!token) {
-      throw new HttpError(401, "UNAUTHENTICATED", "Missing refresh token");
+      throw new HttpError(401, "UNAUTHENTICATED", "UNAUTHENTICATED");
     }
     const context = buildAuthContext(req, res);
     const { user, newRefresh, accessToken } = await doRefresh(token, context);
@@ -213,7 +213,7 @@ export async function listSessions(req: Request, res: Response, next: NextFuncti
     const authUser = getAuthenticatedUser(req);
     const userId = authUser?.sub;
     if (!userId) {
-      throw new HttpError(401, "UNAUTHENTICATED", "Missing authentication context");
+      throw new HttpError(401, "UNAUTHENTICATED", "UNAUTHENTICATED");
     }
     const sessionId = authUser?.sid ?? currentSessionId(req);
     const sessions = await doListSessions(userId, sessionId ?? null);
@@ -228,7 +228,7 @@ export async function revokeSessions(req: Request, res: Response, next: NextFunc
     const authUser = getAuthenticatedUser(req);
     const userId = authUser?.sub;
     if (!userId) {
-      throw new HttpError(401, "UNAUTHENTICATED", "Missing authentication context");
+      throw new HttpError(401, "UNAUTHENTICATED", "UNAUTHENTICATED");
     }
     const payload = RevokeSessionsSchema.parse(req.body ?? {});
     const sessionId = authUser?.sid ?? currentSessionId(req);

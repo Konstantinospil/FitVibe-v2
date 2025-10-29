@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { DashboardAnalyticsResponse, DashboardGrain, DashboardRange } from "../services/api";
+import type { DashboardGrain, DashboardRange } from "../services/api";
 import { getDashboardAnalytics } from "../services/api";
 
 export interface UseDashboardAnalyticsOptions {
@@ -8,9 +8,9 @@ export interface UseDashboardAnalyticsOptions {
 }
 
 export function useDashboardAnalytics({ range, grain }: UseDashboardAnalyticsOptions) {
-  return useQuery<DashboardAnalyticsResponse>({
+  return useQuery({
     queryKey: ["analytics", "dashboard", range, grain],
     queryFn: () => getDashboardAnalytics({ range, grain }),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 }

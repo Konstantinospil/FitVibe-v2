@@ -81,18 +81,3 @@ export function readOnlyGuard(req: Request, res: Response, next: NextFunction): 
 
   next();
 }
-
-/**
- * Express type augmentation for user property.
- * This allows TypeScript to recognize req.user added by auth middleware.
- */
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        sub: string;
-        roles?: string[];
-      };
-    }
-  }
-}

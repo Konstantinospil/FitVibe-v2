@@ -18,34 +18,34 @@
     "german": "Deutsch"
   },
   "status": {
-    "checking": "Backend wird gepr�ft...",
-    "online": "Backend verf�gbar",
+    "checking": "Backend wird geprüft...",
+    "online": "Backend verfügbar",
     "offline": "Backend nicht erreichbar"
   },
   "visibility": {
     "labels": {
       "private": "Privat",
       "link": "Nur mit Link",
-      "public": "�ffentlich"
+      "public": "Öffentlich"
     },
     "guards": {
-      "private": "Nur du kannst diese Einheit �ffnen.",
+      "private": "Nur du kannst diese Einheit öffnen.",
       "link": "Jede Person mit dem Link kann diese Einheit sehen.",
-      "public": "F�r alle auf FitVibe sichtbar."
+      "public": "Für alle auf FitVibe sichtbar."
     }
   },
   "home": {
     "eyebrow": "FitVibe Plattform",
     "title": "Trainiere smarter. Teile Fortschritt. Feiere Konstanz.",
-    "description": "FitVibe unterst�tzt Athletinnen und Coaches beim Planen, Protokollieren und Analysieren jeder Einheit. Moderne Werkzeuge f�r Streak-Tracking, Leaderboard-Heatmaps und aussagekr�ftige Recovery-Insights.",
-    "subtitleOnline": "API-Verbindung ist stabil � Status: {{status}}.",
-    "subtitleOnlineFallback": "API-Verbindung ist stabil � wir sind startklar.",
-    "subtitleOffline": "Wir halten alles lokal im Cache, bis das Backend wieder verf�gbar ist.",
-    "subtitleChecking": "Pr�fe den API-Status und w�rme Caches vor...",
+    "description": "FitVibe unterstützt Athletinnen und Coaches beim Planen, Protokollieren und Analysieren jeder Einheit. Moderne Werkzeuge für Streak-Tracking, Leaderboard-Heatmaps und aussagekräftige Recovery-Insights.",
+    "subtitleOnline": "API-Verbindung ist stabil - Status: {{status}}.",
+    "subtitleOnlineFallback": "API-Verbindung ist stabil - wir sind startklar.",
+    "subtitleOffline": "Wir halten alles lokal im Cache, bis das Backend wieder verfügbar ist.",
+    "subtitleChecking": "Prüfe den API-Status und wärme Caches vor...",
     "ctaPrimary": "Private Beta beitreten",
     "ctaSecondary": "Mit dem Team sprechen",
     "chartTitle": "Konstanz-Trend",
-    "chartDescription": "Abschlussrate der geplanten Trainings �ber sieben Tage.",
+    "chartDescription": "Abschlussrate der geplanten Trainings über sieben Tage.",
     "chartLabel": "Tag: {{label}}",
     "chartValue": "{{value}} %"
   },
@@ -60,12 +60,16 @@
       "submitting": "Wird angemeldet...",
       "registerPrompt": "Noch kein Konto?",
       "forgot": "Passwort vergessen?",
-      "error": "Wir konnten deine Zugangsdaten nicht best�tigen. Bitte versuche es erneut."
+      "error": "Wir konnten deine Zugangsdaten nicht bestätigen. Bitte versuche es erneut."
     },
     "register": {
       "eyebrow": "FitVibe beitreten",
       "title": "Registriere dich und starte kollaboratives Training.",
-      "description": "Erstelle dein Athletenprofil, definiere Trainingspr�ferenzen und lade deine Coaches ein. Wir sch�tzen sensible Daten standardm��ig.",
+      "description": "Erstelle dein Athletenprofil, definiere Trainingspräferenzen und lade deine Coaches ein. Wir sch�tzen sensible Daten standardm��ig.",
+      "successTitle": "Überprüfe deine E-Mail!",
+      "successDescription": "Wir haben einen Bestätigungslink an deine E-Mail gesendet. Klicke auf den Link, um dein Konto zu aktivieren und mit dem Training zu beginnen.",
+      "checkEmail": "Bestätigungs-E-Mail gesendet an {{email}}",
+      "goToLogin": "Zur Anmeldung",
       "nameLabel": "Anzeigename",
       "emailLabel": "E-Mail",
       "passwordLabel": "Passwort",
@@ -73,36 +77,36 @@
       "submitting": "Konto wird erstellt...",
       "loginPrompt": "Trainierst du bereits mit uns?",
       "loginLink": "Anmelden",
-      "error": "Wir konnten dein Konto nicht erstellen. Bitte versuche es in K�rze erneut."
+      "error": "Wir konnten dein Konto nicht erstellen. Bitte versuche es in K�rze erneut."
     },
     "placeholders": {
       "email": "du@fitvibe.app",
       "password": "********",
-      "name": "Jamie Carter"
+      "name": "Jamie Doe"
     }
   },
   "profile": {
     "eyebrow": "Athletenprofil",
-    "title": "Stimme Einstellungen, Privatsph�re und Ziele ab.",
-    "description": "Definiere Sichtbarkeiten, bevorzugte Einheiten und pers�nliche Bestleistungen, damit jede geteilte Session deine Geschichte erz�hlt.",
+    "title": "Stimme Einstellungen, Privatsphäre und Ziele ab.",
+    "description": "Definiere Sichtbarkeiten, bevorzugte Einheiten und pers�nliche Bestleistungen, damit jede geteilte Session deine Geschichte erz�hlt.",
     "edit": "Profil bearbeiten",
     "sections": {
       "visibility": {
         "title": "Sichtbarkeit",
-        "description": "Standard-Sichtbarkeit f�r Sessions ist auf Follower gesetzt. F�r Wettkampf-Recaps kannst du auf �ffentlich wechseln."
+        "description": "Standard-Sichtbarkeit für Sessions ist auf Follower gesetzt. F�r Wettkampf-Recaps kannst du auf �ffentlich wechseln."
       },
       "units": {
         "title": "Bevorzugte Einheiten",
-        "description": "Gewicht in Kilogramm � Distanz in Kilometern � Pace in min/km."
+        "description": "Gewicht in Kilogramm � Distanz in Kilometern � Pace in min/km."
       },
       "achievements": {
         "title": "Highlights",
-        "description": "180 kg Kniebeuge � 115 kg Bankdr�cken � 210 kg Kreuzheben � Boston-Marathon-Qualifikation."
+        "description": "180 kg Kniebeuge � 115 kg Bankdr�cken � 210 kg Kreuzheben � Boston-Marathon-Qualifikation."
       }
     },
     "share": {
       "title": "Freigabelinks",
-      "description": "Erstelle pers�nliche Links f�r externe Coaches oder Kampfrichter. Du kannst jeden Link sofort deaktivieren, wenn Zugriff entzogen werden soll.",
+      "description": "Erstelle pers�nliche Links f�r externe Coaches oder Kampfrichter. Du kannst jeden Link sofort deaktivieren, wenn Zugriff entzogen werden soll.",
       "create": "Freigabelink erstellen",
       "empty": "Noch keine aktiven Freigabelinks.",
       "copy": "Link kopieren",
@@ -110,7 +114,7 @@
       "revoked": "Widerrufen",
       "copied": "Link in die Zwischenablage kopiert",
       "guards": {
-        "active": "Teile diese URL nur mit vertrauensw�rdigen Personen.",
+        "active": "Teile diese URL nur mit vertrauensw�rdigen Personen.",
         "revoked": "Dieser Link ist nicht mehr erreichbar."
       }
     }
@@ -118,31 +122,285 @@
   "feed": {
     "eyebrow": "Community-Stream",
     "title": "Teile Fortschritt mit Teamkollegen und Followern.",
-    "description": "Der Feed filtert Einheiten nach Sichtbarkeit � Privates bleibt privat, �ffentliche Erfolge bekommen das verdiente Rampenlicht.",
+    "description": "Der Feed filtert Einheiten nach Sichtbarkeit � Privates bleibt privat, �ffentliche Erfolge bekommen das verdiente Rampenlicht.",
     "timestamp": "gerade eben",
-    "button": "Session �ffnen",
+    "button": "Session �ffnen",
     "items": {
       "leah": {
         "user": "Leah",
-        "note": "Neuen 5RM im Kreuzheben mit 170 kg erreicht � das Grifftraining zahlt sich aus!",
-        "stats": "17 Likes � 6 Kommentare",
+        "note": "Neuen 5RM im Kreuzheben mit 170 kg erreicht � das Grifftraining zahlt sich aus!",
+        "stats": "17 Likes � 6 Kommentare",
         "visibility": "public"
       },
       "marco": {
         "user": "Marco",
-        "note": "Deload-Plan mit Reha-Protokoll f�rs Sprunggelenk geteilt.",
-        "stats": "Coach-Ansicht � Nur mit Link",
+        "note": "Deload-Plan mit Reha-Protokoll f�rs Sprunggelenk geteilt.",
+        "stats": "Coach-Ansicht � Nur mit Link",
         "visibility": "link"
       },
       "team": {
         "user": "Team Nordic Velocity",
-        "note": "Wochenranking: Emma hat sich mit 98 Streak-Punkten Platz 1 zur�ckgeholt.",
-        "stats": "Gepinnt � Team-Feed",
+        "note": "Wochenranking: Emma hat sich mit 98 Streak-Punkten Platz 1 zurückgeholt.",
+        "stats": "Gepinnt @ Team-Feed",
         "visibility": "private"
       }
     }
   },
   "footer": {
-    "note": "F�r Athletinnen und Athleten, die datengetriebenen Fortschritt lieben � FitVibe Labs"
+    "note": "F�r Athletinnen und Athleten, die datengetriebenen Fortschritt lieben � FitVibe Labs"
+  },
+  "errors": {
+    "WEAK_PASSWORD": "Passwort muss mindestens 12 Zeichen lang sein und Großbuchstaben, Kleinbuchstaben, Ziffern und Sonderzeichen enthalten",
+    "PASSWORD_CONTAINS_USERNAME": "Passwort darf deinen Benutzernamen nicht enthalten",
+    "PASSWORD_CONTAINS_EMAIL": "Passwort darf deine E-Mail-Adresse nicht enthalten",
+    "AUTH_INVALID_TOKEN": "Ungültiger Verifizierungstoken",
+    "AUTH_TOKEN_EXPIRED": "Dein Verifizierungslink ist abgelaufen. Bitte fordere einen neuen an",
+    "AUTH_TOO_MANY_REQUESTS": "Verifizierungslimit erreicht. Bitte versuche es später erneut",
+    "AUTH_CONFLICT": "Registrierung konnte nicht abgeschlossen werden",
+    "AUTH_USER_NOT_FOUND": "Benutzer nicht gefunden",
+    "AUTH_INVALID_CREDENTIALS": "Ungültige Zugangsdaten",
+    "AUTH_INVALID_REFRESH": "Ungültiger Refresh-Token",
+    "AUTH_SESSION_REVOKED": "Sitzung widerrufen",
+    "AUTH_REFRESH_EXPIRED": "Refresh-Token abgelaufen",
+    "AUTH_INVALID_SCOPE": "Geben Sie eine sessionId oder einen Widerruf-Bereich an",
+    "AUTH_SESSION_NOT_FOUND": "Sitzung nicht gefunden",
+    "UNAUTHENTICATED": "Fehlender Authentifizierungskontext",
+    "USER_USERNAME_TAKEN": "Benutzername bereits vergeben",
+    "USER_USERNAME_INVALID": "Benutzername muss 3-50 Zeichen lang sein und darf Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten",
+    "USER_STATUS_INVALID": "Statusübergang nicht möglich",
+    "USER_DISPLAY_NAME_REQUIRED": "Anzeigename ist erforderlich",
+    "USER_EMAIL_INVALID": "E-Mail ist erforderlich",
+    "USER_ROLE_INVALID": "Rolle ist erforderlich",
+    "USER_NOT_FOUND": "Benutzer nicht gefunden",
+    "USER_EMAIL_TAKEN": "E-Mail bereits vergeben",
+    "USER_REFRESH_FAILED": "Benutzerdaten konnten nicht geladen werden",
+    "USER_INVALID_PASSWORD": "Ungültiges aktuelles Passwort",
+    "USER_CONTACT_NOT_FOUND": "Kontakt nicht gefunden",
+    "USER_CONTACT_ALREADY_VERIFIED": "Kontakt bereits verifiziert",
+    "USER_PHONE_INVALID": "Telefonnummer ist erforderlich",
+    "USER_PHONE_TAKEN": "Telefonnummer bereits vergeben",
+    "USER_CONTACT_TOKEN_REQUIRED": "Verifizierungstoken ist erforderlich",
+    "USER_CONTACT_TOKEN_INVALID": "Ungültiger Verifizierungstoken",
+    "USER_CONTACT_TOKEN_EXPIRED": "Verifizierungstoken abgelaufen",
+    "USER_CONTACT_REFRESH_FAILED": "Kontakt konnte nicht geladen werden",
+    "USER_CONTACT_REMOVE_PRIMARY": "Primäre E-Mail kann nicht entfernt werden",
+    "EXERCISE_INVALID_TYPE": "Ungültiger Übungstyp",
+    "EXERCISE_DUPLICATE": "Übungsname existiert bereits in diesem Bibliotheksbereich",
+    "EXERCISE_NOT_FOUND": "Übung nicht gefunden",
+    "EXERCISE_FORBIDDEN": "Du hast keine Berechtigung, diese Übung zu ändern",
+    "EXERCISE_CREATE_FAILED": "Erstellte Übung konnte nicht geladen werden",
+    "EXERCISE_REFRESH_FAILED": "Aktualisierte Übung konnte nicht geladen werden",
+    "SESSION_INVALID_SET": "Ungültige Satzdaten",
+    "SESSION_INVALID_PLAN": "Ungültiger Plan",
+    "SESSION_NOT_FOUND": "Einheit nicht gefunden",
+    "SESSION_CREATE_FAILED": "Erstellte Einheit konnte nicht geladen werden",
+    "SESSION_UPDATE_FAILED": "Aktualisierte Einheit konnte nicht geladen werden",
+    "SESSION_CLONE_FAILED": "Geklonte Einheit konnte nicht geladen werden",
+    "SESSION_RECURRENCE_INVALID": "Wiederholungszeitraum überschreitet ein Jahr",
+    "SESSION_INVALID_SOURCE": "Quell-Einheit hat ungültiges geplantes Datum",
+    "FEED_AUTH_REQUIRED": "Authentifizierung für den angeforderten Feed-Bereich erforderlich",
+    "FEED_ITEM_NOT_FOUND": "Feed-Element nicht gefunden",
+    "FEED_BLOCKED": "Interaktion durch Privatsphäre-Einstellungen blockiert",
+    "FEED_NOT_PUBLIC": "Feed-Element ist nicht öffentlich",
+    "FEED_SESSION_NOT_FOUND": "Einheit nicht gefunden",
+    "FEED_REPORT_REASON_REQUIRED": "Meldegrund ist erforderlich",
+    "FEED_REPORT_REASON_TOO_LONG": "Grund überschreitet 200 Zeichen",
+    "FEED_NOT_OWNER": "Du bist nicht der Besitzer dieser Einheit",
+    "FEED_INVALID_STATUS": "Nur abgeschlossene Einheiten können geteilt werden",
+    "FEED_LINK_REVOKED": "Freigabelink wurde widerrufen",
+    "FEED_LINK_EXPIRED": "Freigabelink ist abgelaufen",
+    "FEED_LINK_EXHAUSTED": "Freigabelink-Aufrufslimit erreicht",
+    "FEED_LINK_NOT_FOUND": "Freigabelink nicht gefunden",
+    "FEED_USER_NOT_FOUND": "Benutzer nicht gefunden",
+    "FEED_CANNOT_FOLLOW_SELF": "Du kannst dir nicht selbst folgen",
+    "FEED_CANNOT_BLOCK_SELF": "Du kannst dich nicht selbst blockieren",
+    "FEED_COMMENT_NOT_FOUND": "Kommentar nicht gefunden",
+    "FEED_INVALID_EXPIRES_AT": "expiresAt muss ein gültiges ISO-Datum sein",
+    "SOCIAL_COMMENT_EMPTY": "Kommentartext ist erforderlich",
+    "SOCIAL_COMMENT_TOO_LONG": "Kommentar überschreitet 500 Zeichen",
+    "SOCIAL_COMMENT_FORBIDDEN": "Kommentar hat Moderation nicht bestanden",
+    "SOCIAL_COMMENT_LOAD_FAILED": "Kommentar konnte nicht geladen werden",
+    "POINTS_INVALID_CURSOR": "Cursor ist fehlerhaft",
+    "POINTS_INVALID_LIMIT": "Limit muss eine positive Ganzzahl sein",
+    "POINTS_INVALID_FROM": "From muss ein gültiger ISO-Zeitstempel sein",
+    "POINTS_INVALID_TO": "To muss ein gültiger ISO-Zeitstempel sein",
+    "POINTS_SESSION_NOT_COMPLETED": "Einheit ist nicht abgeschlossen",
+    "IDEMPOTENCY_STATE": "Idempotenz-Datensatz konnte nicht initialisiert werden",
+    "IDEMPOTENCY_MISMATCH": "Idempotenz-Schlüssel bereits mit anderer Payload verwendet",
+    "IDEMPOTENCY_INVALID": "Idempotency-Key-Header darf nicht leer sein",
+    "VALIDATION_ERROR": "Validierung fehlgeschlagen",
+    "INTERNAL_SERVER_ERROR": "Unerwarteter Fehler",
+    "UPLOAD_NO_FILE": "Keine Datei hochgeladen",
+    "UPLOAD_UNSUPPORTED_TYPE": "Nicht unterstützter Dateityp",
+    "UPLOAD_TOO_LARGE": "Datei zu groß (max 5MB)",
+    "UPLOAD_MALWARE_DETECTED": "Datei hat Sicherheitsprüfung nicht bestanden",
+    "UPLOAD_NOT_FOUND": "Datei nicht gefunden",
+    "EMAIL_SERVICE_UNAVAILABLE": "E-Mail-Dienst nicht verfügbar"
+  },
+  "validation": {
+    "passwordMinLength": "Passwort muss mindestens 12 Zeichen lang sein",
+    "passwordLowercase": "Passwort muss einen Kleinbuchstaben enthalten",
+    "passwordUppercase": "Passwort muss einen Großbuchstaben enthalten",
+    "passwordDigit": "Passwort muss eine Ziffer enthalten",
+    "passwordSymbol": "Passwort muss ein Sonderzeichen enthalten",
+    "usernameFormat": "Benutzername darf nur Buchstaben, Zahlen, Unterstriche, Punkte oder Bindestriche enthalten",
+    "sessionIdRequired": "Geben Sie sessionId oder Widerruf-Bereich an",
+    "revokeConflict": "Kann revokeAll und revokeOthers nicht kombinieren"
+  },
+  "dashboard": {
+    "eyebrow": "Bereitschafts-Puls",
+    "title": "Deine Trainingszentrale.",
+    "description": "Überwache Serien, Bereitschaft und Leaderboard-Deltas auf einen Blick. Jede Metrik aktualisiert sich in Echtzeit, sobald Einheiten von Wearables oder manuellen Protokollen synchronisiert werden.",
+    "errorRefresh": "Analytics konnten jetzt nicht aktualisiert werden. Zeige den letzten geladenen Snapshot.",
+    "retry": "Erneut versuchen",
+    "personalBests": "Persönliche Bestleistungen",
+    "volumeAggregates": "Volumen-Aggregate",
+    "selectRange": "Bereich auswählen",
+    "last4Weeks": "Letzte 4 Wochen",
+    "last8Weeks": "Letzte 8 Wochen",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "refreshing": "Wird aktualisiert…",
+    "period": "Zeitraum",
+    "volume": "Volumen",
+    "sessions": "Einheiten",
+    "helperText": "Zeige bis zu 5 Zeiträume, um die Payload auf geteilten Dashboards gering zu halten."
+  },
+  "progress": {
+    "eyebrow": "Trends & Insights",
+    "title": "Visualisiere Fortschritt mit Kontext",
+    "description": "Vergleiche Block-über-Block Volumen, Geschwindigkeit und Bereitschaft, um zu verstehen, wie Programmierungsanpassungen sich in Ergebnisse übersetzen.",
+    "exportFailed": "Fortschrittsdaten-Export fehlgeschlagen",
+    "chartRenderFailed": "Diagramm konnte nicht gerendert werden",
+    "reloadPage": "Seite neu laden",
+    "presetRange": "Voreingestellter Bereich",
+    "customRange": "Benutzerdefinierter Bereich",
+    "period": "Zeitraum:",
+    "7days": "7 Tage",
+    "30days": "30 Tage",
+    "90days": "90 Tage",
+    "groupBy": "Gruppieren nach:",
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "exportCsv": "CSV exportieren",
+    "volumeTrend": "Volumen-Trend",
+    "sessionsTrend": "Einheiten-Trend",
+    "intensityTrend": "Durchschnittliche Intensität (RPE)",
+    "exerciseBreakdown": "Übungsaufschlüsselung",
+    "failedToLoad": "Trenddaten konnten nicht geladen werden",
+    "failedToLoadExercise": "Übungsdaten konnten nicht geladen werden",
+    "retry": "Erneut versuchen",
+    "noData": "Keine Daten für diesen Zeitraum verfügbar",
+    "noExerciseData": "Keine Übungsdaten für diesen Zeitraum verfügbar",
+    "exercise": "Übung",
+    "totalVolume": "Gesamtvolumen",
+    "avgVolume": "Durchschn. Volumen",
+    "maxWeight": "Max. Gewicht",
+    "trend": "Trend",
+    "trendUp": "↗ Aufwärts",
+    "trendDown": "↘ Abwärts",
+    "trendStable": "→ Stabil",
+    "session": "Einheit",
+    "sessions": "Einheiten"
+  },
+  "verifyEmail": {
+    "eyebrow": "E-Mail-Verifizierung",
+    "titleVerifying": "E-Mail wird verifiziert...",
+    "titleSuccess": "E-Mail verifiziert!",
+    "titleFailed": "Verifizierung fehlgeschlagen",
+    "descVerifying": "Bitte warte, während wir deine E-Mail-Adresse verifizieren...",
+    "descSuccess": "Deine E-Mail wurde erfolgreich verifiziert. Weiterleitung zum Login...",
+    "descFailed": "Wir konnten deine E-Mail nicht verifizieren. Der Link ist möglicherweise abgelaufen oder ungültig.",
+    "noToken": "Kein Verifizierungstoken angegeben",
+    "goToLogin": "Zum Login",
+    "backToRegister": "Zurück zur Registrierung"
+  },
+  "forgotPassword": {
+    "eyebrow": "Passwort zurücksetzen",
+    "titleSuccess": "Überprüfe deine E-Mail",
+    "title": "Passwort vergessen?",
+    "descSuccess": "Falls ein Konto mit dieser E-Mail-Adresse existiert, haben wir Anweisungen zum Zurücksetzen deines Passworts gesendet.",
+    "description": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "du@beispiel.de",
+    "sending": "Wird gesendet...",
+    "sendLink": "Reset-Link senden",
+    "backToLogin": "Zurück zum Login",
+    "successMessage": "Bitte überprüfe deine E-Mail für den Passwort-Reset-Link.",
+    "errorSend": "Fehler beim Senden der Reset-E-Mail"
+  },
+  "resetPassword": {
+    "eyebrow": "Passwort zurücksetzen",
+    "titleSuccess": "Passwort erfolgreich zurückgesetzt",
+    "title": "Setze dein Passwort zurück",
+    "descSuccess": "Dein Passwort wurde erfolgreich zurückgesetzt. Weiterleitung zum Login...",
+    "description": "Gib unten dein neues Passwort ein, um es zurückzusetzen.",
+    "newPasswordLabel": "Neues Passwort",
+    "newPasswordPlaceholder": "Neues Passwort eingeben",
+    "confirmPasswordLabel": "Neues Passwort bestätigen",
+    "confirmPasswordPlaceholder": "Neues Passwort bestätigen",
+    "resetting": "Wird zurückgesetzt...",
+    "resetButton": "Passwort zurücksetzen",
+    "backToLogin": "Zurück zum Login",
+    "successText": "Du kannst dich jetzt mit deinem neuen Passwort anmelden.",
+    "passwordMismatch": "Passwörter stimmen nicht überein",
+    "invalidToken": "Ungültiger Reset-Token. Bitte fordere ein neues Passwort-Reset an.",
+    "errorReset": "Fehler beim Zurücksetzen des Passworts"
+  },
+  "logger": {
+    "eyebrow": "Logbuch",
+    "title": "Erfasse jede Wiederholung ohne den Flow zu verlieren.",
+    "description": "Ob im Fitnessstudio oder beim Synchronisieren von Wearables, der Logger verfolgt Sätze, RPE und Tempo, damit deine Daten Coach-bereit bleiben.",
+    "exercise": "Übung",
+    "sets": "Sätze",
+    "reps": "Wiederholungen",
+    "load": "Last"
+  },
+  "planner": {
+    "eyebrow": "Einheiten-Architektur",
+    "title": "Gestalte Trainingsblöcke mit Absicht.",
+    "description": "Ziehe, dupliziere und periodisiere Workouts. Der Planer hält Intensität, Volumen und Deload-Verhältnisse im Einklang mit deinem Makrozyklus.",
+    "editBlock": "Block bearbeiten"
+  },
+  "notFound": {
+    "eyebrow": "Navigation",
+    "title": "Wir konnten diese Seite nicht finden.",
+    "description": "Die angeforderte Route ist entweder privat oder noch im Aufbau. Gehe zurück zum Dashboard oder sprich mit dem Team, wenn du frühen Zugang benötigst.",
+    "takeMeHome": "Bring mich nach Hause",
+    "goToLanding": "Zur Startseite"
+  },
+  "components": {
+    "dateRangePicker": {
+      "from": "Von:",
+      "to": "Bis:"
+    },
+    "maintenanceBanner": {
+      "message": "System ist derzeit im Nur-Lese-Modus. Schreibvorgänge sind deaktiviert."
+    },
+    "errorBoundary": {
+      "title": "Etwas ist schiefgelaufen",
+      "message": "Ein unerwarteter Fehler ist aufgetreten",
+      "tryAgain": "Erneut versuchen"
+    },
+    "mainLayout": {
+      "logo": "FV",
+      "brand": "FitVibe"
+    }
+  },
+  "common": {
+    "retry": "Erneut versuchen",
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "submit": "Absenden",
+    "confirm": "Bestätigen"
   }
 }

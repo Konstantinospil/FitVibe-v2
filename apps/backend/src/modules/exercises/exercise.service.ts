@@ -56,7 +56,7 @@ async function ensureTypeExists(typeCode: string) {
   const trimmed = typeCode.trim();
   const type = await db<ExerciseTypeRow>("exercise_types").where({ code: trimmed }).first();
   if (!type) {
-    throw new HttpError(400, ERROR_INVALID_TYPE, "Invalid exercise type");
+    throw new HttpError(400, ERROR_INVALID_TYPE, "EXERCISE_INVALID_TYPE");
   }
 }
 
@@ -79,7 +79,7 @@ async function ensureNameUnique(ownerId: string | null, name: string, excludeId?
 
   const existing = await query.first<Exercise>();
   if (existing) {
-    throw new HttpError(409, ERROR_DUPLICATE, "Exercise name already exists in this library scope");
+    throw new HttpError(409, ERROR_DUPLICATE, "EXERCISE_DUPLICATE");
   }
 }
 
@@ -94,10 +94,10 @@ export async function getAll(
 export async function getOne(id: string, userId: string, isAdmin = false) {
   const exercise = isAdmin ? await getExerciseRaw(id) : await getExercise(id, userId);
   if (!exercise || (!isAdmin && exercise.owner_id && exercise.owner_id !== userId)) {
-    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+    throw new HttpError(404, ERROR_NOT_FOUND, "EXERCISE_NOT_FOUND");
   }
   if (!isAdmin && exercise.archived_at) {
-    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+    throw new HttpError(404, ERROR_NOT_FOUND, "EXERCISE_NOT_FOUND");
   }
   return exercise;
 }
@@ -105,10 +105,10 @@ export async function getOne(id: string, userId: string, isAdmin = false) {
 export async function createOne(userId: string, dto: CreateExerciseDTO, isAdmin = false) {
   if (!isAdmin) {
     if (dto.owner_id && dto.owner_id !== userId) {
-      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot assign exercises to another user");
+      throw new HttpError(403, ERROR_FORBIDDEN, "EXERCISE_FORBIDDEN");
     }
     if (dto.owner_id === null) {
-      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot create global exercises");
+      throw new HttpError(403, ERROR_FORBIDDEN, "EXERCISE_FORBIDDEN");
     }
   }
 
@@ -143,7 +143,7 @@ export async function createOne(userId: string, dto: CreateExerciseDTO, isAdmin 
   }
 
   if (!created) {
-    throw new HttpError(500, "EXERCISE_CREATE_FAILED", "Unable to load created exercise");
+    throw new HttpError(500, "EXERCISE_CREATE_FAILED", "EXERCISE_CREATE_FAILED");
   }
 
   return created;
@@ -157,13 +157,13 @@ export async function updateOne(
 ) {
   const existing = await getExerciseRaw(id);
   if (!existing) {
-    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+    throw new HttpError(404, ERROR_NOT_FOUND, "EXERCISE_NOT_FOUND");
   }
 
   const ownerId = existing.owner_id ?? null;
   if (!isAdmin) {
     if (ownerId === null || ownerId !== userId) {
-      throw new HttpError(403, ERROR_FORBIDDEN, "Cannot update this exercise");
+      throw new HttpError(403, ERROR_FORBIDDEN, "EXERCISE_FORBIDDEN");
     }
   }
 
@@ -203,20 +203,20 @@ export async function updateOne(
 
   const affected = await updateExercise(id, updates);
   if (affected === 0) {
-    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+    throw new HttpError(404, ERROR_NOT_FOUND, "EXERCISE_NOT_FOUND");
   }
 
   if (isAdmin) {
     const refreshed = await getExerciseRaw(id);
     if (!refreshed) {
-      throw new HttpError(500, "EXERCISE_REFRESH_FAILED", "Unable to load updated exercise");
+      throw new HttpError(500, "EXERCISE_REFRESH_FAILED", "EXERCISE_REFRESH_FAILED");
     }
     return refreshed;
   }
 
   const refreshed = await getExercise(id, userId);
   if (!refreshed) {
-    throw new HttpError(500, "EXERCISE_REFRESH_FAILED", "Unable to load updated exercise");
+    throw new HttpError(500, "EXERCISE_REFRESH_FAILED", "EXERCISE_REFRESH_FAILED");
   }
   return refreshed;
 }
@@ -224,7 +224,7 @@ export async function updateOne(
 export async function archiveOne(id: string, userId: string, isAdmin = false) {
   const existing = await getExerciseRaw(id);
   if (!existing) {
-    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+    throw new HttpError(404, ERROR_NOT_FOUND, "EXERCISE_NOT_FOUND");
   }
 
   const ownerId = existing.owner_id ?? null;
@@ -236,6 +236,6 @@ export async function archiveOne(id: string, userId: string, isAdmin = false) {
 
   const affected = await archiveExercise(id);
   if (affected === 0) {
-    throw new HttpError(404, ERROR_NOT_FOUND, "Exercise not found");
+    throw new HttpError(404, ERROR_NOT_FOUND, "EXERCISE_NOT_FOUND");
   }
 }

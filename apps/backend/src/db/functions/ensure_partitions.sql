@@ -61,7 +61,7 @@ BEGIN
         AND child.relkind IN ('r', 'p')
     LOOP
       IF partition_expr NOT LIKE 'DEFAULT' THEN
-        bounds := regexp_matches(partition_expr, $$FROM \('(.*)'\) TO \('(.*)'\)$$);
+        bounds := regexp_matches(partition_expr, $re$FROM \('(.*)'\) TO \('(.*)'\)$re$);
         IF bounds IS NOT NULL AND array_length(bounds, 1) = 2 THEN
           bound_start := bounds[1]::date;
           bound_end := bounds[2]::date;

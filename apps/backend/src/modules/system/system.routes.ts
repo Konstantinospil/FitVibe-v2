@@ -35,12 +35,13 @@ router.get("/health", (_req: Request, res: Response) => {
  */
 router.get(
   "/read-only/status",
-  asyncHandler(async (_req: Request, res: Response) => {
+  asyncHandler((_req: Request, res: Response) => {
     res.status(200).json({
       readOnlyMode: env.readOnlyMode,
       message: env.readOnlyMode ? env.maintenanceMessage : null,
       timestamp: new Date().toISOString(),
     });
+    return Promise.resolve();
   }),
 );
 
@@ -61,6 +62,7 @@ router.post(
   requireRole("admin"),
   asyncHandler(async (req: Request, res: Response) => {
     const previousState = env.readOnlyMode;
+    const body = req.body as { reason?: string; estimatedDuration?: string };
 
     // Enable read-only mode (Note: This is runtime-only, not persisted)
     // For persistent changes, update environment variable and restart
@@ -69,8 +71,8 @@ router.post(
     logger.warn(
       {
         actorUserId: req.user?.sub,
-        reason: req.body.reason,
-        estimatedDuration: req.body.estimatedDuration,
+        reason: body.reason,
+        estimatedDuration: body.estimatedDuration,
         previousState,
       },
       "[system] Read-only mode ENABLED",
@@ -82,8 +84,8 @@ router.post(
       action: "read_only_enabled",
       entityId: "system",
       metadata: {
-        reason: req.body.reason || "Manual activation",
-        estimatedDuration: req.body.estimatedDuration,
+        reason: body.reason || "Manual activation",
+        estimatedDuration: body.estimatedDuration,
         previousState,
       },
     });
@@ -113,6 +115,7 @@ router.post(
   requireRole("admin"),
   asyncHandler(async (req: Request, res: Response) => {
     const previousState = env.readOnlyMode;
+    const body = req.body as { notes?: string };
 
     // Disable read-only mode
     (env as { readOnlyMode: boolean }).readOnlyMode = false;
@@ -120,7 +123,7 @@ router.post(
     logger.info(
       {
         actorUserId: req.user?.sub,
-        notes: req.body.notes,
+        notes: body.notes,
         previousState,
       },
       "[system] Read-only mode DISABLED",
@@ -132,7 +135,7 @@ router.post(
       action: "read_only_disabled",
       entityId: "system",
       metadata: {
-        notes: req.body.notes || "Manual deactivation",
+        notes: body.notes || "Manual deactivation",
         previousState,
       },
     });

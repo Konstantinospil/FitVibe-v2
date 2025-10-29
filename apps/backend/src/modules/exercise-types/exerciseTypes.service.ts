@@ -48,7 +48,7 @@ export async function addType(
 ): Promise<ExerciseType | undefined> {
   const exists = await getExerciseType(dto.code);
   if (exists) {
-    throw Object.assign(new Error("Type code already exists"), { status: 409 });
+    throw Object.assign(new Error("EXERCISE_INVALID_TYPE"), { status: 409 });
   }
   await createExerciseType(dto);
   invalidateTypesCache();
@@ -71,7 +71,7 @@ export async function editType(
 ): Promise<ExerciseType | undefined> {
   const existing = await getExerciseType(code);
   if (!existing) {
-    throw Object.assign(new Error("Exercise type not found"), { status: 404 });
+    throw Object.assign(new Error("EXERCISE_NOT_FOUND"), { status: 404 });
   }
   await updateExerciseType(code, updates);
   invalidateTypesCache();
@@ -90,7 +90,7 @@ export async function editType(
 export async function removeType(code: string, userId?: string): Promise<void> {
   const existing = await getExerciseType(code);
   if (!existing) {
-    throw Object.assign(new Error("Exercise type not found"), { status: 404 });
+    throw Object.assign(new Error("EXERCISE_NOT_FOUND"), { status: 404 });
   }
   invalidateTypesCache();
   await deleteExerciseType(code);

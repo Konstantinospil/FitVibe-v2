@@ -1,4 +1,4 @@
-﻿CREATE MATERIALIZED VIEW session_summary AS
+CREATE MATERIALIZED VIEW session_summary AS
 SELECT
   s.id AS session_id,
   s.owner_id,

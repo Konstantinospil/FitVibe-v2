@@ -73,7 +73,10 @@ export async function findPointsEventBySource(
 
 export async function getPointsBalance(userId: string, trx?: Knex.Transaction): Promise<number> {
   const exec = executor(trx);
-  const result = await exec(TABLE).where({ user_id: userId }).sum<{ total: string | number }>("points as total").first();
+  const result = await exec(TABLE)
+    .where({ user_id: userId })
+    .sum<{ total: string | number }>("points as total")
+    .first();
   const value = result?.total ?? 0;
   return typeof value === "string" ? Number(value) : Number(value ?? 0);
 }
@@ -124,13 +127,11 @@ export async function getPointsHistory(
   }
   if (options.cursor) {
     query.andWhere((builder) => {
-      builder
-        .where("awarded_at", "<", options.cursor!.awardedAt)
-        .orWhere((inner) => {
-          inner
-            .where("awarded_at", "=", options.cursor!.awardedAt)
-            .andWhere("id", "<", options.cursor!.id);
-        });
+      builder.where("awarded_at", "<", options.cursor!.awardedAt).orWhere((inner) => {
+        inner
+          .where("awarded_at", "=", options.cursor!.awardedAt)
+          .andWhere("id", "<", options.cursor!.id);
+      });
     });
   }
 
@@ -184,7 +185,9 @@ export async function getExercisesMetadata(
   return map;
 }
 
-export async function getBadgeCatalog(trx?: Knex.Transaction): Promise<Map<string, BadgeCatalogEntry>> {
+export async function getBadgeCatalog(
+  trx?: Knex.Transaction,
+): Promise<Map<string, BadgeCatalogEntry>> {
   const exec = executor(trx);
   const rows = await exec("badge_catalog").select([
     "code",
@@ -210,7 +213,10 @@ export async function getBadgeCatalog(trx?: Knex.Transaction): Promise<Map<strin
   return map;
 }
 
-export async function getUserBadgeCodes(userId: string, trx?: Knex.Transaction): Promise<Set<string>> {
+export async function getUserBadgeCodes(
+  userId: string,
+  trx?: Knex.Transaction,
+): Promise<Set<string>> {
   const exec = executor(trx);
   const rows = await exec("badges").where({ user_id: userId }).select(["badge_type"]);
   return new Set(rows.map((row) => row.badge_type as string));

@@ -73,7 +73,9 @@ const mockedIncrementPointsAwarded = incrementPointsAwarded as jest.MockedFuncti
   typeof incrementPointsAwarded
 >;
 const mockedPointsJobsService = pointsJobsService as unknown as {
-  scheduleStreakEvaluation: jest.MockedFunction<(userId: string, sessionId: string, completedAt: string) => void>;
+  scheduleStreakEvaluation: jest.MockedFunction<
+    (userId: string, sessionId: string, completedAt: string) => void
+  >;
   scheduleSeasonalEventSweep: jest.MockedFunction<
     (userId: string, sessionId: string, completedAt: string) => void
   >;
@@ -101,7 +103,9 @@ beforeEach(() => {
   });
 });
 
-function buildCompletedSession(overrides: Partial<SessionWithExercises> = {}): SessionWithExercises {
+function buildCompletedSession(
+  overrides: Partial<SessionWithExercises> = {},
+): SessionWithExercises {
   const now = new Date();
   const completedAt = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
   return {
@@ -181,7 +185,9 @@ describe("awardPointsForSession", () => {
       created_at: new Date().toISOString(),
     };
     mockedInsertPointsEvent.mockResolvedValue(eventRecord);
-    mockedEvaluateBadgesForSession.mockResolvedValue([{ badgeCode: "first_session", metadata: {} }]);
+    mockedEvaluateBadgesForSession.mockResolvedValue([
+      { badgeCode: "first_session", metadata: {} },
+    ]);
 
     const result = await awardPointsForSession(buildCompletedSession());
 

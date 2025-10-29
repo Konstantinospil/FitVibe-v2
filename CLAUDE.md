@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 FitVibe V2 is a PNPM-managed monorepo for a fitness training companion that helps athletes plan sessions, log workouts, and track long-term progress. The stack includes a Node.js/Express backend with PostgreSQL, and a React + Vite frontend.
 
 **Key Principles:**
+
 - **Privacy-by-design**: All user content is private-by-default; explicit consent required for sharing
 - **GDPR compliance**: Data Subject Rights (DSR) endpoints for export/delete; 24-month inactivity auto-purge
 - **Security-first**: RS256 JWT with refresh rotation, CSRF protection, CSP/HSTS headers, rate limiting
@@ -15,18 +16,21 @@ FitVibe V2 is a PNPM-managed monorepo for a fitness training companion that help
 ## Development Commands
 
 ### Starting Development
+
 ```bash
 pnpm install              # bootstrap all workspaces
 pnpm dev                  # start backend + frontend via Turbo in parallel
 ```
 
 ### Running Specific Apps
+
 ```bash
 pnpm --filter @fitvibe/backend dev      # run backend only (Express + TSX watch)
 pnpm --filter @fitvibe/frontend dev     # run frontend only (Vite dev server)
 ```
 
 ### Testing & Quality
+
 ```bash
 pnpm test                                # unit/integration tests across repo
 pnpm --filter @fitvibe/backend test     # backend tests (Jest 30 + @swc/jest)
@@ -40,6 +44,7 @@ pnpm fmt                                 # format all files with Prettier
 ```
 
 ### Building
+
 ```bash
 pnpm build                               # production builds via Turbo
 pnpm --filter @fitvibe/backend build    # compile backend to dist/
@@ -48,6 +53,7 @@ pnpm --filter @fitvibe/frontend preview # preview frontend production build
 ```
 
 ### Database Operations
+
 ```bash
 # Run migration scripts (from repo root)
 pnpm tsx apps/backend/src/db/scripts/migrate.ts
@@ -63,6 +69,7 @@ pnpm openapi:build                       # generate OpenAPI documentation
 ```
 
 ### Other Commands
+
 ```bash
 pnpm clean                               # remove node_modules, .turbo, reinstall
 ```
@@ -72,11 +79,13 @@ pnpm clean                               # remove node_modules, .turbo, reinstal
 ### High-Level Design Principles
 
 **Three-Layer Architecture (ADR-013):**
+
 1. **Router (HTTP layer)** - Express routers per domain; request parsing, Zod validation, authn, coarse RBAC, HTTP error mapping
 2. **Service (domain layer)** - Pure business logic; coordinates repositories; enforces fine-grained authz; emits events
 3. **Repository (data layer)** - SQL via Knex; owns queries, pagination, data mapping; no HTTP code
 
 **Domain Modules:**
+
 - `auth` - Registration, login, email verification, password reset, 2FA (TOTP), session management
 - `users` - Profile management, privacy settings, avatar upload with AV scan
 - `exercises` - Exercise library with user-owned and admin-owned global exercises
@@ -195,6 +204,7 @@ src/
 **Schema Overview (40+ migrations):**
 
 **1. Identity & Security:**
+
 - `users` - Account records with soft delete (`deleted_at`)
 - `profiles` - 1:1 user profiles with privacy settings
 - `roles`, `user_roles` - RBAC mapping
@@ -203,12 +213,14 @@ src/
 - `auth_token_tables` - Refresh token storage with rotation tracking
 
 **2. Catalog & i18n:**
+
 - `exercise_categories`, `exercises` - User-owned + admin-owned global exercises
 - `tags`, `exercise_tags` - Tagging system
 - `translations`, `translation_fields` - Field-level i18n with allow-list
 - `translation_cache` - Optional cache for translated content
 
 **3. Planning & Logging:**
+
 - `plans` - User training plans
 - `workout_templates` - Reusable workout templates with ratings
 - `sessions` - Workout sessions (planned/started/completed) with visibility controls
@@ -216,12 +228,14 @@ src/
 - `exercise_sets` - Set-level data (reps, weight, RPE, tempo, rest)
 
 **4. Progress & Recovery:**
+
 - `personal_records` - Time-series PRs with `is_current` flag
 - `body_measurements` - Daily snapshots (weight, BF%)
 - `recovery_logs` - Daily wellness inputs (sleep, soreness, stress)
 - `user_metrics` - Historical metrics tracking
 
 **5. Social & Gamification:**
+
 - `feed_items` - Activity feed with visibility (public/followers/link/private)
 - `feed_comments`, `feed_likes`, `session_bookmarks` - Social interactions
 - `followers` - User following relationships
@@ -230,11 +244,13 @@ src/
 - `user_points` - Append-only points ledger (partitioned by `awarded_at`)
 
 **6. Media & Operations:**
+
 - `media_assets` - File uploads with AV scan metadata
 - `idempotency_keys` - Request deduplication (24h TTL)
 - `audit_log` - PII-free audit trail (partitioned by month)
 
 **Advanced Features:**
+
 - **Partitioning**: `sessions` (monthly on `planned_at`), `audit_log` (monthly), `user_points` (by `awarded_at`)
 - **Materialized Views**: `session_summary`, `weekly_aggregates`, `leaderboard_view` (incremental refresh)
 - **Soft Deletes**: `deleted_at` and `archived_at` columns for recoverable deletes
@@ -266,6 +282,7 @@ src/
 Copy `.env.example` to the root directory:
 
 **Required:**
+
 - `DATABASE_URL` - PostgreSQL connection string, OR:
   - `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
 - `JWT_PRIVATE_KEY_PATH` / `JWT_PUBLIC_KEY_PATH` - RSA-4096 keys for JWT signing
@@ -273,6 +290,7 @@ Copy `.env.example` to the root directory:
   - Rotation: Quarterly (14-day alerts)
 
 **Common:**
+
 - `PORT` - Backend port (default: 3000)
 - `NODE_ENV` - `development` | `test` | `production`
 - `ALLOWED_ORIGINS` - CORS origins (comma-separated)
@@ -286,6 +304,7 @@ Copy `.env.example` to the root directory:
 - `LOG_LEVEL` - Pino log level (debug/info/warn/error)
 
 **Feature Flags:**
+
 - `FEATURE_SOCIAL_FEED` - Enable social feed (default: false)
 - `FEATURE_COACH_DASHBOARD` - Enable coach features (default: false)
 - `FEATURE_INSIGHTS` - Enable advanced analytics (default: false)
@@ -305,6 +324,7 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### Authentication & Session Management (ADR-002)
 
 **Token Model:**
+
 - **Access Token**: RS256 JWT, 10-15min TTL
   - Claims: `iss`, `aud`, `sub`, `exp`, `iat`, `nbf`, `jti`, `sid`, `scope`, `roles`, `locale`
   - Header includes `kid` for key rotation
@@ -314,6 +334,7 @@ Additional `VITE_*` variables are exposed to the bundle.
   - Rotation on each refresh with reuse detection
 
 **Session Lifecycle:**
+
 1. Register → email verification (15min TTL) → verified account
 2. Login → issue `{accessToken, refreshToken}` pair
 3. Client stores tokens in Zustand store
@@ -323,6 +344,7 @@ Additional `VITE_*` variables are exposed to the bundle.
 7. Logout: revoke active refresh session family (all tokens bound to `jti`)
 
 **Security Controls:**
+
 - Password policy: min 12 chars, uppercase, lowercase, number, symbol
 - Progressive lockout on failed attempts
 - No user enumeration (identical messages for existent/non-existent emails)
@@ -332,17 +354,20 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### Idempotency Policy (ADR-007)
 
 **Requirements:**
+
 - All POST/PUT/PATCH/DELETE endpoints accept `Idempotency-Key` header
 - Client generates UUID per logical operation
 - Server stores `{ key, route, method, principal, body_hash, response_code, response_body, ttl }`
 
 **Behavior:**
+
 - Same key + same payload → replay stored response (status + body)
 - Same key + different payload → 409 Conflict
 - TTL: 24 hours (after expiry, key is forgotten)
 - Scoped to `{principal, method, route_template}`
 
 **Storage:**
+
 - Primary: Redis with TTL
 - Fallback: Postgres `idempotency_keys` table
 - Atomic write: `SETNX` or Lua script for first-write wins
@@ -350,6 +375,7 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### API Versioning (ADR-001)
 
 **Policy:**
+
 - `/api/v1` is stable; additive changes only (new fields, endpoints)
 - Deprecations use `Deprecation` and `Sunset` headers
 - Breaking changes require new version (`/api/v2`)
@@ -358,16 +384,19 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### Data Retention & GDPR (ADR-003)
 
 **Classification:**
+
 - **Public** - Marketing content, public profiles
 - **Internal** - Configs, runbooks (24-month retention)
 - **Restricted** - Infra IPs, rate-limit configs (24-month retention)
 - **Sensitive (Personal)** - User data, workout logs (delete on request; auto-purge after 24 months inactivity)
 
 **DSR Endpoints:**
+
 - `/api/v1/users/export` - Export all user data (JSON/CSV)
 - `/api/v1/users/delete` - Trigger deletion (hard delete + backup purge ≤14 days)
 
 **Retention:**
+
 - App logs (no PII): 7 days
 - Security audit logs: 24 months
 - Backups: Purge ≤14 days after hard delete
@@ -376,6 +405,7 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### Media Upload Safety (ADR-004)
 
 **Upload Flow:**
+
 1. Client requests signed upload URL
 2. Server validates MIME type (allow-list: JPEG/PNG/WebP)
 3. Client uploads directly to object storage
@@ -386,6 +416,7 @@ Additional `VITE_*` variables are exposed to the bundle.
 8. Generate 128×128 avatar derivative
 
 **Constraints:**
+
 - Max file size: 5MB
 - Image-only MIME types
 - Private ACL by default
@@ -394,12 +425,14 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### Observability
 
 **Structured Logging (Pino):**
+
 - Correlation IDs propagated across layers
 - No PII in logs (use pseudonymous UUIDs)
 - Log levels: debug, info, warn, error
 - Request/response logging via morgan
 
 **Metrics (Prometheus):**
+
 - Request latency histograms per route
 - Domain counters (created/updated/deleted)
 - Auth failure rates
@@ -411,6 +444,7 @@ Additional `VITE_*` variables are exposed to the bundle.
   - Failed-login spike > 3σ baseline
 
 **Performance Budgets:**
+
 - API p95 < 300ms (overall)
 - Auth endpoints ≤ 200ms
 - CRUD endpoints ≤ 300ms
@@ -422,18 +456,21 @@ Additional `VITE_*` variables are exposed to the bundle.
 ### Testing Strategy
 
 **Backend (Jest 30 + @swc/jest per ADR-021):**
+
 - Unit tests: Services with mocked repositories
 - Integration tests: Routers → Services → Repos against ephemeral Postgres
 - Database tests: pg-mem or ephemeral instance with migrations + seeds
 - Security tests: OWASP ZAP baseline (weekly), Snyk scans (nightly)
 
 **Frontend (Vitest):**
+
 - Component tests: React Testing Library + jsdom
 - Integration tests: User flows with mocked API
 - E2E tests: Playwright flows (planned)
 - Accessibility tests: Lighthouse + axe (≥90 score requirement)
 
 **Quality Gates (CI):**
+
 - Lint: `pnpm lint:check` (--max-warnings=0)
 - Type check: `tsc --noEmit`
 - Tests: `pnpm test` (all workspaces)
@@ -445,32 +482,33 @@ Additional `VITE_*` variables are exposed to the bundle.
 
 ### Security Controls Summary
 
-| Area | Control | Notes |
-|------|---------|-------|
-| **Authentication** | RS256 JWT (≤15min) + rotating refresh | Reuse detection, quarterly key rotation |
-| **Transport** | TLS 1.3 only, HSTS, OCSP stapling | Modern ciphers only |
-| **Headers** | CSP (no unsafe-inline), Referrer-Policy, Permissions-Policy, X-Frame-Options, X-Content-Type-Options | Strict defaults |
-| **CSRF** | SameSite cookies + CSRF token | Defense-in-depth |
-| **Validation** | Zod DTO validation, environment schema | Deny by default |
-| **Rate Limiting** | 100 req/min/IP baseline (adjustable) | Stricter on auth routes |
-| **Uploads** | AV scan, MIME allow-list, EXIF strip, private ACL | Quarantine on fail |
-| **Idempotency** | 24h key storage, replay-safe | Required for state-changing writes |
-| **Observability** | Pino logs + correlation IDs; Prometheus metrics | No PII in logs/labels |
-| **Privacy/GDPR** | Privacy-by-default; DSR endpoints; data minimization | Auto-purge after 24mo |
-| **Supply Chain** | SCA (npm-audit/Snyk), SBOM, signed images, pinned digests | Block on critical/high |
+| Area               | Control                                                                                              | Notes                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Authentication** | RS256 JWT (≤15min) + rotating refresh                                                                | Reuse detection, quarterly key rotation |
+| **Transport**      | TLS 1.3 only, HSTS, OCSP stapling                                                                    | Modern ciphers only                     |
+| **Headers**        | CSP (no unsafe-inline), Referrer-Policy, Permissions-Policy, X-Frame-Options, X-Content-Type-Options | Strict defaults                         |
+| **CSRF**           | SameSite cookies + CSRF token                                                                        | Defense-in-depth                        |
+| **Validation**     | Zod DTO validation, environment schema                                                               | Deny by default                         |
+| **Rate Limiting**  | 100 req/min/IP baseline (adjustable)                                                                 | Stricter on auth routes                 |
+| **Uploads**        | AV scan, MIME allow-list, EXIF strip, private ACL                                                    | Quarantine on fail                      |
+| **Idempotency**    | 24h key storage, replay-safe                                                                         | Required for state-changing writes      |
+| **Observability**  | Pino logs + correlation IDs; Prometheus metrics                                                      | No PII in logs/labels                   |
+| **Privacy/GDPR**   | Privacy-by-default; DSR endpoints; data minimization                                                 | Auto-purge after 24mo                   |
+| **Supply Chain**   | SCA (npm-audit/Snyk), SBOM, signed images, pinned digests                                            | Block on critical/high                  |
 
 ### CVSS Severity → Fix SLAs
 
 | CVSS Score | Severity | Target Triage | Target Fix (Prod) |
-|------------|----------|---------------|-------------------|
-| 9.0–10.0 | Critical | ≤24h | ≤72h |
-| 7.0–8.9 | High | ≤48h | ≤7 days |
-| 4.0–6.9 | Medium | ≤5 biz days | ≤30 days |
-| 0.1–3.9 | Low | Best effort | Next release |
+| ---------- | -------- | ------------- | ----------------- |
+| 9.0–10.0   | Critical | ≤24h          | ≤72h              |
+| 7.0–8.9    | High     | ≤48h          | ≤7 days           |
+| 4.0–6.9    | Medium   | ≤5 biz days   | ≤30 days          |
+| 0.1–3.9    | Low      | Best effort   | Next release      |
 
 ### Contributor Security Requirements
 
 All contributors must:
+
 - Use 2FA on GitHub accounts
 - Sign commits (`git config --global commit.gpgSign true`)
 - Never commit secrets or `.env` files
@@ -497,20 +535,21 @@ All contributors must:
    - Example: `202510270101_create_users_table.ts`
 
 2. **Implement up/down functions**:
+
 ```typescript
-import { Knex } from 'knex';
+import { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
-  await knex.schema.createTable('users', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-    table.text('username').notNullable().unique();
-    table.text('password_hash').notNullable();
+  await knex.schema.createTable("users", (table) => {
+    table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
+    table.text("username").notNullable().unique();
+    table.text("password_hash").notNullable();
     table.timestamps(true, true);
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.dropTableIfExists('users');
+  await knex.schema.dropTableIfExists("users");
 }
 ```
 
@@ -519,6 +558,7 @@ export async function down(knex: Knex): Promise<void> {
 5. **Rollback if needed**: `pnpm tsx apps/backend/src/db/scripts/rollback.ts`
 
 **Migration Best Practices:**
+
 - Always include `down` function for rollback capability
 - Use transactions for multi-step migrations
 - Add indexes for foreign keys and frequently queried columns
@@ -531,27 +571,31 @@ export async function down(knex: Knex): Promise<void> {
 2. **Add route** in `apps/frontend/src/routes/` (React Router v6)
 3. **Create API functions** in `apps/frontend/src/services/api.ts`
 4. **Use TanStack Query** for data fetching:
+
 ```typescript
 const { data, isLoading, error } = useQuery({
-  queryKey: ['resource', id],
+  queryKey: ["resource", id],
   queryFn: () => apiClient.get(`/api/v1/resource/${id}`),
 });
 ```
+
 5. **Handle authentication** via `useAuthStore` hook
 6. **Add accessibility** attributes (ARIA labels, keyboard nav)
 
 ### Working with Feature Flags
 
 **Backend:**
+
 ```typescript
-import { env } from './config/env';
+import { env } from "./config/env";
 
 if (env.FEATURE_SOCIAL_FEED) {
-  app.use('/api/v1/feed', feedRouter);
+  app.use("/api/v1/feed", feedRouter);
 }
 ```
 
 **Frontend:**
+
 ```typescript
 const FEATURES = {
   socialFeed: import.meta.env.VITE_FEATURE_SOCIAL_FEED === 'true',
@@ -563,16 +607,18 @@ const FEATURES = {
 ### Handling Errors
 
 **Backend error pattern:**
-```typescript
-import { HttpError } from '../utils/http-errors';
 
-throw new HttpError(401, 'E.AUTH.INVALID_CREDENTIALS', 'Invalid credentials');
+```typescript
+import { HttpError } from "../utils/http-errors";
+
+throw new HttpError(401, "E.AUTH.INVALID_CREDENTIALS", "Invalid credentials");
 ```
 
 **Frontend error handling:**
+
 ```typescript
 try {
-  await apiClient.post('/api/v1/resource', data);
+  await apiClient.post("/api/v1/resource", data);
 } catch (error) {
   if (error.response?.status === 401) {
     // Token refresh handled by interceptor
@@ -596,29 +642,29 @@ try {
 
 ### Key Architecture Decision Records (ADRs)
 
-| ID | Title | Key Points |
-|----|-------|------------|
-| ADR-001 | API Versioning Policy | `/api/v1` stable; additive only; breaking → `/v2` |
-| ADR-002 | Authentication Token Strategy | RS256 JWT + rotating refresh; reuse detection |
-| ADR-003 | Data Retention & GDPR | DSR endpoints; 24mo auto-purge; backup purge ≤14d |
-| ADR-004 | Media Upload Safety | AV scan; MIME allow-list; EXIF strip; quarantine |
-| ADR-005 | Partitioning Strategy | Sessions monthly on `planned_at`; audit_log monthly |
-| ADR-006 | Observability Cardinality | No PII in labels; bounded label sets; alert on growth |
-| ADR-007 | Idempotency Policy | `Idempotency-Key` header; 24h TTL; 409 on mismatch |
-| ADR-008 | Materialized Views | session_summary, weekly_aggregates; incremental refresh |
-| ADR-009 | Exercise Library Ownership | Global exercises: `owner_id = NULL` (admin-owned) |
-| ADR-010 | Visibility Model | public/followers/link/private; default private |
-| ADR-011 | Internationalization | Static EN/DE for MVP; AI translation feature-flagged |
-| ADR-012 | Monorepo Structure | pnpm + Turbo; CODEOWNERS; feature flags |
-| ADR-013 | Modular Backend | Router → Service → Repository; domain modules |
-| ADR-014 | Technology Stack | Node/Express, React/Vite, Postgres, object storage |
-| ADR-015 | API Design | REST/JSON; RFC7807 errors; cursor pagination |
-| ADR-016 | Security Middleware | CSP/HSTS; RBAC; PII-free audit logs |
-| ADR-017 | Avatar Handling | Server-mediated; AV scan; signed URLs; private-default |
-| ADR-018 | CI/CD | GitHub Actions; GHCR images; SBOM/provenance; OIDC |
-| ADR-019 | Caching Strategy | Layered caching; explicit invalidation; p95 < 300ms |
-| ADR-020 | Accessibility | WCAG 2.1 AA; Lighthouse ≥90; keyboard flows |
-| ADR-021 | Test Runner | Jest 30 + @swc/jest for backend; Vitest for frontend |
+| ID      | Title                         | Key Points                                              |
+| ------- | ----------------------------- | ------------------------------------------------------- |
+| ADR-001 | API Versioning Policy         | `/api/v1` stable; additive only; breaking → `/v2`       |
+| ADR-002 | Authentication Token Strategy | RS256 JWT + rotating refresh; reuse detection           |
+| ADR-003 | Data Retention & GDPR         | DSR endpoints; 24mo auto-purge; backup purge ≤14d       |
+| ADR-004 | Media Upload Safety           | AV scan; MIME allow-list; EXIF strip; quarantine        |
+| ADR-005 | Partitioning Strategy         | Sessions monthly on `planned_at`; audit_log monthly     |
+| ADR-006 | Observability Cardinality     | No PII in labels; bounded label sets; alert on growth   |
+| ADR-007 | Idempotency Policy            | `Idempotency-Key` header; 24h TTL; 409 on mismatch      |
+| ADR-008 | Materialized Views            | session_summary, weekly_aggregates; incremental refresh |
+| ADR-009 | Exercise Library Ownership    | Global exercises: `owner_id = NULL` (admin-owned)       |
+| ADR-010 | Visibility Model              | public/followers/link/private; default private          |
+| ADR-011 | Internationalization          | Static EN/DE for MVP; AI translation feature-flagged    |
+| ADR-012 | Monorepo Structure            | pnpm + Turbo; CODEOWNERS; feature flags                 |
+| ADR-013 | Modular Backend               | Router → Service → Repository; domain modules           |
+| ADR-014 | Technology Stack              | Node/Express, React/Vite, Postgres, object storage      |
+| ADR-015 | API Design                    | REST/JSON; RFC7807 errors; cursor pagination            |
+| ADR-016 | Security Middleware           | CSP/HSTS; RBAC; PII-free audit logs                     |
+| ADR-017 | Avatar Handling               | Server-mediated; AV scan; signed URLs; private-default  |
+| ADR-018 | CI/CD                         | GitHub Actions; GHCR images; SBOM/provenance; OIDC      |
+| ADR-019 | Caching Strategy              | Layered caching; explicit invalidation; p95 < 300ms     |
+| ADR-020 | Accessibility                 | WCAG 2.1 AA; Lighthouse ≥90; keyboard flows             |
+| ADR-021 | Test Runner                   | Jest 30 + @swc/jest for backend; Vitest for frontend    |
 
 ### Glossary (Key Terms)
 
@@ -643,24 +689,29 @@ try {
 ### Common Issues
 
 **Database Connection Errors:**
+
 - Verify `DATABASE_URL` or `PG*` variables in `.env`
 - Ensure PostgreSQL is running: `docker ps` or `pg_isready`
 - Check migrations: `pnpm tsx apps/backend/src/db/scripts/migrate.ts`
 
 **JWT Errors:**
+
 - Verify RSA key files exist at paths specified in env
 - Generate keys: `openssl genrsa -out jwt_private.pem 4096 && openssl rsa -in jwt_private.pem -pubout -out jwt_public.pem`
 - Check key permissions (readable by Node process)
 
 **CORS Errors:**
+
 - Add frontend URL to `ALLOWED_ORIGINS` in backend `.env`
 - Format: `http://localhost:3000` (no trailing slash)
 
 **Rate Limit Issues:**
+
 - Adjust `GLOBAL_RATE_LIMIT_POINTS` and `GLOBAL_RATE_LIMIT_DURATION` in `.env`
 - Clear rate limit cache (restart backend or flush Redis)
 
 **Migration Failures:**
+
 - Rollback: `pnpm tsx apps/backend/src/db/scripts/rollback.ts`
 - Check `knex_migrations` table for current state
 - Review migration file for syntax errors

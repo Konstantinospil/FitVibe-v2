@@ -117,8 +117,9 @@ jest.mock("../../common/audit.util.js", () => ({
 
 const mockedListFeedSessions = listFeedSessions as jest.MockedFunction<typeof listFeedSessions>;
 const mockedFindSessionById = findSessionById as jest.MockedFunction<typeof findSessionById>;
-const mockedFindActiveShareLinkBySession =
-  findActiveShareLinkBySession as jest.MockedFunction<typeof findActiveShareLinkBySession>;
+const mockedFindActiveShareLinkBySession = findActiveShareLinkBySession as jest.MockedFunction<
+  typeof findActiveShareLinkBySession
+>;
 const mockedFindShareLinkByToken = findShareLinkByToken as jest.MockedFunction<
   typeof findShareLinkByToken
 >;
@@ -149,27 +150,32 @@ const mockedGetFeedItemStats = getFeedItemStats as jest.MockedFunction<typeof ge
 const mockedFindUserLikedFeedItems = findUserLikedFeedItems as jest.MockedFunction<
   typeof findUserLikedFeedItems
 >;
-const mockedFindUserBookmarkedSessions =
-  findUserBookmarkedSessions as jest.MockedFunction<typeof findUserBookmarkedSessions>;
+const mockedFindUserBookmarkedSessions = findUserBookmarkedSessions as jest.MockedFunction<
+  typeof findUserBookmarkedSessions
+>;
 const mockedUpsertFeedLike = upsertFeedLike as jest.MockedFunction<typeof upsertFeedLike>;
 const mockedDeleteFeedLike = deleteFeedLike as jest.MockedFunction<typeof deleteFeedLike>;
 const mockedUpsertBookmark = upsertBookmark as jest.MockedFunction<typeof upsertBookmark>;
 const mockedDeleteBookmark = deleteBookmark as jest.MockedFunction<typeof deleteBookmark>;
-const mockedListBookmarkedSessions =
-  listBookmarkedSessions as jest.MockedFunction<typeof listBookmarkedSessions>;
-const mockedListCommentsForFeedItem =
-  listCommentsForFeedItem as jest.MockedFunction<typeof listCommentsForFeedItem>;
+const mockedListBookmarkedSessions = listBookmarkedSessions as jest.MockedFunction<
+  typeof listBookmarkedSessions
+>;
+const mockedListCommentsForFeedItem = listCommentsForFeedItem as jest.MockedFunction<
+  typeof listCommentsForFeedItem
+>;
 const mockedInsertComment = insertComment as jest.MockedFunction<typeof insertComment>;
 const mockedFindCommentById = findCommentById as jest.MockedFunction<typeof findCommentById>;
-const mockedGetCommentWithAuthor =
-  getCommentWithAuthor as jest.MockedFunction<typeof getCommentWithAuthor>;
+const mockedGetCommentWithAuthor = getCommentWithAuthor as jest.MockedFunction<
+  typeof getCommentWithAuthor
+>;
 const mockedSoftDeleteComment = softDeleteComment as jest.MockedFunction<typeof softDeleteComment>;
 const mockedHasBlockRelation = hasBlockRelation as jest.MockedFunction<typeof hasBlockRelation>;
 const mockedInsertBlock = insertBlock as jest.MockedFunction<typeof insertBlock>;
 const mockedDeleteBlock = deleteBlock as jest.MockedFunction<typeof deleteBlock>;
 const mockedInsertFeedReport = insertFeedReport as jest.MockedFunction<typeof insertFeedReport>;
-const mockedGetLeaderboardRows =
-  getLeaderboardRows as jest.MockedFunction<typeof getLeaderboardRows>;
+const mockedGetLeaderboardRows = getLeaderboardRows as jest.MockedFunction<
+  typeof getLeaderboardRows
+>;
 
 describe("feed.service", () => {
   beforeEach(() => {
@@ -199,9 +205,7 @@ describe("feed.service", () => {
         session_points: 120,
       },
     ] as any);
-    mockedGetFeedItemStats.mockResolvedValueOnce(
-      new Map([["feed-1", { likes: 2, comments: 1 }]]),
-    );
+    mockedGetFeedItemStats.mockResolvedValueOnce(new Map([["feed-1", { likes: 2, comments: 1 }]]));
     mockedFindUserLikedFeedItems.mockResolvedValueOnce(new Set(["feed-1"]));
     mockedFindUserBookmarkedSessions.mockResolvedValueOnce(new Set(["session-1"]));
 
@@ -440,9 +444,7 @@ describe("feed.service", () => {
       published_at: "2025-10-20T11:00:00Z",
     } as any);
     mockedUpsertFeedLike.mockResolvedValueOnce(true);
-    mockedGetFeedItemStats.mockResolvedValueOnce(
-      new Map([["feed-1", { likes: 3, comments: 1 }]]),
-    );
+    mockedGetFeedItemStats.mockResolvedValueOnce(new Map([["feed-1", { likes: 3, comments: 1 }]]));
 
     const result = await likeFeedItem("user-2", "feed-1");
     expect(mockedUpsertFeedLike).toHaveBeenCalledWith("feed-1", "user-2");

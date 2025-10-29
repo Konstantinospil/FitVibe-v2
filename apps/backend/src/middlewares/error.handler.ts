@@ -15,7 +15,7 @@ function normalizeError(err: unknown): HttpError {
   }
 
   if (err instanceof ZodError) {
-    return new HttpError(400, "VALIDATION_ERROR", "Validation failed", err.flatten());
+    return new HttpError(400, "VALIDATION_ERROR", "VALIDATION_ERROR", err.flatten());
   }
 
   if (err instanceof Error) {
@@ -34,14 +34,14 @@ function normalizeError(err: unknown): HttpError {
                 ? "RATE_LIMITED"
                 : "INTERNAL_SERVER_ERROR");
 
-    const normalized = new HttpError(status, code, err.message || "Unexpected error");
+    const normalized = new HttpError(status, code, err.message || "INTERNAL_SERVER_ERROR");
     if ((err as GenericError).details) {
       normalized.details = (err as GenericError).details;
     }
     return normalized;
   }
 
-  return new HttpError(500, "INTERNAL_SERVER_ERROR", "Unexpected error");
+  return new HttpError(500, "INTERNAL_SERVER_ERROR", "INTERNAL_SERVER_ERROR");
 }
 
 export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {

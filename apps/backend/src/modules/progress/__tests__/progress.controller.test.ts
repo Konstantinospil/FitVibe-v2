@@ -1,4 +1,3 @@
-
 import type { Request, Response } from "express";
 import type { ExercisesPayload, PlanProgress } from "../progress.types";
 
@@ -11,14 +10,7 @@ jest.mock("../progress.service", () => ({
   renderProgressReportCsv: jest.fn(),
 }));
 
-const mockedService = jest.requireMock("../progress.service") as {
-  getSummary: jest.Mock;
-  getTrends: jest.Mock;
-  getExerciseBreakdown: jest.Mock;
-  getPlans: jest.Mock;
-  buildProgressReport: jest.Mock;
-  renderProgressReportCsv: jest.Mock;
-};
+const mockedService = jest.requireMock("../progress.service");
 
 describe("progress.controller", () => {
   const USER_ID = "user-123";

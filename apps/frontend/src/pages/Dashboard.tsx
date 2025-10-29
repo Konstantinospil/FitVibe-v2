@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import PageIntro from "../components/PageIntro";
 import { Button, Skeleton, VisibilityBadge } from "../components/ui";
 import { useDashboardAnalytics } from "../hooks/useDashboardAnalytics";
+import { useTranslation } from "react-i18next";
 import type {
   DashboardAggregateRow,
   DashboardGrain,
@@ -81,52 +82,47 @@ const DEFAULT_AGGREGATES: Record<
 const cardStyle: React.CSSProperties = {
   display: "grid",
   gap: "0.75rem",
-  background: "var(--color-surface-glass)",
+  background: "var(--color-surface-glass)}",
   borderRadius: "18px",
   padding: "1.6rem",
-  border: "1px solid var(--color-border)",
-};
-
-const rangeLabels: Record<DashboardRange, string> = {
-  "4w": "Last 4 weeks",
-  "8w": "Last 8 weeks",
-};
-
-const grainLabels: Record<DashboardGrain, string> = {
-  weekly: "Weekly",
-  monthly: "Monthly",
+  border: "1px solid var(--color-border)}",
 };
 
 const formatMetricValue = (value: string | number) =>
   typeof value === "number" ? value.toLocaleString() : value;
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [range, setRange] = useState<DashboardRange>("4w");
   const [grain, setGrain] = useState<DashboardGrain>("weekly");
   const { data, isLoading, isFetching, error, refetch } = useDashboardAnalytics({ range, grain });
 
-  const summaryMetrics = (
-    data?.summary?.length ? data.summary : DEFAULT_SUMMARY
-  ) as DashboardSummaryMetric[];
-  const personalRecords = (
-    data?.personalRecords?.length ? data.personalRecords : DEFAULT_RECORDS
-  ) as DashboardPersonalRecord[];
+  const rangeLabels: Record<DashboardRange, string> = {
+    "4w": t("dashboard.last4Weeks"),
+    "8w": t("dashboard.last8Weeks"),
+  };
+
+  const grainLabels: Record<DashboardGrain, string> = {
+    weekly: t("dashboard.weekly"),
+    monthly: t("dashboard.monthly"),
+  };
+
+  const summaryMetrics = data?.summary?.length ? data.summary : DEFAULT_SUMMARY;
+  const personalRecords = data?.personalRecords?.length ? data.personalRecords : DEFAULT_RECORDS;
   const fallbackAggregates = useMemo(
     () => DEFAULT_AGGREGATES[grain]?.[range] ?? [],
     [grain, range],
   );
-  const aggregateRows = (
-    data?.aggregates?.length ? data.aggregates : fallbackAggregates
-  ) as DashboardAggregateRow[];
+  const aggregateRows = data?.aggregates?.length ? data.aggregates : fallbackAggregates;
 
   const activeRange = data?.meta?.range ?? range;
   const activeGrain = data?.meta?.grain ?? grain;
 
   return (
     <PageIntro
-      eyebrow="Readiness Pulse"
-      title="Your training command center."
-      description="Monitor streaks, readiness, and leaderboard deltas at a glance. Every metric updates in real-time once sessions sync from wearables or manual logs."
+      eyebrow={t("dashboard.eyebrow")}
+      title={t("dashboard.title")}
+      description={t("dashboard.description")}
     >
       <section
         style={{
@@ -140,9 +136,9 @@ const Dashboard: React.FC = () => {
             style={{
               padding: "0.85rem 1rem",
               borderRadius: "12px",
-              border: "1px solid rgba(235, 87, 87, 0.35)",
-              background: "rgba(235, 87, 87, 0.12)",
-              color: "rgb(248, 113, 113)",
+              border: "1px solid rgba(235, 87, 87, 0.35)}",
+              background: "rgba(235, 87, 87, 0.12)}",
+              color: "rgb(248, 113, 113)}",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -151,7 +147,7 @@ const Dashboard: React.FC = () => {
             }}
           >
             <span>We could not refresh analytics right now. Showing the last loaded snapshot.</span>
-            <Button size="sm" variant="ghost" type="button" onClick={() => refetch()}>
+            <Button size="sm" variant="ghost" type="button" onClick={() => void refetch()}>
               Retry
             </Button>
           </div>
@@ -169,15 +165,15 @@ const Dashboard: React.FC = () => {
               style={{
                 flex: "1 1 200px",
                 minWidth: "200px",
-                background: "var(--color-surface-glass)",
+                background: "var(--color-surface-glass)}",
                 borderRadius: "18px",
                 padding: "1.4rem",
-                border: "1px solid var(--color-border)",
+                border: "1px solid var(--color-border)}",
                 display: "grid",
                 gap: "0.35rem",
               }}
             >
-              <span style={{ color: "var(--color-text-secondary)", fontSize: "0.85rem" }}>
+              <span style={{ color: "var(--color-text-secondary)}", fontSize: "0.85rem" }}>
                 {metric.label}
               </span>
               {isLoading ? (
@@ -186,7 +182,7 @@ const Dashboard: React.FC = () => {
                 <strong style={{ fontSize: "2rem" }}>{formatMetricValue(metric.value)}</strong>
               )}
               {metric.trend ? (
-                <span style={{ fontSize: "0.9rem", color: "var(--color-highlight)" }}>
+                <span style={{ fontSize: "0.9rem", color: "var(--color-highlight)}" }}>
                   {metric.trend}
                 </span>
               ) : null}
@@ -210,7 +206,7 @@ const Dashboard: React.FC = () => {
                   <span>{entry.lift}</span>
                   <strong>{entry.value}</strong>
                 </div>
-                <small style={{ color: "var(--color-text-muted)" }}>{entry.achieved}</small>
+                <small style={{ color: "var(--color-text-muted)}" }}>{entry.achieved}</small>
               </li>
             ))}
           </ul>
@@ -229,13 +225,13 @@ const Dashboard: React.FC = () => {
             <strong style={{ fontSize: "1.1rem" }}>Volume aggregates</strong>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               <select
-                aria-label="Select range"
+                aria-label={t("dashboard.selectRange")}
                 value={range}
                 onChange={(event) => setRange(event.target.value as DashboardRange)}
                 style={{
-                  background: "rgba(15, 23, 42, 0.35)",
-                  color: "var(--color-text-primary)",
-                  border: "1px solid var(--color-border)",
+                  background: "rgba(15, 23, 42, 0.35)}",
+                  color: "var(--color-text-primary)}",
+                  border: "1px solid var(--color-border)}",
                   borderRadius: "12px",
                   padding: "0.35rem 0.75rem",
                 }}
@@ -246,8 +242,8 @@ const Dashboard: React.FC = () => {
               <div style={{ display: "inline-flex", gap: "0.35rem" }}>
                 {(
                   [
-                    { key: "weekly", label: "Weekly" },
-                    { key: "monthly", label: "Monthly" },
+                    { key: "weekly", label: t("dashboard.weekly") },
+                    { key: "monthly", label: t("dashboard.monthly") },
                   ] as const
                 ).map((option) => (
                   <Button
@@ -270,7 +266,7 @@ const Dashboard: React.FC = () => {
               alignItems: "center",
               flexWrap: "wrap",
               gap: "0.6rem",
-              color: "var(--color-text-muted)",
+              color: "var(--color-text-muted)}",
               fontSize: "0.85rem",
             }}
           >
@@ -288,7 +284,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               <thead>
-                <tr style={{ textAlign: "left", color: "var(--color-text-secondary)" }}>
+                <tr style={{ textAlign: "left", color: "var(--color-text-secondary)}" }}>
                   <th style={{ paddingBottom: "0.5rem" }}>Period</th>
                   <th style={{ paddingBottom: "0.5rem" }}>Volume</th>
                   <th style={{ paddingBottom: "0.5rem" }}>Sessions</th>
@@ -305,7 +301,7 @@ const Dashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <small style={{ color: "var(--color-text-muted)" }}>
+          <small style={{ color: "var(--color-text-muted)}" }}>
             Showing up to 5 periods to keep payloads light on shared dashboards.
           </small>
         </div>

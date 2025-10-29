@@ -119,9 +119,7 @@ export interface FeedItemRow {
   published_at: string | null;
 }
 
-export async function findFeedItemBySessionId(
-  sessionId: string,
-): Promise<FeedItemRow | undefined> {
+export async function findFeedItemBySessionId(sessionId: string): Promise<FeedItemRow | undefined> {
   return db<FeedItemRow>(FEED_ITEMS_TABLE)
     .select(["id", "owner_id", "session_id", "visibility", "published_at"])
     .where({ session_id: sessionId })
@@ -237,9 +235,7 @@ export async function insertShareLink({
 }
 
 export async function incrementShareLinkView(linkId: string): Promise<void> {
-  await db(SHARE_LINKS_TABLE)
-    .where({ id: linkId })
-    .increment("view_count", 1);
+  await db(SHARE_LINKS_TABLE).where({ id: linkId }).increment("view_count", 1);
 }
 
 export async function revokeShareLinksForSession(sessionId: string): Promise<number> {
@@ -249,19 +245,11 @@ export async function revokeShareLinksForSession(sessionId: string): Promise<num
     .update({ revoked_at: new Date().toISOString() });
 }
 
-export async function deleteFollower(
-  followerId: string,
-  followingId: string,
-): Promise<number> {
-  return db(FOLLOWERS_TABLE)
-    .where({ follower_id: followerId, following_id: followingId })
-    .del();
+export async function deleteFollower(followerId: string, followingId: string): Promise<number> {
+  return db(FOLLOWERS_TABLE).where({ follower_id: followerId, following_id: followingId }).del();
 }
 
-export async function upsertFollower(
-  followerId: string,
-  followingId: string,
-): Promise<boolean> {
+export async function upsertFollower(followerId: string, followingId: string): Promise<boolean> {
   const insertQuery = db(FOLLOWERS_TABLE)
     .insert({
       follower_id: followerId,
@@ -333,9 +321,7 @@ export interface FeedItemStats {
   comments: number;
 }
 
-export async function getFeedItemStats(
-  feedItemIds: string[],
-): Promise<Map<string, FeedItemStats>> {
+export async function getFeedItemStats(feedItemIds: string[]): Promise<Map<string, FeedItemStats>> {
   const map = new Map<string, FeedItemStats>();
   if (feedItemIds.length === 0) {
     return map;
@@ -387,10 +373,7 @@ export async function findUserLikedFeedItems(
   return new Set(rows.map((row) => row.feed_item_id));
 }
 
-export async function upsertBookmark(
-  sessionId: string,
-  userId: string,
-): Promise<boolean> {
+export async function upsertBookmark(sessionId: string, userId: string): Promise<boolean> {
   const insertQuery = db(SESSION_BOOKMARKS_TABLE)
     .insert({
       session_id: sessionId,
@@ -538,14 +521,7 @@ export async function insertComment({
       parent_id: parentId,
       body,
     })
-    .returning<CommentRow[]>([
-      "id",
-      "feed_item_id",
-      "user_id",
-      "body",
-      "created_at",
-      "edited_at",
-    ]);
+    .returning<CommentRow[]>(["id", "feed_item_id", "user_id", "body", "created_at", "edited_at"]);
   return row;
 }
 
@@ -560,13 +536,8 @@ export interface FeedCommentRecord {
   deleted_at: string | null;
 }
 
-export async function findCommentById(
-  commentId: string,
-): Promise<FeedCommentRecord | undefined> {
-  return db<FeedCommentRecord>(FEED_COMMENTS_TABLE)
-    .select("*")
-    .where({ id: commentId })
-    .first();
+export async function findCommentById(commentId: string): Promise<FeedCommentRecord | undefined> {
+  return db<FeedCommentRecord>(FEED_COMMENTS_TABLE).select("*").where({ id: commentId }).first();
 }
 
 export async function getCommentWithAuthor(commentId: string): Promise<CommentRow | undefined> {
@@ -593,10 +564,7 @@ export async function softDeleteComment(commentId: string): Promise<number> {
     .update({ deleted_at: new Date().toISOString() });
 }
 
-export async function hasBlockRelation(
-  userA: string,
-  userB: string,
-): Promise<boolean> {
+export async function hasBlockRelation(userA: string, userB: string): Promise<boolean> {
   const row = await db(USER_BLOCKS_TABLE)
     .whereIn("blocker_id", [userA, userB])
     .whereIn("blocked_id", [userA, userB])
@@ -623,9 +591,7 @@ export async function insertBlock(blockerId: string, blockedId: string): Promise
 }
 
 export async function deleteBlock(blockerId: string, blockedId: string): Promise<number> {
-  return db(USER_BLOCKS_TABLE)
-    .where({ blocker_id: blockerId, blocked_id: blockedId })
-    .del();
+  return db(USER_BLOCKS_TABLE).where({ blocker_id: blockerId, blocked_id: blockedId }).del();
 }
 
 export interface FeedReportInsert {
@@ -674,13 +640,7 @@ export async function getLeaderboardRows({
   const periodStartExpr = db.raw("date_trunc(?, now())::date", [period]);
 
   const query = db(LEADERBOARD_TABLE)
-    .select<LeaderboardRow[]>([
-      "user_id",
-      "username",
-      "display_name",
-      "points",
-      "badges_count",
-    ])
+    .select<LeaderboardRow[]>(["user_id", "username", "display_name", "points", "badges_count"])
     .where({ period_type: period })
     .andWhere("period_start", "=", periodStartExpr)
     .orderBy("points", "desc")
@@ -688,9 +648,7 @@ export async function getLeaderboardRows({
 
   if (scope === "friends" && viewerId) {
     query.whereIn("user_id", function friendsScope(this: any) {
-      this.select("following_id")
-        .from(FOLLOWERS_TABLE)
-        .where({ follower_id: viewerId });
+      this.select("following_id").from(FOLLOWERS_TABLE).where({ follower_id: viewerId });
       this.unionAll(function includeSelf(this: any) {
         this.select(db.raw("?", [viewerId]));
       });

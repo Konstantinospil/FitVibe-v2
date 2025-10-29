@@ -8,10 +8,7 @@ import {
   getUserBadgeCodes,
   insertBadgeAward,
 } from "./points.repository.js";
-import type {
-  BadgeEvaluationResult,
-  SessionMetricsSnapshot,
-} from "./points.types.js";
+import type { BadgeEvaluationResult, SessionMetricsSnapshot } from "./points.types.js";
 import type { SessionWithExercises } from "../sessions/sessions.types.js";
 
 const BADGE_CODES = {
@@ -41,10 +38,7 @@ export async function evaluateBadgesForSession({
   const owned = await getUserBadgeCodes(session.owner_id, trx);
   const awarded: BadgeEvaluationResult[] = [];
 
-  async function enqueueAward(
-    badgeCode: string,
-    metadata: Record<string, unknown>,
-  ): Promise<void> {
+  async function enqueueAward(badgeCode: string, metadata: Record<string, unknown>): Promise<void> {
     if (owned.has(badgeCode)) {
       return;
     }
@@ -82,7 +76,12 @@ export async function evaluateBadgesForSession({
     streakStart.setUTCDate(streakStart.getUTCDate() - (streakLength - 1));
     streakStart.setUTCHours(0, 0, 0, 0);
 
-    const streakDays = await getCompletedSessionDatesInRange(session.owner_id, streakStart, completedAt, trx);
+    const streakDays = await getCompletedSessionDatesInRange(
+      session.owner_id,
+      streakStart,
+      completedAt,
+      trx,
+    );
     let streakMet = true;
     const cursor = new Date(streakStart);
     while (cursor <= completedAt) {

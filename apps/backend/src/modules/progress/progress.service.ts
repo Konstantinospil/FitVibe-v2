@@ -150,9 +150,7 @@ export function renderProgressReportCsv(report: ProgressReport): string {
   lines.push(`summary,total_reps,${escapeCsvValue(summary.total_reps)}`);
   lines.push(`summary,total_volume,${escapeCsvValue(summary.total_volume)}`);
   lines.push(`summary,total_duration_min,${escapeCsvValue(summary.total_duration_min)}`);
-  lines.push(
-    `summary,avg_volume_per_session,${escapeCsvValue(summary.avg_volume_per_session)}`,
-  );
+  lines.push(`summary,avg_volume_per_session,${escapeCsvValue(summary.avg_volume_per_session)}`);
   lines.push("");
 
   lines.push("trends,date,sessions,volume");

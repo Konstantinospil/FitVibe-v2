@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE VIEW v_session_summary AS
+CREATE OR REPLACE VIEW v_session_summary AS
 SELECT
   ss.session_id,
   ss.owner_id,

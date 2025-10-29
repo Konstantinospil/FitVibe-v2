@@ -23,7 +23,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   );
 
   useEffect(() => {
-    useAuthStore.persist?.rehydrate?.();
+    void useAuthStore.persist?.rehydrate?.();
     const unsub = useAuthStore.persist?.onFinishHydration?.(() => {
       setHydrated(true);
     });

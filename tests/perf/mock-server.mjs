@@ -1,6 +1,6 @@
-import http from 'node:http';
+import http from "node:http";
 const port = Number(process.env.PERF_PORT ?? 4173);
-const host = '127.0.0.1';
+const host = "127.0.0.1";
 
 const indexHtml = `<!doctype html>
 <html lang="en">
@@ -41,25 +41,23 @@ fitvibe_mock_request_latency_seconds_count 10
 const server = http.createServer(async (req, res) => {
   if (!req.url) {
     res.statusCode = 400;
-    res.end('Bad request');
+    res.end("Bad request");
     return;
   }
 
-  if (req.url.startsWith('/health')) {
-    res.setHeader('Content-Type', 'application/json');
-    res.end(
-      JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }),
-    );
+  if (req.url.startsWith("/health")) {
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ status: "ok", timestamp: new Date().toISOString() }));
     return;
   }
 
-  if (req.url.startsWith('/metrics')) {
-    res.setHeader('Content-Type', 'text/plain');
+  if (req.url.startsWith("/metrics")) {
+    res.setHeader("Content-Type", "text/plain");
     res.end(metricsPayload);
     return;
   }
 
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.end(indexHtml);
 });
 
@@ -67,6 +65,6 @@ server.listen(port, host, () => {
   console.log(`[perf] Mock server listening at http://${host}:${port}`);
 });
 
-process.on('SIGINT', () => {
+process.on("SIGINT", () => {
   server.close(() => process.exit(0));
 });

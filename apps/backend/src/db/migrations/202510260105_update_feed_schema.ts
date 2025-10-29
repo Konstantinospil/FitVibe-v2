@@ -32,10 +32,7 @@ export async function up(knex: Knex): Promise<void> {
     table
       .uuid("session_id")
       .nullable()
-      .references("id")
-      .inTable("sessions")
-      .onUpdate("CASCADE")
-      .onDelete("SET NULL");
+      .comment("FK to sessions(id) - enforced at application level per ADR-005");
     table.string("kind").notNullable().defaultTo("session");
     table.string("target_type").nullable();
     table.uuid("target_id").nullable();
@@ -70,10 +67,7 @@ export async function up(knex: Knex): Promise<void> {
     table
       .uuid("session_id")
       .notNullable()
-      .references("id")
-      .inTable("sessions")
-      .onUpdate("CASCADE")
-      .onDelete("CASCADE");
+      .comment("FK to sessions(id) - enforced at application level per ADR-005");
     table
       .uuid("user_id")
       .notNullable()

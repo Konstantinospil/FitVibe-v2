@@ -12,8 +12,7 @@ import { env } from "../../config/env";
 
 // EICAR test string - recognized by all AV software as a test virus
 // This is NOT real malware, it's a standard test file
-const EICAR_TEST_STRING =
-  "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
+const EICAR_TEST_STRING = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 
 describe("Antivirus Service (B-USR-5)", () => {
   describe("when ClamAV is disabled", () => {

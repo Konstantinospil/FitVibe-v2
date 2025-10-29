@@ -9,8 +9,5 @@ const FOLLOWERS = [
 ];
 
 export async function seed(knex: Knex): Promise<void> {
-  await knex("followers")
-    .insert(FOLLOWERS)
-    .onConflict(["follower_id", "following_id"])
-    .ignore();
+  await knex("followers").insert(FOLLOWERS).onConflict(["follower_id", "following_id"]).ignore();
 }

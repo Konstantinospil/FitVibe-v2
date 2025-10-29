@@ -14,7 +14,9 @@ async function main(): Promise<void> {
   try {
     logger.info("[post-deploy] Ensuring monthly partitions...");
     await ensurePartitions();
-    logger.info("[post-deploy] Refreshing analytics materialized views (session_summary, weekly_aggregates)...");
+    logger.info(
+      "[post-deploy] Refreshing analytics materialized views (session_summary, weekly_aggregates)...",
+    );
     await refreshProgressViews();
     logger.info("[post-deploy] Completed database maintenance tasks.");
   } catch (error: unknown) {

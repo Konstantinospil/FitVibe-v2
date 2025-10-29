@@ -89,14 +89,14 @@ export async function resolveIdempotency(
     if (retry) {
       return { type: "new", recordId: retry.id };
     }
-    throw new HttpError(500, "E.IDEMPOTENCY.STATE", "Unable to initialize idempotency record");
+    throw new HttpError(500, "E.IDEMPOTENCY.STATE", "IDEMPOTENCY_STATE");
   }
 
   if (existing.request_hash !== requestHash) {
     throw new HttpError(
       409,
       "E.IDEMPOTENCY.MISMATCH",
-      "Idempotency key already used with a different payload",
+      "IDEMPOTENCY_MISMATCH",
     );
   }
 
