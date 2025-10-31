@@ -146,7 +146,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const { user, tokens, session } = await doLogin(credentials, context);
     setAccessCookie(res, tokens.accessToken);
     setRefreshCookie(res, tokens.refreshToken);
-    return res.json({ user, session });
+    return res.json({
+      user,
+      session,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
+    });
   } catch (error) {
     next(error);
   }

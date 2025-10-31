@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import PageIntro from "../components/PageIntro";
+import { Eye, EyeOff } from "lucide-react";
+import AuthPageLayout from "../components/AuthPageLayout";
 import { Button } from "../components/ui";
 import { useAuth } from "../contexts/AuthContext";
 import { login } from "../services/api";
@@ -9,8 +10,8 @@ import { login } from "../services/api";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   borderRadius: "12px",
-  border: "1px solid rgba(148, 163, 184, 0.35)",
-  background: "rgba(15, 23, 42, 0.35)",
+  border: "1px solid var(--color-border)",
+  background: "var(--color-surface-glass)",
   color: "var(--color-text-primary)",
   padding: "0.85rem 1rem",
   fontSize: "1rem",
@@ -24,6 +25,7 @@ const Login: React.FC = () => {
   const from = (location.state as { from?: { pathname?: string } })?.from?.pathname ?? "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +46,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <PageIntro
+    <AuthPageLayout
       eyebrow={t("auth.login.eyebrow")}
       title={t("auth.login.title")}
       description={t("auth.login.description")}
@@ -71,24 +73,55 @@ const Login: React.FC = () => {
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
             {t("auth.login.passwordLabel")}
           </span>
-          <input
-            name="password"
-            type="password"
-            placeholder={t("auth.placeholders.password")}
-            style={inputStyle}
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="current-password"
-            disabled={isSubmitting}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder={t("auth.placeholders.password")}
+              style={{ ...inputStyle, paddingRight: "3rem" }}
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-text-secondary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.25rem",
+                transition: "color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--color-text-primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--color-text-secondary)";
+              }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              disabled={isSubmitting}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </label>
         {error ? (
           <div
             role="alert"
             style={{
               background: "rgba(248, 113, 113, 0.16)",
-              color: "#fecaca",
+              color: "#FFFFFF",
               borderRadius: "12px",
               padding: "0.75rem 1rem",
               fontSize: "0.95rem",
@@ -116,7 +149,7 @@ const Login: React.FC = () => {
           </NavLink>
         </div>
       </form>
-    </PageIntro>
+    </AuthPageLayout>
   );
 };
 

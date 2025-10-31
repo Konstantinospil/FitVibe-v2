@@ -18,136 +18,141 @@
     "german": "German"
   },
   "status": {
-    "checking": "Checking backend...",
-    "online": "Backend online",
-    "offline": "Backend offline"
+    "checking": "Checking server…",
+    "online": "Server online",
+    "offline": "Server offline"
   },
   "visibility": {
     "labels": {
       "private": "Private",
-      "link": "Link-only",
+      "link": "Unlisted",
       "public": "Public"
     },
     "guards": {
-      "private": "Only you can open this session.",
-      "link": "Anyone with the link can view this session.",
+      "private": "Only you can view this session.",
+      "link": "Anyone with the link can view.",
       "public": "Visible to everyone on FitVibe."
     }
   },
   "home": {
-    "eyebrow": "FitVibe Platform",
+    "eyebrow": "FitVibe",
     "title": "Train smarter. Share progress. Celebrate consistency.",
-    "description": "FitVibe helps athletes and coaches plan, log, and analyse every session. A modern toolkit for streak tracking, leaderboard heatmaps, and meaningful recovery insights.",
-    "subtitleOnline": "API connection looks healthy � status: {{status}}.",
-    "subtitleOnlineFallback": "API connection looks healthy � ready when you are.",
-    "subtitleOffline": "We will keep everything cached locally until the backend returns.",
-    "subtitleChecking": "Checking the API health and warming caches...",
+    "description": "Plan, log, and analyse your training with coach‑ready detail. Track streaks, compare blocks, and spot recovery trends with zero fluff.",
+    "subtitleOnline": "API connection healthy — status: {{status}}.",
+    "subtitleOnlineFallback": "API connection healthy — ready when you are.",
+    "subtitleOffline": "Working offline. Your changes will sync when the server returns.",
+    "subtitleChecking": "Verifying API health and warming caches…",
     "ctaPrimary": "Join the private beta",
     "ctaSecondary": "Talk to the team",
     "chartTitle": "Consistency trend",
-    "chartDescription": "Seven-day completion rate across planned training sessions.",
+    "chartDescription": "Seven‑day completion rate across planned sessions.",
     "chartLabel": "Day: {{label}}",
     "chartValue": "{{value}}%"
   },
   "auth": {
     "login": {
-      "eyebrow": "Secure Access",
-      "title": "Log back in to continue your training streak.",
-      "description": "We rotate login tokens automatically and enforce session hygiene so you can rely on FitVibe for competition prep and daily discipline.",
+      "eyebrow": "Secure access",
+      "title": "Welcome back. Keep your streak going.",
+      "description": "We rotate tokens and enforce session hygiene so your account stays secure.",
       "emailLabel": "Email",
       "passwordLabel": "Password",
-      "submit": "Sign In",
-      "submitting": "Signing in...",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
       "registerPrompt": "Need an account?",
       "forgot": "Forgot password?",
-      "error": "We could not verify your credentials. Please try again."
+      "error": "We couldn’t verify your credentials. Please try again."
     },
     "register": {
       "eyebrow": "Join FitVibe",
-      "title": "Register to unlock collaborative training.",
-      "description": "Create your athlete profile, set training preferences, and invite your coach. We'll keep sensitive data private by default.",
-      "successTitle": "Check your email!",
-      "successDescription": "We've sent a verification link to your inbox. Click the link to activate your account and start training.",
+      "title": "Create your account",
+      "description": "Set up your profile, training preferences, and privacy defaults. Sensitive data is private by default.",
+      "successTitle": "Check your email",
+      "successDescription": "We’ve sent a verification link. Click it to activate your account.",
       "checkEmail": "Verification email sent to {{email}}",
-      "goToLogin": "Go to Login",
+      "goToLogin": "Go to login",
       "nameLabel": "Display name",
       "emailLabel": "Email",
       "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm password",
+      "passwordMismatch": "Passwords do not match",
       "submit": "Create account",
-      "submitting": "Creating account...",
-      "loginPrompt": "Already training with us?",
+      "submitting": "Creating account…",
+      "loginPrompt": "Already have an account?",
       "loginLink": "Sign in",
-      "error": "We could not create your account. Please retry shortly."
+      "error": "We couldn’t create your account. Please try again shortly."
     },
     "placeholders": {
       "email": "you@fitvibe.app",
       "password": "********",
+      "confirmPassword": "********",
       "name": "Jamie Carter"
-    }
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "profile": {
-    "eyebrow": "Athlete Profile",
-    "title": "Dial in preferences, privacy, and performance goals.",
-    "description": "Define visibility defaults, preferred units, and personal best milestones so every shared session reflects your story.",
+    "eyebrow": "Athlete profile",
+    "title": "Preferences, privacy, and performance goals.",
+    "description": "Set default visibility, preferred units, and personal best targets so every shared session tells your story.",
     "edit": "Edit profile",
     "sections": {
       "visibility": {
         "title": "Visibility",
-        "description": "Default session visibility set to Followers. Switch to Public for comp prep recaps."
+        "description": "Default session visibility: Followers. Switch to Public for competition recaps."
       },
       "units": {
         "title": "Preferred units",
-        "description": "Weight in kilograms � Distance in kilometers � Pace in min/km."
+        "description": "Weight in kilograms • Distance in kilometers • Pace in min/km."
       },
       "achievements": {
         "title": "Signature achievements",
-        "description": "180 kg back squat � 115 kg bench � 210 kg deadlift � Boston Marathon qualifier."
+        "description": "Back squat 180 kg • Bench 115 kg • Deadlift 210 kg • Boston Marathon qualifier."
       }
     },
     "share": {
       "title": "Share links",
-      "description": "Create personal share links for external coaches or event judges. Revoke any link instantly if access should be removed.",
+      "description": "Create personal share links for coaches or judges. Revoke access instantly at any time.",
       "create": "Create share link",
       "empty": "No active share links yet.",
       "copy": "Copy link",
       "revoke": "Revoke",
       "revoked": "Revoked",
-      "copied": "Link copied to clipboard",
+      "copied": "Link copied",
       "guards": {
-        "active": "Share this URL with trusted teammates.",
-        "revoked": "This link is no longer accessible."
+        "active": "Share this URL only with people you trust.",
+        "revoked": "This link no longer works."
       }
     }
   },
   "feed": {
-    "eyebrow": "Community Stream",
+    "eyebrow": "Community stream",
     "title": "Share progress with teammates and followers.",
-    "description": "The feed filters sessions by visibility, so private work stays private while public achievements earn rightful hype.",
+    "description": "Private work stays private. Public achievements are discoverable and easy to celebrate.",
     "timestamp": "moments ago",
     "button": "Open session",
     "items": {
       "leah": {
         "user": "Leah",
-        "note": "Hit a new 5RM on deadlifts at 170 kg � grip work is paying off!",
-        "stats": "17 likes � 6 comments",
+        "note": "New 5RM deadlift at 170 kg — grip work is paying off!",
+        "stats": "17 likes • 6 comments",
         "visibility": "public"
       },
       "marco": {
         "user": "Marco",
-        "note": "Shared a deload session plan with ankle rehab protocol.",
-        "stats": "Coach view � Link-only",
+        "note": "Shared a deload plan with ankle‑rehab protocol.",
+        "stats": "Coach view • Unlisted",
         "visibility": "link"
       },
       "team": {
         "user": "Team Nordic Velocity",
-        "note": "Weekly leaderboard: Emma reclaimed the #1 spot with 98 streak points.",
-        "stats": "Pinned � Team feed",
+        "note": "Weekly leaderboard: Emma reclaimed #1 with 98 streak points.",
+        "stats": "Pinned • Team feed",
         "visibility": "private"
       }
     }
   },
   "footer": {
-    "note": "Built for athletes who love data-driven progress � FitVibe Labs"
+    "note": "Built for athletes who love data‑driven progress — FitVibe Labs"
   },
   "errors": {
     "WEAK_PASSWORD": "Password must be at least 12 characters and include uppercase, lowercase, digit, and symbol",
@@ -166,7 +171,7 @@
     "AUTH_SESSION_NOT_FOUND": "Session not found",
     "UNAUTHENTICATED": "Missing authentication context",
     "USER_USERNAME_TAKEN": "Username already in use",
-    "USER_USERNAME_INVALID": "Username must be 3-50 characters and may include letters, numbers, dot, underscore, and dash",
+    "USER_USERNAME_INVALID": "Username must be 3–50 characters and may include letters, numbers, dots, underscores, and dashes",
     "USER_STATUS_INVALID": "Cannot transition status",
     "USER_DISPLAY_NAME_REQUIRED": "Display name is required",
     "USER_EMAIL_INVALID": "Email is required",
@@ -197,8 +202,8 @@
     "SESSION_UPDATE_FAILED": "Unable to load updated session",
     "SESSION_CLONE_FAILED": "Unable to load cloned session",
     "SESSION_RECURRENCE_INVALID": "Recurrence horizon exceeds one year",
-    "SESSION_INVALID_SOURCE": "Source session has invalid planned date",
-    "FEED_AUTH_REQUIRED": "Authentication required for requested feed scope",
+    "SESSION_INVALID_SOURCE": "Source session has an invalid planned date",
+    "FEED_AUTH_REQUIRED": "Authentication required for the requested feed",
     "FEED_ITEM_NOT_FOUND": "Feed item not found",
     "FEED_BLOCKED": "Interaction blocked by privacy settings",
     "FEED_NOT_PUBLIC": "Feed item is not public",
@@ -212,8 +217,8 @@
     "FEED_LINK_EXHAUSTED": "Share link view limit reached",
     "FEED_LINK_NOT_FOUND": "Share link not found",
     "FEED_USER_NOT_FOUND": "User not found",
-    "FEED_CANNOT_FOLLOW_SELF": "Cannot follow yourself",
-    "FEED_CANNOT_BLOCK_SELF": "Cannot block yourself",
+    "FEED_CANNOT_FOLLOW_SELF": "You cannot follow yourself",
+    "FEED_CANNOT_BLOCK_SELF": "You cannot block yourself",
     "FEED_COMMENT_NOT_FOUND": "Comment not found",
     "FEED_INVALID_EXPIRES_AT": "expiresAt must be a valid ISO date",
     "SOCIAL_COMMENT_EMPTY": "Comment body is required",
@@ -232,10 +237,10 @@
     "INTERNAL_SERVER_ERROR": "Unexpected error",
     "UPLOAD_NO_FILE": "No file uploaded",
     "UPLOAD_UNSUPPORTED_TYPE": "Unsupported file type",
-    "UPLOAD_TOO_LARGE": "File too large (max 5MB)",
+    "UPLOAD_TOO_LARGE": "File too large (max 5 MB)",
     "UPLOAD_MALWARE_DETECTED": "File failed security scan",
     "UPLOAD_NOT_FOUND": "File not found",
-    "EMAIL_SERVICE_UNAVAILABLE": "Email service not available"
+    "EMAIL_SERVICE_UNAVAILABLE": "Email service unavailable"
   },
   "validation": {
     "passwordMinLength": "Password must be at least 12 characters long",
@@ -248,10 +253,10 @@
     "revokeConflict": "Cannot combine revokeAll and revokeOthers"
   },
   "dashboard": {
-    "eyebrow": "Readiness Pulse",
-    "title": "Your training command center.",
-    "description": "Monitor streaks, readiness, and leaderboard deltas at a glance. Every metric updates in real-time once sessions sync from wearables or manual logs.",
-    "errorRefresh": "We could not refresh analytics right now. Showing the last loaded snapshot.",
+    "eyebrow": "Readiness pulse",
+    "title": "Your training command centre",
+    "description": "Monitor streaks, readiness, and leaderboard changes at a glance. Metrics update in real time after sync or manual logs.",
+    "errorRefresh": "Couldn’t refresh analytics. Showing the last snapshot.",
     "retry": "Retry",
     "personalBests": "Personal bests",
     "volumeAggregates": "Volume aggregates",
@@ -264,17 +269,17 @@
     "period": "Period",
     "volume": "Volume",
     "sessions": "Sessions",
-    "helperText": "Showing up to 5 periods to keep payloads light on shared dashboards."
+    "helperText": "Showing up to 5 periods to keep shared dashboards fast."
   },
   "progress": {
-    "eyebrow": "Trends & Insights",
-    "title": "Visualize progression with context",
-    "description": "Compare block-over-block volume, velocity, and readiness to understand how programming tweaks translate to results.",
+    "eyebrow": "Trends & insights",
+    "title": "Visualise progression with context",
+    "description": "Compare volume, velocity, and readiness across blocks to see how programming changes drive results.",
     "exportFailed": "Failed to export progress data",
     "chartRenderFailed": "Failed to render chart",
-    "reloadPage": "Reload Page",
-    "presetRange": "Preset Range",
-    "customRange": "Custom Range",
+    "reloadPage": "Reload page",
+    "presetRange": "Preset range",
+    "customRange": "Custom range",
     "period": "Period:",
     "7days": "7 days",
     "30days": "30 days",
@@ -283,89 +288,89 @@
     "daily": "Daily",
     "weekly": "Weekly",
     "exportCsv": "Export CSV",
-    "volumeTrend": "Volume Trend",
-    "sessionsTrend": "Sessions Trend",
-    "intensityTrend": "Average Intensity (RPE)",
-    "exerciseBreakdown": "Exercise Breakdown",
-    "failedToLoad": "Failed to load trends data",
+    "volumeTrend": "Volume trend",
+    "sessionsTrend": "Sessions trend",
+    "intensityTrend": "Average intensity (RPE)",
+    "exerciseBreakdown": "Exercise breakdown",
+    "failedToLoad": "Failed to load trend data",
     "failedToLoadExercise": "Failed to load exercise data",
     "retry": "Retry",
-    "noData": "No data available for this period",
-    "noExerciseData": "No exercise data available for this period",
+    "noData": "No data for this period",
+    "noExerciseData": "No exercise data for this period",
     "exercise": "Exercise",
-    "totalVolume": "Total Volume",
-    "avgVolume": "Avg Volume",
-    "maxWeight": "Max Weight",
+    "totalVolume": "Total volume",
+    "avgVolume": "Avg volume",
+    "maxWeight": "Max weight",
     "trend": "Trend",
-    "trendUp": "↗ Up",
-    "trendDown": "↘ Down",
-    "trendStable": "→ Stable",
+    "trendUp": "Up",
+    "trendDown": "Down",
+    "trendStable": "Stable",
     "session": "session",
     "sessions": "sessions"
   },
   "verifyEmail": {
-    "eyebrow": "Email Verification",
-    "titleVerifying": "Verifying your email...",
-    "titleSuccess": "Email Verified!",
-    "titleFailed": "Verification Failed",
-    "descVerifying": "Please wait while we verify your email address...",
-    "descSuccess": "Your email has been successfully verified. Redirecting you to login...",
-    "descFailed": "We couldn't verify your email. The link may have expired or is invalid.",
+    "eyebrow": "Email verification",
+    "titleVerifying": "Verifying your email…",
+    "titleSuccess": "Email verified",
+    "titleFailed": "Verification failed",
+    "descVerifying": "Please wait while we verify your email address.",
+    "descSuccess": "Your email has been verified. Redirecting to login…",
+    "descFailed": "We couldn’t verify your email. The link may have expired or is invalid.",
     "noToken": "No verification token provided",
-    "goToLogin": "Go to Login",
-    "backToRegister": "Back to Register"
+    "goToLogin": "Go to login",
+    "backToRegister": "Back to register"
   },
   "forgotPassword": {
-    "eyebrow": "Password Reset",
+    "eyebrow": "Password reset",
     "titleSuccess": "Check your email",
     "title": "Forgot your password?",
-    "descSuccess": "If an account exists with that email address, we've sent instructions to reset your password.",
-    "description": "Enter your email address and we'll send you a link to reset your password.",
+    "descSuccess": "If an account exists for that email, we sent reset instructions.",
+    "description": "Enter your email and we’ll send a reset link.",
     "emailLabel": "Email address",
     "emailPlaceholder": "you@example.com",
-    "sending": "Sending...",
+    "sending": "Sending…",
     "sendLink": "Send reset link",
     "backToLogin": "Back to login",
-    "successMessage": "Please check your email for the password reset link.",
+    "successMessage": "Check your email for the password reset link.",
     "errorSend": "Failed to send reset email"
   },
   "resetPassword": {
-    "eyebrow": "Password Reset",
+    "eyebrow": "Password reset",
     "titleSuccess": "Password reset successful",
     "title": "Reset your password",
-    "descSuccess": "Your password has been successfully reset. Redirecting to login...",
-    "description": "Enter your new password below to reset it.",
+    "descSuccess": "Your password was reset. Redirecting to login…",
+    "description": "Enter your new password below.",
     "newPasswordLabel": "New password",
     "newPasswordPlaceholder": "Enter new password",
     "confirmPasswordLabel": "Confirm new password",
     "confirmPasswordPlaceholder": "Confirm new password",
-    "resetting": "Resetting...",
+    "resetting": "Resetting…",
     "resetButton": "Reset password",
     "backToLogin": "Back to login",
     "successText": "You can now log in with your new password.",
     "passwordMismatch": "Passwords do not match",
-    "invalidToken": "Invalid reset token. Please request a new password reset.",
+    "invalidToken": "Invalid reset token. Please request a new one.",
     "errorReset": "Failed to reset password"
   },
   "logger": {
     "eyebrow": "Logbook",
-    "title": "Capture every rep without losing flow.",
-    "description": "Whether you're in the gym or syncing from wearables, the logger tracks sets, RPE, and tempo so your data stays coach-ready.",
+    "title": "Capture every rep without breaking flow.",
+    "description": "Track sets, load, tempo, and RPE. Sync with wearables or log manually—your data stays coach‑ready.",
     "exercise": "Exercise",
     "sets": "Sets",
     "reps": "Reps",
     "load": "Load"
   },
   "planner": {
-    "eyebrow": "Session Architecture",
+    "eyebrow": "Session architecture",
     "title": "Design training blocks with intent.",
-    "description": "Drag, duplicate, and periodise workouts. Planner keeps intensity, volume, and deload ratios aligned with your macrocycle.",
+    "description": "Drag, duplicate, and periodise workouts. Planner keeps intensity, volume, and deload ratios on target.",
     "editBlock": "Edit block"
   },
   "notFound": {
     "eyebrow": "Navigation",
-    "title": "We couldn't find that page.",
-    "description": "The route you requested is either private or still under construction. Head back to the dashboard or talk to the team if you need early access.",
+    "title": "We couldn’t find that page.",
+    "description": "The route is private or not yet available. Return to the dashboard or contact the team for early access.",
     "takeMeHome": "Take me home",
     "goToLanding": "Go to landing"
   },
@@ -375,12 +380,12 @@
       "to": "To:"
     },
     "maintenanceBanner": {
-      "message": "System is currently in read-only mode. Write operations are disabled."
+      "message": "The system is in read-only mode. Write operations are disabled."
     },
     "errorBoundary": {
       "title": "Something went wrong",
       "message": "An unexpected error occurred",
-      "tryAgain": "Try Again"
+      "tryAgain": "Try again"
     },
     "mainLayout": {
       "logo": "FV",
@@ -389,7 +394,7 @@
   },
   "common": {
     "retry": "Retry",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "error": "Error",
     "success": "Success",
     "cancel": "Cancel",

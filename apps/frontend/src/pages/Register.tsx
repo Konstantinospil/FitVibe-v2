@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import PageIntro from "../components/PageIntro";
-import { useAuth } from "../contexts/AuthContext";
-import { useNavigate, NavLink } from "react-router-dom";
+import AuthPageLayout from "../components/AuthPageLayout";
+import { NavLink } from "react-router-dom";
 import { register as registerAccount } from "../services/api";
 import { Button } from "../components/ui";
 import { useTranslation } from "react-i18next";
+import { Eye, EyeOff } from "lucide-react";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   borderRadius: "12px",
-  border: "1px solid rgba(148, 163, 184, 0.35)",
-  background: "rgba(15, 23, 42, 0.35)",
+  border: "1px solid var(--color-border)",
+  background: "var(--color-surface-glass)",
   color: "var(--color-text-primary)",
   padding: "0.85rem 1rem",
   fontSize: "1rem",
@@ -21,6 +21,9 @@ const Register: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -28,6 +31,13 @@ const Register: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError(t("auth.register.passwordMismatch"));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -48,7 +58,9 @@ const Register: React.FC = () => {
     } catch (err: unknown) {
       // Show more specific error if available
       if (err && typeof err === "object" && "response" in err) {
-        const axiosError = err as { response?: { data?: { error?: { code?: string; message?: string } } } };
+        const axiosError = err as {
+          response?: { data?: { error?: { code?: string; message?: string } } };
+        };
         const errorCode = axiosError.response?.data?.error?.code;
         setError(errorCode ? t(`errors.${errorCode}`) : t("auth.register.error"));
       } else {
@@ -61,7 +73,7 @@ const Register: React.FC = () => {
 
   if (success) {
     return (
-      <PageIntro
+      <AuthPageLayout
         eyebrow={t("auth.register.eyebrow")}
         title={t("auth.register.successTitle")}
         description={t("auth.register.successDescription")}
@@ -110,12 +122,12 @@ const Register: React.FC = () => {
             {t("auth.register.goToLogin")}
           </NavLink>
         </div>
-      </PageIntro>
+      </AuthPageLayout>
     );
   }
 
   return (
-    <PageIntro
+    <AuthPageLayout
       eyebrow={t("auth.register.eyebrow")}
       title={t("auth.register.title")}
       description={t("auth.register.description")}
@@ -158,24 +170,98 @@ const Register: React.FC = () => {
           <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
             {t("auth.register.passwordLabel")}
           </span>
-          <input
-            name="password"
-            type="password"
-            placeholder={t("auth.placeholders.password")}
-            style={inputStyle}
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="new-password"
-            disabled={isSubmitting}
-          />
+          <div style={{ position: "relative" }}>
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder={t("auth.placeholders.password")}
+              style={inputStyle}
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="new-password"
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              onMouseDown={() => setShowPassword(true)}
+              onMouseUp={() => setShowPassword(false)}
+              onMouseLeave={() => setShowPassword(false)}
+              onTouchStart={() => setShowPassword(true)}
+              onTouchEnd={() => setShowPassword(false)}
+              style={{
+                position: "absolute",
+                right: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-text-secondary)",
+                padding: "0.25rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
+              disabled={isSubmitting}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+        </label>
+        <label style={{ display: "grid", gap: "0.35rem" }}>
+          <span style={{ fontSize: "0.95rem", color: "var(--color-text-secondary)" }}>
+            {t("auth.register.confirmPasswordLabel")}
+          </span>
+          <div style={{ position: "relative" }}>
+            <input
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder={t("auth.placeholders.confirmPassword")}
+              style={inputStyle}
+              required
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              autoComplete="new-password"
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              onMouseDown={() => setShowConfirmPassword(true)}
+              onMouseUp={() => setShowConfirmPassword(false)}
+              onMouseLeave={() => setShowConfirmPassword(false)}
+              onTouchStart={() => setShowConfirmPassword(true)}
+              onTouchEnd={() => setShowConfirmPassword(false)}
+              style={{
+                position: "absolute",
+                right: "0.75rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-text-secondary)",
+                padding: "0.25rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              aria-label={showConfirmPassword ? t("auth.hidePassword") : t("auth.showPassword")}
+              disabled={isSubmitting}
+            >
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </label>
         {error ? (
           <div
             role="alert"
             style={{
               background: "rgba(248, 113, 113, 0.16)",
-              color: "#fecaca",
+              color: "#FFFFFF",
               borderRadius: "12px",
               padding: "0.75rem 1rem",
               fontSize: "0.95rem",
@@ -201,7 +287,7 @@ const Register: React.FC = () => {
           </NavLink>
         </p>
       </form>
-    </PageIntro>
+    </AuthPageLayout>
   );
 };
 

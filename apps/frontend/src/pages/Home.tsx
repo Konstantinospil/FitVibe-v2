@@ -59,11 +59,11 @@ const Home: React.FC = () => {
   );
 
   const handleBetaClick = () => {
-    window.open("https://fitvibe.app", "_blank", "noopener,noreferrer");
+    window.location.href = "/register";
   };
 
   const handleContactClick = () => {
-    window.location.href = "mailto:engineering@fitvibe.app";
+    window.location.href = "/login";
   };
 
   return (

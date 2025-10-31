@@ -3,21 +3,25 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Avatar, Button } from "../components/ui";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import ThemeToggle from "../components/ThemeToggle";
 import { useTranslation } from "react-i18next";
+import { LogOut, Home, BookOpen, TrendingUp, Dumbbell, Target, Users, User } from "lucide-react";
+import logoFull from "../assets/logo_full.ico";
 
 type NavItem = {
   to: string;
   labelKey: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/", labelKey: "navigation.home" },
-  { to: "/dashboard", labelKey: "navigation.dashboard" },
-  { to: "/planner", labelKey: "navigation.planner" },
-  { to: "/logger", labelKey: "navigation.logger" },
-  { to: "/progress", labelKey: "navigation.progress" },
-  { to: "/feed", labelKey: "navigation.feed" },
-  { to: "/profile", labelKey: "navigation.profile" },
+  { to: "/", labelKey: "navigation.home", icon: Home },
+  { to: "/dashboard", labelKey: "navigation.dashboard", icon: TrendingUp },
+  { to: "/planner", labelKey: "navigation.planner", icon: Dumbbell },
+  { to: "/logger", labelKey: "navigation.logger", icon: BookOpen },
+  { to: "/progress", labelKey: "navigation.progress", icon: Target },
+  { to: "/feed", labelKey: "navigation.feed", icon: Users },
+  { to: "/profile", labelKey: "navigation.profile", icon: User },
 ];
 
 const MainLayout: React.FC = () => {
@@ -74,24 +78,14 @@ const MainLayout: React.FC = () => {
               fontSize: "var(--font-size-sm)",
             }}
           >
-            <span
-              aria-hidden
+            <img
+              src={logoFull}
+              alt="FitVibe Logo"
               style={{
-                width: "36px",
                 height: "36px",
-                borderRadius: "14px",
-                background: "linear-gradient(135deg, var(--color-accent), var(--color-highlight))",
-                display: "grid",
-                placeItems: "center",
-                boxShadow: "0 12px 30px -15px rgba(0, 0, 0, 0.45)",
-                fontFamily: "var(--font-family-heading)",
-                fontWeight: 600,
-                letterSpacing: "var(--letter-spacing-tight)",
+                width: "auto",
               }}
-            >
-              FV
-            </span>
-            FitVibe
+            />
           </div>
           <div
             style={{
@@ -102,24 +96,33 @@ const MainLayout: React.FC = () => {
               justifyContent: "flex-end",
             }}
           >
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                style={({ isActive }) => ({
-                  padding: "0.5rem 1rem",
-                  borderRadius: "999px",
-                  fontSize: "var(--font-size-sm)",
-                  color: isActive ? "#0f172a" : "var(--color-text-secondary)",
-                  background: isActive ? "var(--color-accent)" : "transparent",
-                  fontWeight: isActive ? 600 : 500,
-                  transition: "background 150ms ease, color 150ms ease",
-                })}
-                end={item.to === "/"}
-              >
-                {t(item.labelKey)}
-              </NavLink>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  style={({ isActive }) => ({
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "50%",
+                    color: isActive ? "#0f172a" : "var(--color-text-secondary)",
+                    background: isActive ? "var(--color-accent)" : "transparent",
+                    transition: "all 150ms ease",
+                    border: isActive ? "2px solid var(--color-accent)" : "2px solid transparent",
+                  })}
+                  end={item.to === "/"}
+                  title={t(item.labelKey)}
+                  aria-label={t(item.labelKey)}
+                >
+                  <IconComponent size={20} strokeWidth={2} />
+                </NavLink>
+              );
+            })}
+            <ThemeToggle />
             <LanguageSwitcher />
             <div
               style={{
@@ -138,8 +141,14 @@ const MainLayout: React.FC = () => {
                   {t("navigation.activeSession")}
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                {t("navigation.signOut")}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                aria-label={t("navigation.signOut")}
+                title={t("navigation.signOut")}
+              >
+                <LogOut size={18} />
               </Button>
             </div>
           </div>

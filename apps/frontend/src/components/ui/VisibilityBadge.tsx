@@ -6,17 +6,17 @@ type VisibilityLevel = "private" | "link" | "public";
 const STYLE_MAP: Record<VisibilityLevel, { background: string; color: string; border: string }> = {
   private: {
     background: "rgba(248, 113, 113, 0.16)",
-    color: "#fecaca",
+    color: "#FFFFFF",
     border: "rgba(248, 113, 113, 0.35)",
   },
   link: {
     background: "rgba(56, 189, 248, 0.12)",
-    color: "#bae6fd",
+    color: "#FFFFFF",
     border: "rgba(56, 189, 248, 0.28)",
   },
   public: {
     background: "rgba(52, 211, 153, 0.16)",
-    color: "#bbf7d0",
+    color: "#FFFFFF",
     border: "rgba(52, 211, 153, 0.28)",
   },
 };

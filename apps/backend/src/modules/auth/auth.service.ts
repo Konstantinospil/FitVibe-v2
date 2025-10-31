@@ -92,7 +92,7 @@ async function recordAuditEvent(
       id: uuidv4(),
       actor_user_id: userId,
       action,
-      entity: "auth",
+      entity_type: "auth",
       metadata,
       created_at: new Date().toISOString(),
     });
@@ -220,7 +220,7 @@ export async function register(
     username,
     display_name: dto.profile?.display_name ?? username,
     status: "pending_verification",
-    role_code: "user",
+    role_code: "athlete",
     password_hash,
     primaryEmail: email,
   });
@@ -524,6 +524,36 @@ export async function requestPasswordReset(email: string): Promise<{ resetToken?
   }
 
   const resetToken = await issueAuthToken(user.id, TOKEN_TYPES.PASSWORD_RESET, PASSWORD_RESET_TTL);
+
+  // Send password reset email
+  if (env.email.enabled) {
+    const resetUrl = `${env.frontendUrl}/reset-password?token=${resetToken}`;
+    await mailerService.send({
+      to: email,
+      subject: "Reset your FitVibe password",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Password Reset Request</h2>
+          <p>We received a request to reset your password. Click the link below to create a new password:</p>
+          <p>
+            <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px;">
+              Reset Password
+            </a>
+          </p>
+          <p>Or copy and paste this link into your browser:</p>
+          <p style="color: #666; word-break: break-all;">${resetUrl}</p>
+          <p style="color: #999; font-size: 12px; margin-top: 32px;">
+            This link will expire in ${Math.floor(PASSWORD_RESET_TTL / 60)} minutes.
+          </p>
+          <p style="color: #999; font-size: 12px;">
+            If you didn't request this password reset, you can safely ignore this email.
+          </p>
+        </div>
+      `,
+      text: `Password Reset Request\n\nWe received a request to reset your password. Please visit the following link to create a new password:\n\n${resetUrl}\n\nThis link will expire in ${Math.floor(PASSWORD_RESET_TTL / 60)} minutes.\n\nIf you didn't request this password reset, you can safely ignore this email.`,
+    });
+  }
+
   return { resetToken };
 }
 

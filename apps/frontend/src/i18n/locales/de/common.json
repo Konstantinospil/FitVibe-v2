@@ -73,6 +73,8 @@
       "nameLabel": "Anzeigename",
       "emailLabel": "E-Mail",
       "passwordLabel": "Passwort",
+      "confirmPasswordLabel": "Passwort bestätigen",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
       "submit": "Konto erstellen",
       "submitting": "Konto wird erstellt...",
       "loginPrompt": "Trainierst du bereits mit uns?",
@@ -82,8 +84,11 @@
     "placeholders": {
       "email": "du@fitvibe.app",
       "password": "********",
+      "confirmPassword": "********",
       "name": "Jamie Doe"
-    }
+    },
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen"
   },
   "profile": {
     "eyebrow": "Athletenprofil",
@@ -297,9 +302,9 @@
     "avgVolume": "Durchschn. Volumen",
     "maxWeight": "Max. Gewicht",
     "trend": "Trend",
-    "trendUp": "↗ Aufwärts",
-    "trendDown": "↘ Abwärts",
-    "trendStable": "→ Stabil",
+    "trendUp": "Aufwärts",
+    "trendDown": "Abwärts",
+    "trendStable": "Stabil",
     "session": "Einheit",
     "sessions": "Einheiten"
   },
