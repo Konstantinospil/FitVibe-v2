@@ -133,7 +133,7 @@ apiClient.interceptors.response.use(
 );
 
 export async function getHealthStatus(): Promise<HealthStatusResponse> {
-  const res = await apiClient.get<HealthStatusResponse>("/api/health");
+  const res = await apiClient.get<HealthStatusResponse>("/health");
   return res.data;
 }
 

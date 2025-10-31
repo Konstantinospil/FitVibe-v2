@@ -59,11 +59,13 @@ const Home: React.FC = () => {
   );
 
   const handleBetaClick = () => {
+    // Navigate to registration or show beta signup form
     window.location.href = "/register";
   };
 
   const handleContactClick = () => {
-    window.location.href = "/login";
+    // Open contact page or email link
+    window.location.href = "mailto:team@fitvibe.app";
   };
 
   return (

@@ -1,11 +1,8 @@
 {
   "navigation": {
     "home": "Home",
-    "dashboard": "Dashboard",
-    "planner": "Planner",
-    "logger": "Logger",
-    "progress": "Progress",
-    "feed": "Feed",
+    "sessions": "Sessions",
+    "insights": "Insights",
     "profile": "Profile",
     "signOut": "Sign out",
     "you": "You",
@@ -152,7 +149,7 @@
     }
   },
   "footer": {
-    "note": "Built for athletes who love data‑driven progress — FitVibe Labs"
+    "note": "Built for athletes who love data‑driven progress — Fitvibe"
   },
   "errors": {
     "WEAK_PASSWORD": "Password must be at least 12 characters and include uppercase, lowercase, digit, and symbol",
@@ -366,6 +363,20 @@
     "title": "Design training blocks with intent.",
     "description": "Drag, duplicate, and periodise workouts. Planner keeps intensity, volume, and deload ratios on target.",
     "editBlock": "Edit block"
+  },
+  "sessions": {
+    "eyebrow": "Training management",
+    "title": "Plan and log your workouts",
+    "description": "Design training blocks and capture every rep without breaking flow.",
+    "plannerTab": "Planner",
+    "loggerTab": "Logger"
+  },
+  "insights": {
+    "eyebrow": "Analytics & trends",
+    "title": "Your performance dashboard",
+    "description": "Monitor readiness, visualise progression, and track your journey with data-driven insights.",
+    "dashboardTab": "Dashboard",
+    "progressTab": "Progress"
   },
   "notFound": {
     "eyebrow": "Navigation",

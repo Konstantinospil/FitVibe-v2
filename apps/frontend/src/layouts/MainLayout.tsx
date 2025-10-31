@@ -5,22 +5,19 @@ import { Avatar, Button } from "../components/ui";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTranslation } from "react-i18next";
-import { LogOut, Home, BookOpen, TrendingUp, Dumbbell, Target, Users, User } from "lucide-react";
+import { LogOut, Home, CalendarDays, BarChart3, User, type LucideIcon } from "lucide-react";
 import logoFull from "../assets/logo_full.ico";
 
 type NavItem = {
   to: string;
   labelKey: string;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  icon: LucideIcon;
 };
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/", labelKey: "navigation.home", icon: Home },
-  { to: "/dashboard", labelKey: "navigation.dashboard", icon: TrendingUp },
-  { to: "/planner", labelKey: "navigation.planner", icon: Dumbbell },
-  { to: "/logger", labelKey: "navigation.logger", icon: BookOpen },
-  { to: "/progress", labelKey: "navigation.progress", icon: Target },
-  { to: "/feed", labelKey: "navigation.feed", icon: Users },
+  { to: "/sessions", labelKey: "navigation.sessions", icon: CalendarDays },
+  { to: "/insights", labelKey: "navigation.insights", icon: BarChart3 },
   { to: "/profile", labelKey: "navigation.profile", icon: User },
 ];
 

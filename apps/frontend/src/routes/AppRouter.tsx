@@ -11,11 +11,8 @@ import Register from "../pages/Register";
 import VerifyEmail from "../pages/VerifyEmail";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
-import Dashboard from "../pages/Dashboard";
-import Planner from "../pages/Planner";
-import Logger from "../pages/Logger";
-import Progress from "../pages/Progress";
-import Feed from "../pages/Feed";
+import Sessions from "../pages/Sessions";
+import Insights from "../pages/Insights";
 import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
 
@@ -27,11 +24,8 @@ const AppRouter: React.FC = () => (
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
               <Route index element={<Home />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="planner" element={<Planner />} />
-              <Route path="logger" element={<Logger />} />
-              <Route path="progress" element={<Progress />} />
-              <Route path="feed" element={<Feed />} />
+              <Route path="sessions" element={<Sessions />} />
+              <Route path="insights" element={<Insights />} />
               <Route path="profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Route>

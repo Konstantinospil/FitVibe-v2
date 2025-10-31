@@ -1,11 +1,8 @@
 {
   "navigation": {
     "home": "Start",
-    "dashboard": "Dashboard",
-    "planner": "Planer",
-    "logger": "Protokoll",
-    "progress": "Fortschritt",
-    "feed": "Feed",
+    "sessions": "Einheiten",
+    "insights": "Einblicke",
     "profile": "Profil",
     "signOut": "Abmelden",
     "you": "Du",
@@ -65,7 +62,7 @@
     "register": {
       "eyebrow": "FitVibe beitreten",
       "title": "Registriere dich und starte kollaboratives Training.",
-      "description": "Erstelle dein Athletenprofil, definiere Trainingspräferenzen und lade deine Coaches ein. Wir sch�tzen sensible Daten standardm��ig.",
+      "description": "Erstelle dein Athletenprofil, definiere Trainingspräferenzen und lade deine Coaches ein. Wir schätzen sensible Daten standardmäßig.",
       "successTitle": "Überprüfe deine E-Mail!",
       "successDescription": "Wir haben einen Bestätigungslink an deine E-Mail gesendet. Klicke auf den Link, um dein Konto zu aktivieren und mit dem Training zu beginnen.",
       "checkEmail": "Bestätigungs-E-Mail gesendet an {{email}}",
@@ -79,7 +76,7 @@
       "submitting": "Konto wird erstellt...",
       "loginPrompt": "Trainierst du bereits mit uns?",
       "loginLink": "Anmelden",
-      "error": "Wir konnten dein Konto nicht erstellen. Bitte versuche es in K�rze erneut."
+      "error": "Wir konnten dein Konto nicht erstellen. Bitte versuche es in Kürze erneut."
     },
     "placeholders": {
       "email": "du@fitvibe.app",
@@ -93,25 +90,25 @@
   "profile": {
     "eyebrow": "Athletenprofil",
     "title": "Stimme Einstellungen, Privatsphäre und Ziele ab.",
-    "description": "Definiere Sichtbarkeiten, bevorzugte Einheiten und pers�nliche Bestleistungen, damit jede geteilte Session deine Geschichte erz�hlt.",
+    "description": "Definiere Sichtbarkeiten, bevorzugte Einheiten und persönliche Bestleistungen, damit jede geteilte Session deine Geschichte erzählt.",
     "edit": "Profil bearbeiten",
     "sections": {
       "visibility": {
         "title": "Sichtbarkeit",
-        "description": "Standard-Sichtbarkeit für Sessions ist auf Follower gesetzt. F�r Wettkampf-Recaps kannst du auf �ffentlich wechseln."
+        "description": "Standard-Sichtbarkeit für Sessions ist auf Follower gesetzt. Für Wettkampf-Recaps kannst du auf Öffentlich wechseln."
       },
       "units": {
         "title": "Bevorzugte Einheiten",
-        "description": "Gewicht in Kilogramm � Distanz in Kilometern � Pace in min/km."
+        "description": "Gewicht in Kilogramm - Distanz in Kilometern - Pace in min/km."
       },
       "achievements": {
         "title": "Highlights",
-        "description": "180 kg Kniebeuge � 115 kg Bankdr�cken � 210 kg Kreuzheben � Boston-Marathon-Qualifikation."
+        "description": "180 kg Kniebeuge - 115 kg Bankdrücken - 210 kg Kreuzheben - Boston-Marathon-Qualifikation."
       }
     },
     "share": {
       "title": "Freigabelinks",
-      "description": "Erstelle pers�nliche Links f�r externe Coaches oder Kampfrichter. Du kannst jeden Link sofort deaktivieren, wenn Zugriff entzogen werden soll.",
+      "description": "Erstelle persönliche Links für externe Coaches oder Kampfrichter. Du kannst jeden Link sofort deaktivieren, wenn Zugriff entzogen werden soll.",
       "create": "Freigabelink erstellen",
       "empty": "Noch keine aktiven Freigabelinks.",
       "copy": "Link kopieren",
@@ -119,7 +116,7 @@
       "revoked": "Widerrufen",
       "copied": "Link in die Zwischenablage kopiert",
       "guards": {
-        "active": "Teile diese URL nur mit vertrauensw�rdigen Personen.",
+        "active": "Teile diese URL nur mit vertrauenswürdigen Personen.",
         "revoked": "Dieser Link ist nicht mehr erreichbar."
       }
     }
@@ -127,20 +124,20 @@
   "feed": {
     "eyebrow": "Community-Stream",
     "title": "Teile Fortschritt mit Teamkollegen und Followern.",
-    "description": "Der Feed filtert Einheiten nach Sichtbarkeit � Privates bleibt privat, �ffentliche Erfolge bekommen das verdiente Rampenlicht.",
+    "description": "Der Feed filtert Einheiten nach Sichtbarkeit – Privates bleibt privat, öffentliche Erfolge bekommen das verdiente Rampenlicht.",
     "timestamp": "gerade eben",
-    "button": "Session �ffnen",
+    "button": "Session öffnen",
     "items": {
       "leah": {
         "user": "Leah",
-        "note": "Neuen 5RM im Kreuzheben mit 170 kg erreicht � das Grifftraining zahlt sich aus!",
-        "stats": "17 Likes � 6 Kommentare",
+        "note": "Neuen 5RM im Kreuzheben mit 170 kg erreicht – das Grifftraining zahlt sich aus!",
+        "stats": "17 Likes – 6 Kommentare",
         "visibility": "public"
       },
       "marco": {
         "user": "Marco",
-        "note": "Deload-Plan mit Reha-Protokoll f�rs Sprunggelenk geteilt.",
-        "stats": "Coach-Ansicht � Nur mit Link",
+        "note": "Deload-Plan mit Reha-Protokoll fürs Sprunggelenk geteilt.",
+        "stats": "Coach-Ansicht – Nur mit Link",
         "visibility": "link"
       },
       "team": {
@@ -152,7 +149,7 @@
     }
   },
   "footer": {
-    "note": "F�r Athletinnen und Athleten, die datengetriebenen Fortschritt lieben � FitVibe Labs"
+    "note": "Für Athletinnen und Athleten, die datengetriebenen Fortschritt lieben — Fitvibe"
   },
   "errors": {
     "WEAK_PASSWORD": "Passwort muss mindestens 12 Zeichen lang sein und Großbuchstaben, Kleinbuchstaben, Ziffern und Sonderzeichen enthalten",
@@ -366,6 +363,20 @@
     "title": "Gestalte Trainingsblöcke mit Absicht.",
     "description": "Ziehe, dupliziere und periodisiere Workouts. Der Planer hält Intensität, Volumen und Deload-Verhältnisse im Einklang mit deinem Makrozyklus.",
     "editBlock": "Block bearbeiten"
+  },
+  "sessions": {
+    "eyebrow": "Training-Management",
+    "title": "Plane und protokolliere deine Workouts",
+    "description": "Gestalte Trainingsblöcke und erfasse jede Wiederholung ohne Unterbrechung.",
+    "plannerTab": "Planer",
+    "loggerTab": "Protokoll"
+  },
+  "insights": {
+    "eyebrow": "Analytics & Trends",
+    "title": "Dein Performance-Dashboard",
+    "description": "Überwache Bereitschaft, visualisiere Fortschritt und verfolge deine Reise mit datengestützten Einblicken.",
+    "dashboardTab": "Dashboard",
+    "progressTab": "Fortschritt"
   },
   "notFound": {
     "eyebrow": "Navigation",
